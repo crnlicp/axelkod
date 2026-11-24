@@ -1,11 +1,10 @@
-import type { PublicConfig } from "../bindings/backend";
+import type { PublicContact } from "../bindings/backend";
 import { dict, type Lang } from "../lib/i18n";
 import { IconCompany, IconMail, IconPhone, IconPin } from "./Icons";
 
-export function ContactDetails({ lang, config }: { lang: Lang; config: PublicConfig | null }) {
+export function ContactDetails({ lang, contact: c }: { lang: Lang; contact: PublicContact | null }) {
   const t = dict(lang).contactDetails;
-  if (!config) return null;
-  const c = config.contact;
+  if (!c) return null;
   const address = [c.street, [c.postalCode, c.city].filter(Boolean).join(" ")].filter(Boolean);
   return (
     <aside className="card h-fit" aria-labelledby="contact-details-title">

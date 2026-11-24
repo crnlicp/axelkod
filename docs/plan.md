@@ -16,7 +16,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 3 | Backend canister | Done | `mops test` (auth, validation, retention) |
 | 4 | Contact form | Done | `mops test` + Playwright form submit |
 | 5a | Admin: inbox | Done | Playwright: local II login, read message |
-| 5b | Admin: contact info | Not started | Playwright edit |
+| 5b | Admin: contact info | Done | Playwright edit |
 | 5c | Admin: SEO + Publish | Not started | Playwright publish, then fetch the HTML head |
 | 5d | Admin: settings | Not started | `mops test` + Playwright |
 | 6 | Deploy + custom domain | Not started | Mainnet deploy (approval at each step) |
@@ -73,8 +73,10 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] Verified: 34 Playwright tests incl. admin shell (axe, noindex, CSP, popup to local II `/authorize`) and `tests/api/admin-api.spec.ts` (real admin with an in-memory key: list/search/status/note/export/delete, settings round-trip, anonymous refused)
 - [x] Browser login via local II (`tests/e2e/admin-login.spec.ts`): the local II runs with dummy auth, so identity creation asks for a "seed index" in a browser prompt instead of a passkey; the test answers it, gets "Åtkomst nekad", is granted admin by the local controller, then searches, opens, notes, marks handled, exports and deletes a message
 
-### 5b. Admin: contact info — Not started
-- [ ] Edit all ContactInfo fields with a live preview
+### 5b. Admin: contact info — Done
+- [x] `/admin/contact`: all ContactInfo fields + show flags, live preview with the same `ContactDetails` component the site uses (show flags applied as in the canister), unsaved-changes state and undo, server validation errors shown on the field
+- [x] Public site reads contact info at runtime, so a save is live immediately (no deploy or Publish)
+- [x] Verified: `tests/e2e/admin-contact.spec.ts` (local II admin edits phone/org.nr, preview follows flags, invalid email rejected by the canister, public page shows the change; original restored). Suite runs with one worker since tests share the local canister
 
 ### 5c. Admin: SEO + Publish — Not started
 - [ ] Per-language tabs, character counters, Google result preview, JSON-LD fields, verification tokens

@@ -77,6 +77,7 @@ export default function AdminLayout() {
               <NavLink to="/admin" end className={tab}>
                 Inkorg{unread ? <span className="ml-1.5 rounded-full bg-[var(--color-teal-500)] px-2 py-0.5 text-xs font-semibold text-[var(--color-navy-900)]" aria-label={`${unread} olästa`}>{unread}</span> : null}
               </NavLink>
+              <NavLink to="/admin/contact" className={tab}>Kontaktuppgifter</NavLink>
             </nav>
             <button type="button" className="btn btn-secondary" onClick={() => void signOut()}>Logga ut</button>
           </div>

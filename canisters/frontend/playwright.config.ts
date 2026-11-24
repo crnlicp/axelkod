@@ -6,6 +6,8 @@ export default defineConfig({
   testDir: "tests",
   globalSetup: "./tests/support/global-setup.ts",
   reporter: "list",
+  // Tests share one local canister's state (settings, admins, rate limits).
+  workers: 1,
   use: {
     baseURL: process.env.BASE_URL ?? "http://frontend.local.localhost:8000",
     launchOptions: { args: ["--disable-gpu"] },

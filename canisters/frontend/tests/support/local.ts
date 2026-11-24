@@ -46,3 +46,28 @@ export async function signInWithLocalII(page: Page, context: BrowserContext) {
   await popup.getByRole("button", { name: "Continue", exact: true }).click();
   await popup.waitForEvent("close");
 }
+
+/**
+ * Signs in through local II, has the local controller grant admin, and returns the
+ * principal plus a cleanup that revokes it.
+ */
+export async function signInAsAdmin(page: Page, context: BrowserContext) {
+  await signInWithLocalII(page, context);
+  const principal = (await page.getByTestId("principal").textContent())!.trim();
+  icp("canister", "call", "backend", "addAdmin", `(principal "${principal}")`);
+  await page.reload();
+  await page.getByRole("heading", { name: "Inkorg" }).waitFor();
+  return { principal, revoke: () => icp("canister", "call", "backend", "removeAdmin", `(principal "${principal}")`) };
+}
+
+/** A node-side admin actor (throwaway in-memory key) for test setup and restore. */
+export async function apiAdmin() {
+  const { Ed25519KeyIdentity } = await import("@icp-sdk/core/identity");
+  const identity = Ed25519KeyIdentity.generate();
+  const principal = identity.getPrincipal().toText();
+  icp("canister", "call", "backend", "addAdmin", `(principal "${principal}")`);
+  return {
+    actor: createActor(ids.backend, { agentOptions: { ...agentOptions, identity } }),
+    revoke: () => icp("canister", "call", "backend", "removeAdmin", `(principal "${principal}")`),
+  };
+}

@@ -83,7 +83,7 @@ export default function Home() {
             <p className="mt-3 text-lg text-muted">{t.contact.intro}</p>
             <ContactForm lang={lang} responseTime={config ? config.responseTime[lang] : null} />
           </div>
-          <ContactDetails lang={lang} config={config} />
+          <ContactDetails lang={lang} contact={config?.contact ?? null} />
         </div>
       </section>
     </PageShell>
