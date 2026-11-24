@@ -3,7 +3,7 @@ moc = "2.2.4"
 lintoko = "0.12.0"
 
 [moc]
-args = ["-W=M0223,M0237"]
+args = [ "-W=M0223,M0237" ]
 
 [canisters.backend]
 main = "src/main.mo"
@@ -17,4 +17,4 @@ check-limit = 1
 path = "deployed/backend.most"
 
 [dependencies]
-core = "2.7.0"
+core = "2.7.1"

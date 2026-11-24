@@ -11,7 +11,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 |---|---|---|---|
 | — | Plan, spec reconciliation | Done | Spec matches RULES.md |
 | 0 | Scaffold | Done | Local `icp deploy`, both canisters respond |
-| 1 | Design system | Not started | Visual check, contrast check |
+| 1 | Design system | Done | Visual check, contrast check |
 | 2 | Public pages (sv/en) | Not started | Lighthouse ≥ 95, axe, one h1 per page |
 | 3 | Backend canister | Not started | `mops test` (auth, validation, retention) |
 | 4 | Contact form | Not started | `mops test` + Playwright form submit |
@@ -30,12 +30,14 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] Root `package.json` with scripts only
 - [x] Local deploy with `--identity anonymous`: frontend serves certified HTML with `ic_env` cookie, backend running, local II responds
 
-### 1. Design system — Not started
-- [ ] Self-hosted Barlow Condensed and Inter (woff2)
-- [ ] Tailwind tokens: navy `#032843`, teal `#05A390`, greys; light by default, optional dark
-- [ ] Logo and symbol SVG components (optimised); line icons in the logo's style
-- [ ] Circuit/hexagon background motif; respects `prefers-reduced-motion`
-- [ ] Focus styles, AA contrast
+### 1. Design system — Done
+- [x] Self-hosted Barlow Condensed 600/700 and Inter Variable (`@fontsource`, bundled woff2, no third-party requests)
+- [x] Tailwind 4 tokens in `app/app.css`: navy/teal/grey scales + semantic `bg/surface/fg/muted/border/accent/brand`; light by default, dark via `prefers-color-scheme` (CSS only, no inline script for the CSP)
+- [x] `Logo` and `LogoSymbol` (`app/components/Logo.tsx`, generated from `docs/brand/`, navy = `currentColor`); line icons (`Icons.tsx`)
+- [x] `CircuitBackground`: traces + hexagon nodes at the edges, pulse animation off under `prefers-reduced-motion`
+- [x] Focus ring, `.btn`/`.card` components; brand teal (3.2:1 on white) only for decoration/large text, `teal-700`/`teal-300` for text
+- [x] Verified: screenshots (light, dark, 390 px), `tests/e2e/a11y.spec.ts` (axe WCAG 2.1 AA incl. contrast, one h1, focus) passes in both themes
+- Note: `app/routes/home.tsx` is a temporary design preview, replaced in Phase 2
 
 ### 2. Public pages (sv/en) — Not started
 - [ ] Prerendered `/`, `/en/`, `/integritet`, `/en/privacy`, `404.html`

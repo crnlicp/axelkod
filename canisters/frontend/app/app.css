@@ -1,1 +1,145 @@
 @import "tailwindcss";
+/* Self-hosted fonts (bundled by Vite into /assets; no third-party requests). */
+@import "@fontsource/barlow-condensed/latin-600.css";
+@import "@fontsource/barlow-condensed/latin-700.css";
+@import "@fontsource-variable/inter/wght.css";
+
+/* Brand palette. Teal #05A390 is 3.2:1 on white: decoration, icons, borders and
+   large text only. Body-size teal text uses teal-700 (light) / teal-300 (dark). */
+@theme {
+  --color-navy-950: #021b2e;
+  --color-navy-900: #032843;
+  --color-navy-800: #0a3a5e;
+  --color-navy-700: #14507d;
+  --color-teal-300: #2bc4af;
+  --color-teal-500: #05a390;
+  --color-teal-700: #047c6e;
+  --color-grey-50: #f6f8fa;
+  --color-grey-100: #eef2f5;
+  --color-grey-200: #dde4ea;
+  --color-grey-300: #c3cdd6;
+  --color-grey-400: #a9b6c2;
+  --color-grey-500: #5b6b7a;
+  --color-grey-600: #4a5868;
+  --color-grey-700: #36424f;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, sans-serif;
+}
+
+/* Semantic colours. Light by default; dark follows the OS setting (CSS only,
+   so no inline theme script and nothing extra in the CSP). */
+:root {
+  --bg: var(--color-white);
+  --surface: var(--color-grey-50);
+  --fg: var(--color-navy-900);
+  --muted: var(--color-grey-600);
+  --border: var(--color-grey-200);
+  --accent: var(--color-teal-700);
+  --brand: var(--color-teal-500);
+  --circuit: var(--color-navy-900);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--color-navy-950);
+    --surface: var(--color-navy-900);
+    --fg: var(--color-grey-100);
+    --muted: var(--color-grey-400);
+    --border: var(--color-navy-700);
+    --accent: var(--color-teal-300);
+    --brand: var(--color-teal-500);
+    --circuit: var(--color-teal-500);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-brand: var(--brand);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.05;
+  }
+  a {
+    color: var(--accent);
+    /* Inline links must not rely on colour alone (WCAG 1.4.1). */
+    text-decoration-line: underline;
+    text-underline-offset: 0.2em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 150ms, color 150ms, border-color 150ms;
+  }
+  /* Navy on teal: 4.8:1. */
+  .btn-primary {
+    background: var(--color-teal-500);
+    color: var(--color-navy-900);
+  }
+  .btn-primary:hover {
+    background: var(--color-teal-300);
+  }
+  .btn-secondary {
+    border: 1.5px solid currentColor;
+    color: var(--fg);
+  }
+  .btn-secondary:hover {
+    color: var(--accent);
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+}
+
+/* Circuit motif */
+.circuit-bg__traces { stroke: var(--circuit); opacity: 0.12; }
+.circuit-bg__nodes { fill: var(--bg); stroke: var(--brand); opacity: 0.5; }
+.circuit-bg__pulses {
+  stroke: var(--brand);
+  opacity: 0.7;
+  stroke-dasharray: 6 94;
+  animation: circuit-pulse 9s linear infinite;
+}
+@keyframes circuit-pulse {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .circuit-bg__pulses { animation: none; display: none; }
+}
