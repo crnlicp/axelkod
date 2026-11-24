@@ -73,7 +73,8 @@ for (const file of htmlFiles(out).sort()) {
     "style-src 'self'",
     "img-src 'self' data:",
     "font-src 'self'",
-    "connect-src 'self'",
+    // The agent calls the page origin locally and icp-api.io on custom domains.
+    "connect-src 'self' https://icp-api.io",
     "manifest-src 'self'",
     "base-uri 'self'",
     "form-action 'self'",

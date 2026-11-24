@@ -1,6 +1,7 @@
 // Initial state. Still pending (never deployed to mainnet), so later phases may
 // extend it in place. Self-contained: types are copied, not imported.
 import Map "mo:core/Map";
+import Queue "mo:core/Queue";
 
 module {
   type Lang = { #sv; #en };
@@ -33,6 +34,8 @@ module {
     admins : Map.Map<Principal, Int>;
     messages : Map.Map<Nat, Message>;
     config : Config;
+    counters : { var nextMessageId : Nat };
+    form : { var secret : Blob; usedTokens : Map.Map<Text, Int>; recent : Queue.Queue<Int> };
   };
 
   let base = "https://axelkod.eu";
@@ -75,6 +78,8 @@ module {
           };
         };
       };
+      counters = { var nextMessageId = 0 };
+      form = { var secret = ""; usedTokens = Map.empty(); recent = Queue.empty() };
     };
   };
 };

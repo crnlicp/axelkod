@@ -95,6 +95,7 @@ Follow RULES.md "Motoko backend" and "Motoko conventions": `mo:core` only, `mops
 - Configuration files in `canisters/frontend/public/`, copied to the root of `dir`. `.ic-assets.json5` is not used: certified-assets ignores it.
   - `_headers`:
     - Security headers: strict Content-Security-Policy, HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, X-Frame-Options. The canister adds no defaults.
+    - CSP: `connect-src 'self' https://icp-api.io` (the agent uses icp-api.io on custom domains); the `presync` step adds `http://localhost:*` for local networks only.
     - CSP: no `unsafe-inline` for scripts. React Router's inline hydration scripts are allowed by `sha256` hashes, which a build script calculates and writes into each HTML file's `_headers` block.
     - Cache headers: `immutable` for hashed `/assets/*`, `max-age=0, must-revalidate` for `/*.html`.
   - `_redirects`: rewrites `/admin` and `/admin/*` to the admin shell (status 200). Nothing else falls back. `404.html` serves every other unknown path.

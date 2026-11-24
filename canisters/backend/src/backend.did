@@ -3,6 +3,16 @@ type Whoami =
    isAdmin: bool;
    "principal": principal;
  };
+type SubmitError = 
+ variant {
+   invalid: text;
+   rateLimited;
+   tokenExpired;
+   tokenInvalid;
+   tokenTooFast;
+   tokenUsed;
+   unavailable;
+ };
 type Status = 
  variant {
    handled;
@@ -44,45 +54,55 @@ type SeoLang =
    ogTitle: opt text;
    title: text;
  };
-type Result_8 = 
+type Result_9 = 
  variant {
-   err: Error;
+   err: SubmitError;
    ok: text;
  };
-type Result_7 = 
+type Result_8 = 
  variant {
    err: Error;
    ok: SeoState;
  };
-type Result_6 = 
+type Result_7 = 
  variant {
    err: Error;
    ok: vec AdminView;
  };
-type Result_5 = 
+type Result_6 = 
  variant {
    err: Error;
    ok: MessagePage;
  };
-type Result_4 = 
+type Result_5 = 
  variant {
    err: Error;
    ok: ContactInfo;
  };
-type Result_3 = 
+type Result_4 = 
  variant {
    err: Error;
    ok: SeoSettings;
  };
-type Result_2 = 
+type Result_3 = 
  variant {
    err: Error;
    ok: SiteSettings;
  };
-type Result_1 = 
+type Result_2 = 
  variant {
    err: Error;
    ok;
+ };
+type Result_10 = 
+ variant {
+   err: Error;
+   ok: text;
+ };
+type Result_1 = 
+ variant {
+   err: SubmitError;
+   ok: nat;
  };
 type Result = 
  variant {
@@ -154,6 +174,18 @@ type Error =
    notAuthorized;
    notFound;
  };
+type ContactInput = 
+ record {
+   area: Area;
+   company: opt text;
+   consent: bool;
+   email: text;
+   lang: Lang;
+   message: text;
+   name: text;
+   phone: opt text;
+   website: text;
+ };
 type ContactInfo = 
  record {
    city: text;
@@ -167,22 +199,24 @@ type ContactInfo =
  };
 type Backend = 
  service {
-   addAdmin: (p: principal) -> (Result_1);
-   deleteMessage: (id: nat) -> (Result_1);
-   exportMessagesCsv: () -> (Result_8) query;
-   getContactInfo: () -> (Result_4) query;
+   addAdmin: (p: principal) -> (Result_2);
+   deleteMessage: (id: nat) -> (Result_2);
+   exportMessagesCsv: () -> (Result_10) query;
+   getContactInfo: () -> (Result_5) query;
+   getFormToken: (nonce: text) -> (Result_9) query;
    getPublicConfig: () -> (PublicConfig) query;
-   getSeoSettings: () -> (Result_7) query;
-   getSiteSettings: () -> (Result_2) query;
-   listAdmins: () -> (Result_6) query;
+   getSeoSettings: () -> (Result_8) query;
+   getSiteSettings: () -> (Result_3) query;
+   listAdmins: () -> (Result_7) query;
    listMessages: (filter: MessageFilter, page: PageRequest) ->
-    (Result_5) query;
-   removeAdmin: (p: principal) -> (Result_1);
-   setContactInfo: (c: ContactInfo) -> (Result_4);
-   setNote: (id: nat, note: text) -> (Result_1);
-   setSeoSettings: (s: SeoSettings) -> (Result_3);
-   setSiteSettings: (s: SiteSettings) -> (Result_2);
-   setStatus: (id: nat, status: Status) -> (Result_1);
+    (Result_6) query;
+   removeAdmin: (p: principal) -> (Result_2);
+   setContactInfo: (c: ContactInfo) -> (Result_5);
+   setNote: (id: nat, note: text) -> (Result_2);
+   setSeoSettings: (s: SeoSettings) -> (Result_4);
+   setSiteSettings: (s: SiteSettings) -> (Result_3);
+   setStatus: (id: nat, status: Status) -> (Result_2);
+   submitContact: (input: ContactInput, token: text) -> (Result_1);
    /// Makes the frontend's authorized set equal the admin set. Run after deploys:
    /// a frontend reinstall wipes its authorized list.
    syncAdminsToFrontend: () -> (Result);

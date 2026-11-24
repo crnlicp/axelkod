@@ -9,8 +9,15 @@
     "contact": "Contact",
     "home": "Axelkod, home"
   },
-  "langSwitch": { "label": "På svenska", "short": "SV" },
-  "anchors": { "services": "services", "why": "why", "contact": "contact" },
+  "langSwitch": {
+    "label": "På svenska",
+    "short": "SV"
+  },
+  "anchors": {
+    "services": "services",
+    "why": "why",
+    "contact": "contact"
+  },
   "seo": {
     "homeTitle": "Axelkod AB – Vehicle parts, software and cyber security",
     "homeDescription": "Axelkod AB in Mölndal, Sweden, supplies parts for heavy vehicles, builds software and advises on cyber security. Get in touch to learn more.",
@@ -25,18 +32,39 @@
   "services": {
     "title": "What we do",
     "items": [
-      { "title": "Vehicle parts", "text": "Spare parts and accessories for trucks and heavy vehicles." },
-      { "title": "Software development", "text": "Software, web applications and websites built to last." },
-      { "title": "Cyber security", "text": "Consulting in IT and information security." }
+      {
+        "title": "Vehicle parts",
+        "text": "Spare parts and accessories for trucks and heavy vehicles."
+      },
+      {
+        "title": "Software development",
+        "text": "Software, web applications and websites built to last."
+      },
+      {
+        "title": "Cyber security",
+        "text": "Consulting in IT and information security."
+      }
     ]
   },
   "why": {
     "title": "Why Axelkod",
     "items": [
-      { "title": "Personal contact", "text": "You talk to us directly, not to a switchboard." },
-      { "title": "Swedish company", "text": "Registered and operating in Mölndal." },
-      { "title": "Secure by design", "text": "Security is part of everything we build." },
-      { "title": "Quick response", "text": "We get back to you within 1–2 business days." }
+      {
+        "title": "Personal contact",
+        "text": "You talk to us directly, not to a switchboard."
+      },
+      {
+        "title": "Swedish company",
+        "text": "Registered and operating in Mölndal."
+      },
+      {
+        "title": "Secure by design",
+        "text": "Security is part of everything we build."
+      },
+      {
+        "title": "Quick response",
+        "text": "We get back to you within 1–2 business days."
+      }
     ]
   },
   "contact": {
@@ -47,7 +75,8 @@
     "company": "Axelkod AB",
     "city": "Mölndal, Sweden",
     "privacy": "Privacy notice",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "orgNumber": "Reg. no."
   },
   "privacy": {
     "title": "Privacy notice",
@@ -83,5 +112,49 @@
     "title": "Page not found",
     "text": "The page you are looking for does not exist or has moved.",
     "home": "Go to the home page"
+  },
+  "form": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "company": "Company",
+    "area": "Area",
+    "areaPlaceholder": "Choose an area",
+    "message": "Message",
+    "optional": "optional",
+    "required": "required",
+    "areas": {
+      "parts": "Vehicle parts",
+      "software": "Software development",
+      "security": "Cyber security",
+      "other": "Other"
+    },
+    "consentBefore": "I agree that Axelkod stores my details to answer my enquiry as described in the ",
+    "consentLink": "privacy notice",
+    "honeypot": "Leave this field empty",
+    "submit": "Send",
+    "sending": "Sending…",
+    "thanks": "Thank you!",
+    "counter": "{count} of {max} characters",
+    "errors": {
+      "name": "Enter your name.",
+      "email": "Enter a valid email address.",
+      "phone": "The phone number may only contain digits, spaces and + - ( ).",
+      "company": "The company name is too long.",
+      "area": "Choose an area.",
+      "message": "Write a message (2,000 characters at most).",
+      "consent": "Please accept the privacy notice.",
+      "summary": "Please check the highlighted fields.",
+      "rateLimited": "We are receiving a lot of messages right now. Please try again later.",
+      "unavailable": "The form is not available right now. Please try again shortly.",
+      "network": "The message could not be sent. Check your connection and try again."
+    }
+  },
+  "contactDetails": {
+    "title": "Contact details",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "orgNumber": "Reg. no."
   }
 }

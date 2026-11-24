@@ -81,5 +81,6 @@ test("no third-party requests", async ({ page }) => {
   page.on("request", (r) => hosts.add(new URL(r.url()).host));
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-  expect([...hosts]).toEqual(["frontend.local.localhost:8000"]);
+  // The page itself plus the local gateway's API endpoint (icp-api.io on mainnet).
+  expect([...hosts].sort()).toEqual(["frontend.local.localhost:8000", "localhost:8000"]);
 });

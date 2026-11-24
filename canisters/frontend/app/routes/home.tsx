@@ -1,11 +1,14 @@
 import { useLocation } from "react-router";
 import { CircuitBackground } from "../components/CircuitBackground";
+import { ContactDetails } from "../components/ContactDetails";
+import { ContactForm } from "../components/ContactForm";
 import {
   IconArrowRight, IconClock, IconCode, IconCompany, IconLock, IconParts, IconPerson, IconShield,
 } from "../components/Icons";
 import { LogoSymbol } from "../components/Logo";
 import { PageShell } from "../components/PageShell";
 import { dict, langFromPath } from "../lib/i18n";
+import { usePublicConfig } from "../lib/publicConfig";
 import { pageMeta } from "../lib/seo";
 import type { Route } from "./+types/home";
 
@@ -17,6 +20,7 @@ const whyIcons = [IconPerson, IconCompany, IconLock, IconClock];
 export default function Home() {
   const lang = langFromPath(useLocation().pathname);
   const t = dict(lang);
+  const config = usePublicConfig();
 
   return (
     <PageShell lang={lang} page="home">
@@ -73,10 +77,13 @@ export default function Home() {
       </section>
 
       <section id={t.anchors.contact} className="scroll-mt-4 px-5 py-16 sm:py-20" aria-labelledby="contact-title">
-        <div className="mx-auto max-w-3xl">
-          <h2 id="contact-title" className="text-4xl uppercase">{t.contact.title}</h2>
-          <p className="mt-3 text-lg text-muted">{t.contact.intro}</p>
-          {/* Contact form and details: Phase 4. */}
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_20rem]">
+          <div>
+            <h2 id="contact-title" className="text-4xl uppercase">{t.contact.title}</h2>
+            <p className="mt-3 text-lg text-muted">{t.contact.intro}</p>
+            <ContactForm lang={lang} responseTime={config ? config.responseTime[lang] : null} />
+          </div>
+          <ContactDetails lang={lang} config={config} />
         </div>
       </section>
     </PageShell>

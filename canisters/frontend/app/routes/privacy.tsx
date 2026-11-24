@@ -1,6 +1,7 @@
 import { useLocation } from "react-router";
 import { PageShell } from "../components/PageShell";
 import { DEFAULT_RETENTION_MONTHS, dict, fmt, langFromPath } from "../lib/i18n";
+import { usePublicConfig } from "../lib/publicConfig";
 import { pageMeta } from "../lib/seo";
 import type { Route } from "./+types/privacy";
 
@@ -11,8 +12,8 @@ const UPDATED = "2026-11-24";
 export default function Privacy() {
   const lang = langFromPath(useLocation().pathname);
   const t = dict(lang);
-  // Retention comes from the admin setting in Phase 4; the default is shown until then.
-  const months = DEFAULT_RETENTION_MONTHS;
+  // Prerendered with the default; replaced by the admin setting once loaded.
+  const months = Number(usePublicConfig()?.retentionMonths ?? DEFAULT_RETENTION_MONTHS);
 
   return (
     <PageShell lang={lang} page="privacy">

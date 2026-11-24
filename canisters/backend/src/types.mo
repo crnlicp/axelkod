@@ -1,5 +1,6 @@
 // Central schema. Stable state types must match the NewActor of the migration chain.
 import Map "mo:core/Map";
+import Queue "mo:core/Queue";
 
 module {
   public type Lang = { #sv; #en };
@@ -66,6 +67,15 @@ module {
     var site : SiteSettings;
   };
 
+  public type Counters = { var nextMessageId : Nat };
+
+  /// Contact-form spam protection state.
+  public type FormState = {
+    var secret : Blob; // HMAC key from raw_rand, set by a timer right after install
+    usedTokens : Map.Map<Text, Int>; // token -> issuedAt, pruned after MAX_AGE
+    recent : Queue.Queue<Int>; // accepted submission times of the last 24 h
+  };
+
   /// Admin principal -> time added (ns).
   public type Admins = Map.Map<Principal, Int>;
   public type Messages = Map.Map<Nat, Message>;
@@ -78,6 +88,28 @@ module {
     #invalid : Text; // name of the offending field
     #lastAdmin;
     #frontend : Text; // the frontend canister rejected authorize/deauthorize
+  };
+
+  public type ContactInput = {
+    name : Text;
+    email : Text;
+    phone : ?Text;
+    company : ?Text;
+    area : Area;
+    message : Text;
+    lang : Lang;
+    consent : Bool;
+    website : Text; // honeypot: humans never see it, so it must stay empty
+  };
+
+  public type SubmitError = {
+    #invalid : Text; // field name
+    #tokenInvalid;
+    #tokenTooFast;
+    #tokenExpired;
+    #tokenUsed;
+    #rateLimited;
+    #unavailable; // secret not initialised yet
   };
 
   public type AdminView = { principal : Principal; addedAt : Int };

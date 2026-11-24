@@ -14,7 +14,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 1 | Design system | Done | Visual check, contrast check |
 | 2 | Public pages (sv/en) | In progress | Lighthouse ≥ 95, axe, one h1 per page |
 | 3 | Backend canister | Done | `mops test` (auth, validation, retention) |
-| 4 | Contact form | Not started | `mops test` + Playwright form submit |
+| 4 | Contact form | Done | `mops test` + Playwright form submit |
 | 5a | Admin: inbox | Not started | Playwright: local II login, read message |
 | 5b | Admin: contact info | Not started | Playwright edit |
 | 5c | Admin: SEO + Publish | Not started | Playwright publish, then fetch the HTML head |
@@ -58,11 +58,13 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] `scripts/deploy.sh local`: deploy, add backend as frontend controller, optional `FIRST_ADMIN`, sync admins
 - [x] Verified: `mops test` (validation, settings, paging/search, retention, CSV, auth) and local calls (frontend refuses until backend is controller; add/remove mirrored; last-admin guard; anonymous gets `notAuthorized`; sync restores a removed authorization; upgrade keeps state)
 
-### 4. Contact form — Not started
-- [ ] `getFormToken` (signed timestamp, secret from `raw_rand`), 3 s minimum, single use
-- [ ] Honeypot, global and per-token rate limits, size caps, control-character stripping
-- [ ] The same validation on the client; aria-live status; success text in sv/en
-- [ ] Contact details loaded from the backend
+### 4. Contact form — Done
+- [x] `getFormToken(nonce)` query: `<issuedAt>.<clientNonce>.<HMAC-SHA256>` (secret from `raw_rand` via a timer after install; `sha2` dependency, HMAC tested against RFC 4231), ≥ 3 s, ≤ 2 h, single use (used tokens pruned after 2 h)
+- [x] `submitContact`: honeypot (fake success, nothing stored), global limits 20/h and 100/day, 3 per email per day, field caps, control-character stripping, consent required; `inspect` drops calls > 16 KB
+- [x] Form (sv/en): client validation mirroring the canister, inline errors with `aria-invalid`/`aria-describedby`, focus on first invalid field, `aria-live` status, success text uses the admin's response-time text, automatic token refresh + one retry
+- [x] Contact details card, footer (org. nr, email, phone) and privacy retention loaded from `getPublicConfig`; agent loaded lazily (not in the initial bundle)
+- [x] CSP `connect-src 'self' https://icp-api.io`; `presync` adds `http://localhost:*` on non-mainnet networks
+- [x] Verified: `mops test` (4 files), local canister calls (too fast, reuse, tamper, honeypot, consent, per-email limit, oversized arg), 27 Playwright tests incl. real submits in sv/en and axe in both themes
 
 ### 5a. Admin: inbox — Not started
 - [ ] Lazy `/admin` chunk, `noindex`, II login with derivation origin, "Access denied"

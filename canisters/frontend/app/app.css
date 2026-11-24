@@ -38,6 +38,8 @@
   --accent: var(--color-teal-700);
   --brand: var(--color-teal-500);
   --circuit: var(--color-navy-900);
+  --error: #b42318;
+  --input-border: #7d8a98; /* 3.5:1 on white (WCAG 1.4.11) */
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -50,6 +52,8 @@
     --accent: var(--color-teal-300);
     --brand: var(--color-teal-500);
     --circuit: var(--color-teal-500);
+    --error: #ff8a80;
+    --input-border: #6b7d8f; /* 4.1:1 on navy-950 */
     color-scheme: dark;
   }
 }
@@ -125,6 +129,9 @@
     padding: 1.5rem;
   }
 }
+
+/* Contact-form honeypot: off-screen rather than display:none, which bots detect. */
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 
 /* Circuit motif */
 .circuit-bg__traces { stroke: var(--circuit); opacity: 0.12; }

@@ -9,8 +9,15 @@
     "contact": "Kontakt",
     "home": "Axelkod, startsida"
   },
-  "langSwitch": { "label": "In English", "short": "EN" },
-  "anchors": { "services": "tjanster", "why": "varfor", "contact": "kontakt" },
+  "langSwitch": {
+    "label": "In English",
+    "short": "EN"
+  },
+  "anchors": {
+    "services": "tjanster",
+    "why": "varfor",
+    "contact": "kontakt"
+  },
   "seo": {
     "homeTitle": "Axelkod AB – Fordonsdelar, mjukvara och cybersäkerhet",
     "homeDescription": "Axelkod AB i Mölndal levererar reservdelar till tunga fordon, utvecklar mjukvara och ger råd inom cybersäkerhet. Kontakta oss så berättar vi mer.",
@@ -25,18 +32,39 @@
   "services": {
     "title": "Vad vi gör",
     "items": [
-      { "title": "Fordonsdelar", "text": "Reservdelar och tillbehör till lastbilar och tunga fordon." },
-      { "title": "Mjukvaruutveckling", "text": "Mjukvara, webbapplikationer och webbplatser byggda för att hålla." },
-      { "title": "Cybersäkerhet", "text": "Rådgivning inom IT- och informationssäkerhet." }
+      {
+        "title": "Fordonsdelar",
+        "text": "Reservdelar och tillbehör till lastbilar och tunga fordon."
+      },
+      {
+        "title": "Mjukvaruutveckling",
+        "text": "Mjukvara, webbapplikationer och webbplatser byggda för att hålla."
+      },
+      {
+        "title": "Cybersäkerhet",
+        "text": "Rådgivning inom IT- och informationssäkerhet."
+      }
     ]
   },
   "why": {
     "title": "Varför Axelkod",
     "items": [
-      { "title": "Personlig kontakt", "text": "Du pratar direkt med oss, inte med en växel." },
-      { "title": "Svenskt bolag", "text": "Registrerat och verksamt i Mölndal." },
-      { "title": "Säkert från början", "text": "Säkerhet är en del av allt vi bygger." },
-      { "title": "Snabbt svar", "text": "Vi återkommer inom 1–2 arbetsdagar." }
+      {
+        "title": "Personlig kontakt",
+        "text": "Du pratar direkt med oss, inte med en växel."
+      },
+      {
+        "title": "Svenskt bolag",
+        "text": "Registrerat och verksamt i Mölndal."
+      },
+      {
+        "title": "Säkert från början",
+        "text": "Säkerhet är en del av allt vi bygger."
+      },
+      {
+        "title": "Snabbt svar",
+        "text": "Vi återkommer inom 1–2 arbetsdagar."
+      }
     ]
   },
   "contact": {
@@ -47,7 +75,8 @@
     "company": "Axelkod AB",
     "city": "Mölndal",
     "privacy": "Integritetspolicy",
-    "rights": "Alla rättigheter förbehållna."
+    "rights": "Alla rättigheter förbehållna.",
+    "orgNumber": "Org.nr"
   },
   "privacy": {
     "title": "Integritetspolicy",
@@ -83,5 +112,49 @@
     "title": "Sidan hittades inte",
     "text": "Sidan du letar efter finns inte eller har flyttats.",
     "home": "Till startsidan"
+  },
+  "form": {
+    "name": "Namn",
+    "email": "E-post",
+    "phone": "Telefon",
+    "company": "Företag",
+    "area": "Område",
+    "areaPlaceholder": "Välj område",
+    "message": "Meddelande",
+    "optional": "valfritt",
+    "required": "obligatoriskt",
+    "areas": {
+      "parts": "Fordonsdelar",
+      "software": "Mjukvaruutveckling",
+      "security": "Cybersäkerhet",
+      "other": "Annat"
+    },
+    "consentBefore": "Jag godkänner att Axelkod sparar mina uppgifter för att besvara min förfrågan enligt ",
+    "consentLink": "integritetspolicyn",
+    "honeypot": "Lämna det här fältet tomt",
+    "submit": "Skicka",
+    "sending": "Skickar…",
+    "thanks": "Tack!",
+    "counter": "{count} av {max} tecken",
+    "errors": {
+      "name": "Fyll i ditt namn.",
+      "email": "Fyll i en giltig e-postadress.",
+      "phone": "Telefonnumret får bara innehålla siffror, mellanslag och + - ( ).",
+      "company": "Företagsnamnet är för långt.",
+      "area": "Välj ett område.",
+      "message": "Skriv ett meddelande (högst 2 000 tecken).",
+      "consent": "Du behöver godkänna integritetspolicyn.",
+      "summary": "Kontrollera de markerade fälten.",
+      "rateLimited": "Vi har fått många meddelanden just nu. Försök igen senare.",
+      "unavailable": "Formuläret är inte tillgängligt just nu. Försök igen om en stund.",
+      "network": "Det gick inte att skicka. Kontrollera anslutningen och försök igen."
+    }
+  },
+  "contactDetails": {
+    "title": "Kontaktuppgifter",
+    "email": "E-post",
+    "phone": "Telefon",
+    "address": "Adress",
+    "orgNumber": "Org.nr"
   }
 }
