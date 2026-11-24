@@ -7,6 +7,6 @@
     "test:backend": "cd canisters/backend && mops test",
     "dev": "npm --prefix canisters/frontend run dev",
     "build": "npm --prefix canisters/frontend run build",
-    "deploy:local": "icp network start -d 2>/dev/null; icp deploy --identity ${ICP_IDENTITY:-anonymous}"
+    "deploy:local": "scripts/deploy.sh local"
   }
 }

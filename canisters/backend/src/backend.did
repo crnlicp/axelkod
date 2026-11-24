@@ -1,2 +1,203 @@
-service : {
-}
+type Whoami = 
+ record {
+   isAdmin: bool;
+   "principal": principal;
+ };
+type Status = 
+ variant {
+   handled;
+   new;
+   read;
+ };
+type SiteSettings = 
+ record {
+   responseTime: record {
+                   en: text;
+                   sv: text;
+                 };
+   retentionMonths: nat;
+ };
+type SeoState = 
+ record {
+   publishedAt: opt int;
+   settings: SeoSettings;
+   updatedAt: int;
+ };
+type SeoSettings = 
+ record {
+   bingVerification: opt text;
+   en: SeoLang;
+   googleVerification: opt text;
+   logoUrl: text;
+   organisationName: text;
+   sameAs: vec text;
+   sv: SeoLang;
+ };
+type SeoLang = 
+ record {
+   canonicalBaseUrl: text;
+   indexable: bool;
+   keywords: opt text;
+   metaDescription: text;
+   ogDescription: opt text;
+   ogImageUrl: text;
+   ogTitle: opt text;
+   title: text;
+ };
+type Result_8 = 
+ variant {
+   err: Error;
+   ok: text;
+ };
+type Result_7 = 
+ variant {
+   err: Error;
+   ok: SeoState;
+ };
+type Result_6 = 
+ variant {
+   err: Error;
+   ok: vec AdminView;
+ };
+type Result_5 = 
+ variant {
+   err: Error;
+   ok: MessagePage;
+ };
+type Result_4 = 
+ variant {
+   err: Error;
+   ok: ContactInfo;
+ };
+type Result_3 = 
+ variant {
+   err: Error;
+   ok: SeoSettings;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: SiteSettings;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: record {
+         authorized: nat;
+         deauthorized: nat;
+       };
+ };
+type PublicContact = 
+ record {
+   city: text;
+   email: opt text;
+   orgNumber: opt text;
+   phone: opt text;
+   postalCode: opt text;
+   street: opt text;
+ };
+type PublicConfig = 
+ record {
+   contact: PublicContact;
+   responseTime: record {
+                   en: text;
+                   sv: text;
+                 };
+   retentionMonths: nat;
+   seo: SeoSettings;
+ };
+type PageRequest = 
+ record {
+   limit: nat;
+   offset: nat;
+ };
+type MessagePage = 
+ record {
+   items: vec Message;
+   total: nat;
+   unread: nat;
+ };
+type MessageFilter = 
+ record {
+   search: opt text;
+   status: opt Status;
+ };
+type Message = 
+ record {
+   adminNote: opt text;
+   area: Area;
+   company: opt text;
+   createdAt: int;
+   email: text;
+   id: nat;
+   lang: Lang;
+   message: text;
+   name: text;
+   phone: opt text;
+   status: Status;
+ };
+type Lang = 
+ variant {
+   en;
+   sv;
+ };
+type Error = 
+ variant {
+   frontend: text;
+   invalid: text;
+   lastAdmin;
+   notAuthorized;
+   notFound;
+ };
+type ContactInfo = 
+ record {
+   city: text;
+   email: text;
+   orgNumber: opt text;
+   phone: opt text;
+   postalCode: opt text;
+   showAddress: bool;
+   showPhone: bool;
+   street: opt text;
+ };
+type Backend = 
+ service {
+   addAdmin: (p: principal) -> (Result_1);
+   deleteMessage: (id: nat) -> (Result_1);
+   exportMessagesCsv: () -> (Result_8) query;
+   getContactInfo: () -> (Result_4) query;
+   getPublicConfig: () -> (PublicConfig) query;
+   getSeoSettings: () -> (Result_7) query;
+   getSiteSettings: () -> (Result_2) query;
+   listAdmins: () -> (Result_6) query;
+   listMessages: (filter: MessageFilter, page: PageRequest) ->
+    (Result_5) query;
+   removeAdmin: (p: principal) -> (Result_1);
+   setContactInfo: (c: ContactInfo) -> (Result_4);
+   setNote: (id: nat, note: text) -> (Result_1);
+   setSeoSettings: (s: SeoSettings) -> (Result_3);
+   setSiteSettings: (s: SiteSettings) -> (Result_2);
+   setStatus: (id: nat, status: Status) -> (Result_1);
+   /// Makes the frontend's authorized set equal the admin set. Run after deploys:
+   /// a frontend reinstall wipes its authorized list.
+   syncAdminsToFrontend: () -> (Result);
+   whoami: () -> (Whoami) query;
+ };
+type Area = 
+ variant {
+   other;
+   parts;
+   security;
+   software;
+ };
+type AdminView = 
+ record {
+   addedAt: int;
+   "principal": principal;
+ };
+service : (firstAdmin: opt principal) -> Backend

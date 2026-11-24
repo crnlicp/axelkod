@@ -13,7 +13,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 0 | Scaffold | Done | Local `icp deploy`, both canisters respond |
 | 1 | Design system | Done | Visual check, contrast check |
 | 2 | Public pages (sv/en) | In progress | Lighthouse ≥ 95, axe, one h1 per page |
-| 3 | Backend canister | Not started | `mops test` (auth, validation, retention) |
+| 3 | Backend canister | Done | `mops test` (auth, validation, retention) |
 | 4 | Contact form | Not started | `mops test` + Playwright form submit |
 | 5a | Admin: inbox | Not started | Playwright: local II login, read message |
 | 5b | Admin: contact info | Not started | Playwright edit |
@@ -49,12 +49,14 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] Verified: 21 Playwright tests (axe AA on all pages in both themes, one h1, skip link/focus, lang/canonical/hreflang, no console or CSP errors, client-side hydration, 404 status, sitemap/robots, no third-party requests); screenshots desktop/mobile
 - [ ] Lighthouse ≥ 95 mobile + desktop (blocked: needs permission to run `npx lighthouse`)
 
-### 3. Backend canister — Not started
-- [ ] `types.mo`: Message, ContactInfo, SeoSettings, SiteSettings
-- [ ] Admin mixin: init-arg first admin, reject anonymous, can't remove the last admin
-- [ ] Settings get/set, `getPublicConfig` (respects show flags)
-- [ ] Message admin methods, CSV export, recurring retention timer
-- [ ] `backend.did` generated and committed
+### 3. Backend canister — Done
+- [x] `types.mo`: Message, ContactInfo, SeoSettings, SiteSettings, Config, Error (variant), API views
+- [x] Admins mixin: optional install arg `firstAdmin` (only while no admins), controllers may also add/remove admins, anonymous rejected, last admin can't be removed, every change mirrored with `authorize`/`deauthorize` on the frontend (bounded wait, rolled back on failure), `syncAdminsToFrontend`, `whoami`
+- [x] Settings mixin: get/set contact, SEO (with updatedAt/publishedAt), site; `getPublicConfig` applies show flags; all input cleaned (control chars) and validated (lengths, email, https URLs, safe verification tokens)
+- [x] Messages mixin: list (filter, search, paging ≤ 100, unread count), setStatus, setNote, delete, CSV export (formula-injection safe); 24 h retention timer re-registered on every start
+- [x] `src/backend.did` generated and committed; pending initial migration holds all defaults
+- [x] `scripts/deploy.sh local`: deploy, add backend as frontend controller, optional `FIRST_ADMIN`, sync admins
+- [x] Verified: `mops test` (validation, settings, paging/search, retention, CSV, auth) and local calls (frontend refuses until backend is controller; add/remove mirrored; last-admin guard; anonymous gets `notAuthorized`; sync restores a removed authorization; upgrade keeps state)
 
 ### 4. Contact form — Not started
 - [ ] `getFormToken` (signed timestamp, secret from `raw_rand`), 3 s minimum, single use
@@ -96,3 +98,4 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | CSP | `sha256` hashes for inline hydration scripts, written into `_headers` for each file |
 | www → apex | Forwarding at the DNS provider (the IC can't redirect by hostname) |
 | II principals | Derivation origin `https://axelkod.eu` |
+| Admin → frontend authorize | Backend canister is a controller of the frontend canister (user decision 2026-11-24) |

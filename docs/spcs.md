@@ -58,7 +58,7 @@ Follow RULES.md "Motoko backend" and "Motoko conventions": `mo:core` only, `mops
 **Admin methods** (caller must be an allowlisted Internet Identity principal):
 - Messages: `listMessages(filter, page)`, `setStatus(id, status)`, `setNote(id, text)`, `deleteMessage(id)`, `exportMessagesCsv()`
 - Settings: `get/setContactInfo`, `get/setSeoSettings`, `get/setSiteSettings`
-- Admins: `addAdmin(principal)`, `removeAdmin(principal)`, `listAdmins()`; the first admin is set by an init argument at deploy and you can't remove the last admin. Adding or removing an admin must also `authorize`/`deauthorize` that principal on the frontend canister (needed for Publish). Never make admins controllers.
+- Admins: `addAdmin(principal)`, `removeAdmin(principal)`, `listAdmins()`; the first admin is set by an init argument at deploy and you can't remove the last admin. Adding or removing an admin must also `authorize`/`deauthorize` that principal on the frontend canister (needed for Publish). Only controllers may call those, so the **backend canister is a controller of the frontend canister** (decided 2026-11-24; added by the deploy script, mainnet with approval). Trade-off: a compromised backend could upgrade or delete the frontend. Controllers (the deploy identity) may also add/remove admins to bootstrap or recover access, but are never admins themselves. `syncAdminsToFrontend()` re-applies the admin set after a frontend reinstall. Never make admins controllers.
 - Retention: a recurring timer deletes messages older than `retentionMonths`.
 
 ## Admin panel (`/admin`, `noindex`, excluded from the sitemap)
