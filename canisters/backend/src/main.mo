@@ -8,6 +8,7 @@ import MessagesLib "lib/Messages";
 import AdminsMixin "mixins/Admins";
 import ContactFormMixin "mixins/ContactForm";
 import MessagesMixin "mixins/Messages";
+import NewsMixin "mixins/News";
 import SettingsMixin "mixins/Settings";
 import Types "types";
 
@@ -19,6 +20,7 @@ actor class Backend(firstAdmin : ?Principal) {
   let config : Types.Config;
   let counters : Types.Counters;
   let form : Types.FormState;
+  let news : Types.NewsStore;
 
   // Only takes effect while there are no admins (first install); the last admin
   // can never be removed, so later deploys can't re-seed it.
@@ -31,6 +33,7 @@ actor class Backend(firstAdmin : ?Principal) {
   include MessagesMixin(admins, messages);
   include SettingsMixin(admins, config);
   include ContactFormMixin(messages, counters, form);
+  include NewsMixin(admins, news, counters, config);
 
   // raw_rand is async, so the form secret is created right after the first install.
   transient let _secretTimer = Timer.setTimer<system>(

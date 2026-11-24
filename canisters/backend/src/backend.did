@@ -57,65 +57,75 @@ type SeoLang =
 type Result_9 = 
  variant {
    err: Error;
-   ok: SeoState;
+   ok: vec AdminView;
  };
 type Result_8 = 
  variant {
    err: Error;
-   ok: vec AdminView;
+   ok: MessagePage;
  };
 type Result_7 = 
  variant {
    err: Error;
-   ok: MessagePage;
+   ok: int;
  };
 type Result_6 = 
  variant {
    err: Error;
-   ok: int;
+   ok: ContactInfo;
  };
 type Result_5 = 
  variant {
    err: Error;
-   ok: ContactInfo;
+   ok: SeoSettings;
  };
 type Result_4 = 
  variant {
    err: Error;
-   ok: SeoSettings;
+   ok: SiteSettings;
  };
 type Result_3 = 
  variant {
    err: Error;
-   ok: SiteSettings;
- };
-type Result_2 = 
- variant {
-   err: Error;
    ok;
  };
-type Result_11 = 
- variant {
-   err: Error;
-   ok: text;
- };
-type Result_10 = 
- variant {
-   err: SubmitError;
-   ok: text;
- };
-type Result_1 = 
+type Result_2 = 
  variant {
    err: SubmitError;
    ok: nat;
  };
-type Result = 
+type Result_13 = 
+ variant {
+   err: Error;
+   ok: vec News;
+ };
+type Result_12 = 
+ variant {
+   err: Error;
+   ok: text;
+ };
+type Result_11 = 
+ variant {
+   err: SubmitError;
+   ok: text;
+ };
+type Result_10 = 
+ variant {
+   err: Error;
+   ok: SeoState;
+ };
+type Result_1 = 
  variant {
    err: Error;
    ok: record {
          authorized: nat;
          deauthorized: nat;
        };
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: News;
  };
 type PublicContact = 
  record {
@@ -140,6 +150,69 @@ type PageRequest =
  record {
    limit: nat;
    offset: nat;
+ };
+type NewsSummary = 
+ record {
+   area: opt NewsArea;
+   coverAlt: text;
+   coverUrl: opt text;
+   excerpt: text;
+   hasOtherLang: bool;
+   publishedAt: int;
+   slug: text;
+   title: text;
+ };
+type NewsStatus = 
+ variant {
+   draft;
+   published;
+ };
+type NewsPage = 
+ record {
+   items: vec NewsSummary;
+   total: nat;
+ };
+type NewsLang = 
+ record {
+   body: text;
+   coverAlt: text;
+   excerpt: text;
+   title: text;
+ };
+type NewsInput = 
+ record {
+   area: opt NewsArea;
+   coverUrl: opt text;
+   en: opt NewsLang;
+   publishedAt: int;
+   slug: text;
+   status: NewsStatus;
+   sv: NewsLang;
+ };
+type NewsArticle = 
+ record {
+   body: text;
+   summary: NewsSummary;
+ };
+type NewsArea = 
+ variant {
+   company;
+   parts;
+   security;
+   software;
+ };
+type News = 
+ record {
+   area: opt NewsArea;
+   coverUrl: opt text;
+   createdAt: int;
+   en: opt NewsLang;
+   id: nat;
+   publishedAt: int;
+   slug: text;
+   status: NewsStatus;
+   sv: NewsLang;
+   updatedAt: int;
  };
 type MessagePage = 
  record {
@@ -173,6 +246,7 @@ type Lang =
  };
 type Error = 
  variant {
+   conflict: text;
    frontend: text;
    invalid: text;
    lastAdmin;
@@ -204,32 +278,40 @@ type ContactInfo =
  };
 type Backend = 
  service {
-   addAdmin: (p: principal) -> (Result_2);
-   deleteMessage: (id: nat) -> (Result_2);
-   exportMessagesCsv: () -> (Result_11) query;
-   getContactInfo: () -> (Result_5) query;
-   getFormToken: (nonce: text) -> (Result_10) query;
+   addAdmin: (p: principal) -> (Result_3);
+   adminListNews: () -> (Result_13) query;
+   createNews: (input: NewsInput) -> (Result);
+   deleteMessage: (id: nat) -> (Result_3);
+   deleteNews: (id: nat) -> (Result_3);
+   exportMessagesCsv: () -> (Result_12) query;
+   getContactInfo: () -> (Result_6) query;
+   getFormToken: (nonce: text) -> (Result_11) query;
+   getNews: (slug: text, lang: Lang) -> (opt NewsArticle) query;
    getPublicConfig: () -> (PublicConfig) query;
-   getSeoSettings: () -> (Result_9) query;
-   getSiteSettings: () -> (Result_3) query;
-   listAdmins: () -> (Result_8) query;
+   getSeoSettings: () -> (Result_10) query;
+   getSiteSettings: () -> (Result_4) query;
+   listAdmins: () -> (Result_9) query;
    listMessages: (filter: MessageFilter, page: PageRequest) ->
-    (Result_7) query;
+    (Result_8) query;
+   listNews: (lang: Lang, offset: nat, limit: nat) -> (NewsPage) query;
    /// Called by the admin UI after Publish has written the SEO files to the frontend.
-   markSeoPublished: () -> (Result_6);
-   removeAdmin: (p: principal) -> (Result_2);
+   markSeoPublished: () -> (Result_7);
+   /// All published articles in both languages (public data), for baking pages.
+   publishedNews: () -> (vec News) query;
+   removeAdmin: (p: principal) -> (Result_3);
    /// Controller-only: clears the global rate-limit window, e.g. after a bot used up
    /// the daily quota (or between local test runs). Single-use tokens stay recorded.
-   resetFormLimits: () -> (Result_2);
-   setContactInfo: (c: ContactInfo) -> (Result_5);
-   setNote: (id: nat, note: text) -> (Result_2);
-   setSeoSettings: (s: SeoSettings) -> (Result_4);
-   setSiteSettings: (s: SiteSettings) -> (Result_3);
-   setStatus: (id: nat, status: Status) -> (Result_2);
-   submitContact: (input: ContactInput, token: text) -> (Result_1);
+   resetFormLimits: () -> (Result_3);
+   setContactInfo: (c: ContactInfo) -> (Result_6);
+   setNote: (id: nat, note: text) -> (Result_3);
+   setSeoSettings: (s: SeoSettings) -> (Result_5);
+   setSiteSettings: (s: SiteSettings) -> (Result_4);
+   setStatus: (id: nat, status: Status) -> (Result_3);
+   submitContact: (input: ContactInput, token: text) -> (Result_2);
    /// Makes the frontend's authorized set equal the admin set. Run after deploys:
    /// a frontend reinstall wipes its authorized list.
-   syncAdminsToFrontend: () -> (Result);
+   syncAdminsToFrontend: () -> (Result_1);
+   updateNews: (id: nat, input: NewsInput) -> (Result);
    whoami: () -> (Whoami) query;
  };
 type Area = 

@@ -23,6 +23,11 @@ module {
     sv : SeoLang; en : SeoLang; organisationName : Text; logoUrl : Text; sameAs : [Text];
     googleVerification : ?Text; bingVerification : ?Text;
   };
+  type NewsLang = { title : Text; excerpt : Text; body : Text; coverAlt : Text };
+  type News = {
+    id : Nat; slug : Text; status : { #draft; #published }; publishedAt : Int; createdAt : Int; updatedAt : Int;
+    area : ?{ #parts; #software; #security; #company }; coverUrl : ?Text; sv : NewsLang; en : ?NewsLang;
+  };
   type SiteSettings = { retentionMonths : Nat; responseTime : { sv : Text; en : Text } };
   type Config = {
     var contact : ContactInfo; var seo : SeoSettings; var seoUpdatedAt : Int;
@@ -34,7 +39,8 @@ module {
     admins : Map.Map<Principal, Int>;
     messages : Map.Map<Nat, Message>;
     config : Config;
-    counters : { var nextMessageId : Nat };
+    counters : { var nextMessageId : Nat; var nextNewsId : Nat };
+    news : Map.Map<Nat, News>;
     form : { var secret : Blob; usedTokens : Map.Map<Text, Int>; recent : Queue.Queue<Int> };
   };
 
@@ -78,7 +84,8 @@ module {
           };
         };
       };
-      counters = { var nextMessageId = 0 };
+      counters = { var nextMessageId = 0; var nextNewsId = 0 };
+      news = Map.empty();
       form = { var secret = ""; usedTokens = Map.empty(); recent = Queue.empty() };
     };
   };

@@ -67,7 +67,52 @@ module {
     var site : SiteSettings;
   };
 
-  public type Counters = { var nextMessageId : Nat };
+  public type Counters = { var nextMessageId : Nat; var nextNewsId : Nat };
+
+  // ── News ──
+  public type NewsArea = { #parts; #software; #security; #company };
+  public type NewsStatus = { #draft; #published };
+
+  /// One language version. `body` is a safe Markdown subset rendered by the frontend.
+  public type NewsLang = { title : Text; excerpt : Text; body : Text; coverAlt : Text };
+
+  public type News = {
+    id : Nat;
+    slug : Text;
+    status : NewsStatus;
+    publishedAt : Int; // shown date; drafts keep it for when they go live
+    createdAt : Int;
+    updatedAt : Int;
+    area : ?NewsArea;
+    coverUrl : ?Text; // "/uploads/..." on this site, or an https URL
+    sv : NewsLang;
+    en : ?NewsLang; // optional: without it the article is not on the English site
+  };
+  public type NewsStore = Map.Map<Nat, News>;
+
+  public type NewsInput = {
+    slug : Text;
+    status : NewsStatus;
+    publishedAt : Int;
+    area : ?NewsArea;
+    coverUrl : ?Text;
+    sv : NewsLang;
+    en : ?NewsLang;
+  };
+
+  /// A published article in one language, for the public site.
+  public type NewsSummary = {
+    slug : Text;
+    publishedAt : Int;
+    area : ?NewsArea;
+    coverUrl : ?Text;
+    coverAlt : Text;
+    title : Text;
+    excerpt : Text;
+    hasOtherLang : Bool;
+  };
+  public type NewsArticle = { summary : NewsSummary; body : Text };
+  public type NewsPage = { items : [NewsSummary]; total : Nat };
 
   /// Contact-form spam protection state.
   public type FormState = {
@@ -88,6 +133,7 @@ module {
     #invalid : Text; // name of the offending field
     #lastAdmin;
     #frontend : Text; // the frontend canister rejected authorize/deauthorize
+    #conflict : Text; // e.g. slug already used
   };
 
   public type ContactInput = {

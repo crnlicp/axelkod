@@ -49,12 +49,12 @@ export async function publishSeo(backend: Backend, identity: Identity): Promise<
 
 const OG_TYPES: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
 
-/** Uploads an OG image to /uploads/ (kept across deploys by _preserve); returns its path. */
-export async function uploadOgImage(identity: Identity, file: File): Promise<string> {
+/** Uploads an image to /uploads/ (kept across deploys by _preserve); returns its path. */
+export async function uploadImage(identity: Identity, file: File, prefix: "og" | "news"): Promise<string> {
   const ext = OG_TYPES[file.type];
   if (!ext) throw new Error("Endast PNG, JPEG eller WebP.");
   if (file.size > MAX_UPLOAD_BYTES) throw new Error("Bilden är större än 1,9 MB.");
-  const key = `/uploads/og-${Date.now()}.${ext}`;
+  const key = `/uploads/${prefix}-${Date.now()}.${ext}`;
   const assets = await assetsActor(identity);
   await assets.upload_asset({
     key,

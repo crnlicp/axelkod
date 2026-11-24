@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SeoLang, SeoSettings } from "../../bindings/backend";
-import { publishSeo, uploadOgImage } from "../../admin/publish";
+import { publishSeo, uploadImage } from "../../admin/publish";
 import { errMessage, type BackendErr } from "../../admin/result";
 import { useAdmin } from "../../admin/session";
 
@@ -96,7 +96,7 @@ export default function SeoAdmin() {
   async function upload(file: File) {
     setBusy("upload");
     try {
-      const path = await uploadOgImage(identity, file);
+      const path = await uploadImage(identity, file, "og");
       setLang({ ogImageUrl: l.canonicalBaseUrl.replace(/\/+$/, "") + path });
       setStatus({ ok: true, text: "Bilden är uppladdad. Spara och publicera för att använda den." });
     } catch (err) {

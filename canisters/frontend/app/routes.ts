@@ -12,6 +12,8 @@ export default [
     route("contact", "routes/admin/contact.tsx"),
     route("seo", "routes/admin/seo.tsx"),
     route("settings", "routes/admin/settings.tsx"),
+    route("news", "routes/admin/news-list.tsx"),
+    route("news/:id", "routes/admin/news-edit.tsx"),
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;
