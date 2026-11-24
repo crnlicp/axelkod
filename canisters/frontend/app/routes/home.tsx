@@ -9,10 +9,6 @@ import { LogoSymbol } from "../components/Logo";
 import { PageShell } from "../components/PageShell";
 import { dict, langFromPath } from "../lib/i18n";
 import { usePublicConfig } from "../lib/publicConfig";
-import { pageMeta } from "../lib/seo";
-import type { Route } from "./+types/home";
-
-export const meta: Route.MetaFunction = ({ location }) => pageMeta("home", langFromPath(location.pathname));
 
 const serviceIcons = [IconParts, IconCode, IconShield];
 const whyIcons = [IconPerson, IconCompany, IconLock, IconClock];

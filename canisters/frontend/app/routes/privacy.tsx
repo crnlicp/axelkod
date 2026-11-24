@@ -2,10 +2,6 @@ import { useLocation } from "react-router";
 import { PageShell } from "../components/PageShell";
 import { DEFAULT_RETENTION_MONTHS, dict, fmt, langFromPath } from "../lib/i18n";
 import { usePublicConfig } from "../lib/publicConfig";
-import { pageMeta } from "../lib/seo";
-import type { Route } from "./+types/privacy";
-
-export const meta: Route.MetaFunction = ({ location }) => pageMeta("privacy", langFromPath(location.pathname));
 
 const UPDATED = "2026-11-24";
 

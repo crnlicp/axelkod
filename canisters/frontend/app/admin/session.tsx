@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import type { Identity } from "@icp-sdk/core/agent";
 import type { Backend } from "../bindings/backend";
 import { adminActor, authClient } from "./auth";
 
@@ -6,7 +7,7 @@ export type Session =
   | { state: "loading" }
   | { state: "signed-out"; error?: string }
   | { state: "denied"; principal: string }
-  | { state: "admin"; principal: string; actor: Backend };
+  | { state: "admin"; principal: string; actor: Backend; identity: Identity };
 
 export function useSession() {
   const [session, setSession] = useState<Session>({ state: "loading" });
@@ -15,11 +16,12 @@ export function useSession() {
     const auth = authClient();
     if (!auth.isAuthenticated()) return setSession({ state: "signed-out" });
     try {
-      const actor = adminActor(await auth.getIdentity());
+      const identity = await auth.getIdentity();
+      const actor = adminActor(identity);
       // The canister decides who is an admin; the UI only reflects it.
       const me = await actor.whoami();
       const principal = me.principal.toText();
-      setSession(me.isAdmin ? { state: "admin", principal, actor } : { state: "denied", principal });
+      setSession(me.isAdmin ? { state: "admin", principal, actor, identity } : { state: "denied", principal });
     } catch (e) {
       setSession({ state: "signed-out", error: e instanceof Error ? e.message : String(e) });
     }
@@ -48,7 +50,7 @@ export function useSession() {
   return { session, signIn, signOut };
 }
 
-export type AdminContext = { actor: Backend; principal: string; refreshUnread: () => void; setUnread: (n: number) => void };
+export type AdminContext = { actor: Backend; identity: Identity; principal: string; refreshUnread: () => void; setUnread: (n: number) => void };
 export const AdminCtx = createContext<AdminContext | null>(null);
 
 export function useAdmin(): AdminContext {

@@ -31,7 +31,7 @@ export default function AdminLayout() {
   const refreshUnread = useCallback(() => setUnreadTick((t) => t + 1), []);
 
   const ctx = useMemo<AdminContext | null>(
-    () => (session.state === "admin" ? { actor: session.actor, principal: session.principal, refreshUnread, setUnread } : null),
+    () => (session.state === "admin" ? { actor: session.actor, identity: session.identity, principal: session.principal, refreshUnread, setUnread } : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [session.state === "admin" ? session.principal : null, unreadTick],
   );
@@ -78,6 +78,7 @@ export default function AdminLayout() {
                 Inkorg{unread ? <span className="ml-1.5 rounded-full bg-[var(--color-teal-500)] px-2 py-0.5 text-xs font-semibold text-[var(--color-navy-900)]" aria-label={`${unread} olästa`}>{unread}</span> : null}
               </NavLink>
               <NavLink to="/admin/contact" className={tab}>Kontaktuppgifter</NavLink>
+              <NavLink to="/admin/seo" className={tab}>SEO</NavLink>
             </nav>
             <button type="button" className="btn btn-secondary" onClick={() => void signOut()}>Logga ut</button>
           </div>

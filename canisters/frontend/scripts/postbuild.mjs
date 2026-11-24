@@ -1,15 +1,15 @@
 // Runs after `react-router build`:
 // 1. Renames prerendered <page>/index.html to <page>.html so the canister's clean
 //    URLs match the spec (/integritet, /en/privacy, /404.html).
-// 2. Writes sitemap.xml and robots.txt.
+// 2. Writes sitemap.xml and robots.txt (shared renderer, app/lib/seo-head.ts).
 // 3. Appends a per-file Content-Security-Policy to _headers, allowing each file's
 //    inline scripts (React Router hydration) by sha256 hash, never 'unsafe-inline'.
 import { createHash } from "node:crypto";
 import { appendFileSync, readdirSync, readFileSync, renameSync, rmdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { robotsTxt, sitemapXml } from "../app/lib/seo-head.ts";
 
-const SITE_URL = "https://axelkod.eu";
 const out = resolve(dirname(fileURLToPath(import.meta.url)), "../build/client");
 
 for (const page of ["integritet", "en/privacy", "404"]) {
@@ -20,38 +20,24 @@ for (const page of ["integritet", "en/privacy", "404"]) {
 // take over, which is what the client-only admin needs. Served at /admin (clean URL)
 // and, via _redirects, for /admin/*.
 renameSync(join(out, "__spa-fallback.html"), join(out, "admin.html"));
+// The fallback is prerendered as if at "/", so it carries the home page's SEO tags
+// (robots "index"). The admin has its own noindex meta; drop the public SEO block.
+const adminFile = join(out, "admin.html");
+const adminHtml = readFileSync(adminFile, "utf8")
+  .replace(/<meta name="x-seo" content="start"\s*\/?>[\s\S]*?<meta name="x-seo" content="end"\s*\/?>/, "")
+  .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, "")
+  .replace(/<script type="application\/json" id="seo-data">[\s\S]*?<\/script>/, "");
+if (/x-seo|seo-data|ld\+json/.test(adminHtml)) throw new Error("postbuild: SEO block left in admin.html");
+writeFileSync(adminFile, adminHtml);
 
-const pages = [
-  { sv: "/", en: "/en/" },
-  { sv: "/integritet", en: "/en/privacy" },
-];
-const urls = pages.flatMap((p) =>
-  ["sv", "en"].map(
-    (lang) => `  <url>
-    <loc>${SITE_URL}${p[lang]}</loc>
-    <xhtml:link rel="alternate" hreflang="sv" href="${SITE_URL}${p.sv}"/>
-    <xhtml:link rel="alternate" hreflang="en" href="${SITE_URL}${p.en}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${SITE_URL}${p.sv}"/>
-  </url>`,
-  ),
-);
-writeFileSync(
-  join(out, "sitemap.xml"),
-  `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-${urls.join("\n")}
-</urlset>
-`,
-);
-writeFileSync(
-  join(out, "robots.txt"),
-  `User-agent: *
-Allow: /
-Disallow: /admin
-
-Sitemap: ${SITE_URL}/sitemap.xml
-`,
-);
+// Sitemap and robots from the shared renderer, using the SEO data embedded in the
+// prerendered home page (the deploy-time bake regenerates both from the backend).
+const home = readFileSync(join(out, "index.html"), "utf8");
+const seoJson = /<script type="application\/json" id="seo-data">([\s\S]*?)<\/script>/.exec(home);
+if (!seoJson) throw new Error("postbuild: seo-data block missing in index.html");
+const seo = JSON.parse(seoJson[1]);
+writeFileSync(join(out, "sitemap.xml"), sitemapXml(seo, new Date().toISOString().slice(0, 10)));
+writeFileSync(join(out, "robots.txt"), robotsTxt(seo));
 
 const htmlFiles = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((e) => {

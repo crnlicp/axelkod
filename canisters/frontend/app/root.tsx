@@ -1,4 +1,5 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation } from "react-router";
+import { SeoHead } from "./components/SeoHead";
 import { langFromPath } from "./lib/i18n";
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -18,6 +19,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#032843" />
+        <SeoHead />
         <Meta />
         <Links />
       </head>

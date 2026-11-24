@@ -17,7 +17,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 4 | Contact form | Done | `mops test` + Playwright form submit |
 | 5a | Admin: inbox | Done | Playwright: local II login, read message |
 | 5b | Admin: contact info | Done | Playwright edit |
-| 5c | Admin: SEO + Publish | Not started | Playwright publish, then fetch the HTML head |
+| 5c | Admin: SEO + Publish | Done | Playwright publish, then fetch the HTML head |
 | 5d | Admin: settings | Not started | `mops test` + Playwright |
 | 6 | Deploy + custom domain | Not started | Mainnet deploy (approval at each step) |
 
@@ -78,12 +78,13 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] Public site reads contact info at runtime, so a save is live immediately (no deploy or Publish)
 - [x] Verified: `tests/e2e/admin-contact.spec.ts` (local II admin edits phone/org.nr, preview follows flags, invalid email rejected by the canister, public page shows the change; original restored). Suite runs with one worker since tests share the local canister
 
-### 5c. Admin: SEO + Publish — Not started
-- [ ] Per-language tabs, character counters, Google result preview, JSON-LD fields, verification tokens
-- [ ] OG upload to `/uploads/*` (`upload_asset`)
-- [ ] Head renderer shared by the build (`presync` bake) and Publish (`upload_assets`)
-- [ ] Publish writes `index.html`, `en/index.html`, `sitemap.xml`, `robots.txt`
-- [ ] "Last published" time and a warning when settings changed but weren't published
+### 5c. Admin: SEO + Publish — Done
+- [x] Shared renderer `app/lib/seo-head.ts` (pure, import-free): head tags between `x-seo` markers + JSON-LD + embedded `seo-data` JSON; React hydrates from the embedded data, so baked/published HTML and the client always agree. Used by React, `postbuild` (sitemap/robots), `presync` and Publish
+- [x] `presync` bake: reads `getPublicConfig` from the backend (agent + generated IDL) and rewrites `/`, `/en/`, `/integritet`, `/en/privacy`, sitemap.xml, robots.txt at every deploy
+- [x] Publish (browser): fetches the live pages, replaces the SEO region (scripts replaced in place, React 19 hoists them), copies the live security headers (CSP hashes unaffected), one atomic `upload_assets` call (≤ 1.9 MB), then `markSeoPublished()`
+- [x] `/admin/seo`: sv/en tabs, counters (~60/~155), Google result preview, keywords/OG fields, OG image upload to `/uploads/og-*.{png,jpg,webp}` (`upload_asset`, ≤ 1.9 MB, kept by `_preserve`), canonical base, index toggle (noindex pages leave the sitemap; robots `Disallow: /` only if both are noindex), organisation JSON-LD fields, verification tokens; "Senast publicerat" + warning when settings or contact info changed after the last Publish
+- [x] `admin.html` stripped of the public SEO block (the SPA fallback is prerendered as `/`)
+- [x] Verified: `tests/e2e/admin-seo.spec.ts` (edit, validation, OG upload served as image/png, publish, live title/og:image/headers, no hydration or CSP errors, sitemap lastmod, restore + re-publish) and `tests/api/seo-bake.spec.ts` (`icp deploy frontend` reproduces backend settings incl. noindex); 38 tests pass
 
 ### 5d. Admin: settings — Not started
 - [ ] Retention months, response-time text

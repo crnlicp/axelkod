@@ -56,23 +56,23 @@ type SeoLang =
  };
 type Result_9 = 
  variant {
-   err: SubmitError;
-   ok: text;
+   err: Error;
+   ok: SeoState;
  };
 type Result_8 = 
  variant {
    err: Error;
-   ok: SeoState;
+   ok: vec AdminView;
  };
 type Result_7 = 
  variant {
    err: Error;
-   ok: vec AdminView;
+   ok: MessagePage;
  };
 type Result_6 = 
  variant {
    err: Error;
-   ok: MessagePage;
+   ok: int;
  };
 type Result_5 = 
  variant {
@@ -94,9 +94,14 @@ type Result_2 =
    err: Error;
    ok;
  };
-type Result_10 = 
+type Result_11 = 
  variant {
    err: Error;
+   ok: text;
+ };
+type Result_10 = 
+ variant {
+   err: SubmitError;
    ok: text;
  };
 type Result_1 = 
@@ -201,15 +206,17 @@ type Backend =
  service {
    addAdmin: (p: principal) -> (Result_2);
    deleteMessage: (id: nat) -> (Result_2);
-   exportMessagesCsv: () -> (Result_10) query;
+   exportMessagesCsv: () -> (Result_11) query;
    getContactInfo: () -> (Result_5) query;
-   getFormToken: (nonce: text) -> (Result_9) query;
+   getFormToken: (nonce: text) -> (Result_10) query;
    getPublicConfig: () -> (PublicConfig) query;
-   getSeoSettings: () -> (Result_8) query;
+   getSeoSettings: () -> (Result_9) query;
    getSiteSettings: () -> (Result_3) query;
-   listAdmins: () -> (Result_7) query;
+   listAdmins: () -> (Result_8) query;
    listMessages: (filter: MessageFilter, page: PageRequest) ->
-    (Result_6) query;
+    (Result_7) query;
+   /// Called by the admin UI after Publish has written the SEO files to the frontend.
+   markSeoPublished: () -> (Result_6);
    removeAdmin: (p: principal) -> (Result_2);
    /// Controller-only: clears the global rate-limit window, e.g. after a bot used up
    /// the daily quota (or between local test runs). Single-use tokens stay recorded.

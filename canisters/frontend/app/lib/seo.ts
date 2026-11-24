@@ -1,48 +1,81 @@
-// Default head tags per page and language. Phase 5c replaces the defaults with
-// the SEO settings stored in the backend (baked in at deploy and on Publish).
-import type { MetaDescriptor } from "react-router";
-import { dict, PATHS, SITE_URL, type Lang, type Page } from "./i18n";
+// SEO data for the shared head renderer (seo-head.ts): build-time defaults (same as
+// the backend migration's), page texts from i18n, and mapping from the backend.
+import type { PublicConfig, SeoSettings } from "../bindings/backend";
+import { dict } from "./i18n";
+import { DATA_ID, type PageTexts, type SeoData } from "./seo-head";
 
-const OG_IMAGE = `${SITE_URL}/og-image.png`;
+const base = "https://axelkod.eu";
 
-export function pageMeta(page: Page, lang: Lang): MetaDescriptor[] {
-  const t = dict(lang);
-  const title = page === "home" ? t.seo.homeTitle : t.seo.privacyTitle;
-  const description = page === "home" ? t.seo.homeDescription : t.seo.privacyDescription;
-  const url = SITE_URL + PATHS[page][lang];
+/** Used for the prerender; the deploy-time bake replaces it with the backend's settings. */
+export const DEFAULT_SEO: SeoData = {
+  sv: {
+    title: dict("sv").seo.homeTitle,
+    metaDescription: dict("sv").seo.homeDescription,
+    ogImageUrl: `${base}/og-image.png`,
+    canonicalBaseUrl: base,
+    indexable: true,
+  },
+  en: {
+    title: dict("en").seo.homeTitle,
+    metaDescription: dict("en").seo.homeDescription,
+    ogImageUrl: `${base}/og-image.png`,
+    canonicalBaseUrl: base,
+    indexable: true,
+  },
+  organisationName: "Axelkod AB",
+  logoUrl: `${base}/icon-512.png`,
+  sameAs: [],
+  contact: { city: "Mölndal" },
+};
 
-  const tags: MetaDescriptor[] = [
-    { title },
-    { name: "description", content: description },
-    { tagName: "link", rel: "canonical", href: url },
-    { tagName: "link", rel: "alternate", hrefLang: "sv", href: SITE_URL + PATHS[page].sv },
-    { tagName: "link", rel: "alternate", hrefLang: "en", href: SITE_URL + PATHS[page].en },
-    { tagName: "link", rel: "alternate", hrefLang: "x-default", href: SITE_URL + PATHS[page].sv },
-    { property: "og:type", content: "website" },
-    { property: "og:site_name", content: "Axelkod AB" },
-    { property: "og:locale", content: t.locale },
-    { property: "og:title", content: title },
-    { property: "og:description", content: description },
-    { property: "og:url", content: url },
-    { property: "og:image", content: OG_IMAGE },
-    { property: "og:image:width", content: "1200" },
-    { property: "og:image:height", content: "630" },
-    { property: "og:image:alt", content: "Axelkod AB" },
-    { name: "twitter:card", content: "summary_large_image" },
-  ];
+export const PAGE_TEXTS: PageTexts = {
+  sv: { privacyTitle: dict("sv").seo.privacyTitle, privacyDescription: dict("sv").seo.privacyDescription, locale: dict("sv").locale },
+  en: { privacyTitle: dict("en").seo.privacyTitle, privacyDescription: dict("en").seo.privacyDescription, locale: dict("en").locale },
+};
 
-  if (page === "home") {
-    // JSON-LD is a data block, not executable script, so the CSP does not apply.
-    tags.push({
-      "script:ld+json": {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        name: "Axelkod AB",
-        url: SITE_URL + "/",
-        logo: `${SITE_URL}/icon-512.png`,
-        address: { "@type": "PostalAddress", addressLocality: "Mölndal", addressCountry: "SE" },
-      },
-    });
+export function toSeoData(seo: SeoSettings, contact: PublicConfig["contact"]): SeoData {
+  // Copy field by field: the renderer embeds this object as JSON, so it must hold
+  // only plain values (no bigint, no undefined-vs-missing differences).
+  const lang = (l: SeoSettings["sv"]) => ({
+    title: l.title,
+    metaDescription: l.metaDescription,
+    ...(l.keywords ? { keywords: l.keywords } : {}),
+    ...(l.ogTitle ? { ogTitle: l.ogTitle } : {}),
+    ...(l.ogDescription ? { ogDescription: l.ogDescription } : {}),
+    ogImageUrl: l.ogImageUrl,
+    canonicalBaseUrl: l.canonicalBaseUrl,
+    indexable: l.indexable,
+  });
+  return {
+    sv: lang(seo.sv),
+    en: lang(seo.en),
+    organisationName: seo.organisationName,
+    logoUrl: seo.logoUrl,
+    sameAs: [...seo.sameAs],
+    ...(seo.googleVerification ? { googleVerification: seo.googleVerification } : {}),
+    ...(seo.bingVerification ? { bingVerification: seo.bingVerification } : {}),
+    contact: {
+      ...(contact.email ? { email: contact.email } : {}),
+      ...(contact.phone ? { phone: contact.phone } : {}),
+      ...(contact.street ? { street: contact.street } : {}),
+      ...(contact.postalCode ? { postalCode: contact.postalCode } : {}),
+      city: contact.city,
+    },
+  };
+}
+
+let embedded: SeoData | null = null;
+
+/** In the browser: the data the page was baked with; during prerender: the defaults. */
+export function currentSeoData(): SeoData {
+  if (typeof document === "undefined") return DEFAULT_SEO;
+  if (!embedded) {
+    const el = document.getElementById(DATA_ID);
+    try {
+      embedded = el?.textContent ? (JSON.parse(el.textContent) as SeoData) : DEFAULT_SEO;
+    } catch {
+      embedded = DEFAULT_SEO;
+    }
   }
-  return tags;
+  return embedded;
 }

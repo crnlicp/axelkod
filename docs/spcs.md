@@ -75,7 +75,7 @@ Follow RULES.md "Motoko backend" and "Motoko conventions": `mo:core` only, `mops
   - Trade-off: an `authorize`d admin can overwrite any frontend file.
   
   Files written:
-  - `index.html` for `/` and `/en/` with the `<head>` filled in (title, description, canonical, hreflang, OG/Twitter tags, JSON-LD Organization with contact info)
+  - `index.html` for `/` and `/en/`, plus the privacy pages (their canonical/hreflang/robots follow the same settings), with the `<head>` filled in (title, description, canonical, hreflang, OG/Twitter tags, JSON-LD Organization with contact info)
   - `sitemap.xml` (both languages, lastmod) and `robots.txt` (respects the index toggle, blocks `/admin`)
   - Show "last published" time and a diff warning if settings changed but weren't published.
 - **Settings:** retention months, response-time text, manage admin principals.

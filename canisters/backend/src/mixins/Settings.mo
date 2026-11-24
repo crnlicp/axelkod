@@ -22,7 +22,12 @@ mixin (admins : Types.Admins, config : Types.Config) {
 
   public shared ({ caller }) func setContactInfo(c : Types.ContactInfo) : async Result.Result<Types.ContactInfo, Types.Error> {
     if (not Auth.isAdmin(admins, caller)) return #err(#notAuthorized);
-    SettingsLib.contact(c).mapOk(func clean { config.contact := clean; clean });
+    SettingsLib.contact(c).mapOk(func clean {
+      config.contact := clean;
+      // The published JSON-LD includes contact details, so SEO needs a new Publish.
+      config.seoUpdatedAt := Time.now();
+      clean;
+    });
   };
 
   public shared query ({ caller }) func getSeoSettings() : async Result.Result<Types.SeoState, Types.Error> {
@@ -37,6 +42,14 @@ mixin (admins : Types.Admins, config : Types.Config) {
       config.seoUpdatedAt := Time.now();
       clean;
     });
+  };
+
+  /// Called by the admin UI after Publish has written the SEO files to the frontend.
+  public shared ({ caller }) func markSeoPublished() : async Result.Result<Int, Types.Error> {
+    if (not Auth.isAdmin(admins, caller)) return #err(#notAuthorized);
+    let now = Time.now();
+    config.seoPublishedAt := ?now;
+    #ok(now);
   };
 
   public shared query ({ caller }) func getSiteSettings() : async Result.Result<Types.SiteSettings, Types.Error> {

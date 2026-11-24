@@ -10,6 +10,7 @@ export default [
   route("admin", "routes/admin/layout.tsx", [
     index("routes/admin/inbox.tsx"),
     route("contact", "routes/admin/contact.tsx"),
+    route("seo", "routes/admin/seo.tsx"),
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;
