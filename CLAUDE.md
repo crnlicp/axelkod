@@ -1,0 +1,1 @@
+@~/.claude/icp/RULES.md

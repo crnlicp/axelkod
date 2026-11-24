@@ -1,0 +1,10 @@
+# icp-cli: cache is ephemeral; .icp/data (mainnet IDs) is committed
+.icp/cache/
+node_modules/
+build/
+.react-router/
+canisters/frontend/app/bindings/
+.mops/
+.migrations-*/
+test-results/
+playwright-report/

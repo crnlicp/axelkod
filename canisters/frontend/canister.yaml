@@ -1,0 +1,8 @@
+name: frontend
+recipe:
+  type: "@dfinity/static-site@v1.0.0"
+  configuration:
+    build:
+      - npm ci
+      - npm run build
+    dir: build/client
