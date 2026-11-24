@@ -5,6 +5,7 @@ const fieldNames: Record<string, string> = {
   email: "E-post", phone: "Telefon", street: "Gatuadress", postalCode: "Postnummer", city: "Ort", orgNumber: "Org.nr",
   organisationName: "Organisationsnamn", logoUrl: "Logotyp-URL", sameAs: "Profiler (sameAs)",
   googleVerification: "Google-verifiering", bingVerification: "Bing-verifiering",
+  retentionMonths: "Lagringstid", "responseTime.sv": "Svarstid (svenska)", "responseTime.en": "Svarstid (engelska)", principal: "ID",
 };
 
 export function errMessage(e: BackendErr): string {
@@ -25,6 +26,7 @@ const seoFields: Record<string, string> = {
 
 /** "sv.title" -> "Svenska: titel". */
 export function fieldLabel(field: string): string {
+  if (field in fieldNames) return fieldNames[field];
   const [lang, key] = field.split(".");
   if (key && (lang === "sv" || lang === "en")) return `${lang === "sv" ? "Svenska" : "Engelska"}: ${seoFields[key] ?? key}`;
   return fieldNames[field] ?? field;

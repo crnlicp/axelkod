@@ -11,37 +11,25 @@ export function ContactDetails({ lang, contact: c }: { lang: Lang; contact: Publ
       <h3 id="contact-details-title" className="text-2xl">{t.title}</h3>
       <dl className="mt-4 space-y-4">
         {c.email && (
-          <div className="flex gap-3">
-            <IconMail className="mt-0.5 h-6 w-6 shrink-0 text-brand" />
-            <div>
-              <dt className="text-sm text-muted">{t.email}</dt>
-              <dd><a href={`mailto:${c.email}`}>{c.email}</a></dd>
-            </div>
+          <div className="relative pl-9">
+            <dt className="text-sm text-muted"><IconMail className="absolute left-0 top-0.5 h-6 w-6 text-brand" />{t.email}</dt>
+            <dd><a href={`mailto:${c.email}`}>{c.email}</a></dd>
           </div>
         )}
         {c.phone && (
-          <div className="flex gap-3">
-            <IconPhone className="mt-0.5 h-6 w-6 shrink-0 text-brand" />
-            <div>
-              <dt className="text-sm text-muted">{t.phone}</dt>
-              <dd><a href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}>{c.phone}</a></dd>
-            </div>
+          <div className="relative pl-9">
+            <dt className="text-sm text-muted"><IconPhone className="absolute left-0 top-0.5 h-6 w-6 text-brand" />{t.phone}</dt>
+            <dd><a href={`tel:${c.phone.replace(/[^\d+]/g, "")}`}>{c.phone}</a></dd>
           </div>
         )}
-        <div className="flex gap-3">
-          <IconPin className="mt-0.5 h-6 w-6 shrink-0 text-brand" />
-          <div>
-            <dt className="text-sm text-muted">{t.address}</dt>
+        <div className="relative pl-9">
+            <dt className="text-sm text-muted"><IconPin className="absolute left-0 top-0.5 h-6 w-6 text-brand" />{t.address}</dt>
             <dd>{address.map((line) => <span key={line} className="block">{line}</span>)}</dd>
           </div>
-        </div>
         {c.orgNumber && (
-          <div className="flex gap-3">
-            <IconCompany className="mt-0.5 h-6 w-6 shrink-0 text-brand" />
-            <div>
-              <dt className="text-sm text-muted">{t.orgNumber}</dt>
-              <dd>{c.orgNumber}</dd>
-            </div>
+          <div className="relative pl-9">
+            <dt className="text-sm text-muted"><IconCompany className="absolute left-0 top-0.5 h-6 w-6 text-brand" />{t.orgNumber}</dt>
+            <dd>{c.orgNumber}</dd>
           </div>
         )}
       </dl>

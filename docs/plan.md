@@ -18,7 +18,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 5a | Admin: inbox | Done | Playwright: local II login, read message |
 | 5b | Admin: contact info | Done | Playwright edit |
 | 5c | Admin: SEO + Publish | Done | Playwright publish, then fetch the HTML head |
-| 5d | Admin: settings | Not started | `mops test` + Playwright |
+| 5d | Admin: settings | Done | `mops test` + Playwright |
 | 6 | Deploy + custom domain | Not started | Mainnet deploy (approval at each step) |
 
 ## Phase details
@@ -86,9 +86,11 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] `admin.html` stripped of the public SEO block (the SPA fallback is prerendered as `/`)
 - [x] Verified: `tests/e2e/admin-seo.spec.ts` (edit, validation, OG upload served as image/png, publish, live title/og:image/headers, no hydration or CSP errors, sitemap lastmod, restore + re-publish) and `tests/api/seo-bake.spec.ts` (`icp deploy frontend` reproduces backend settings incl. noindex); 38 tests pass
 
-### 5d. Admin: settings — Not started
-- [ ] Retention months, response-time text
-- [ ] Manage admins (also `authorize`/`deauthorize` on the frontend)
+### 5d. Admin: settings — Done
+- [x] `/admin/settings`: retention months (1–60, shown on the privacy page, enforced by the daily timer) and response-time text per language (shown after a submit); live on save
+- [x] Admin management: list (own entry marked), add by principal (validated, anonymous refused), remove with confirm (extra warning for yourself), last admin can't be removed; every change is mirrored with `authorize`/`deauthorize` on the frontend canister by the backend
+- [x] Admin pages pass axe (WCAG 2.1 AA); contact card `<dl>` structure fixed
+- [x] Verified: `tests/e2e/admin-settings.spec.ts` (validation, privacy page shows new retention, add/remove reflected in `list_authorized`), `tests/e2e/admin-a11y.spec.ts`; 40 tests pass
 
 ### 6. Deploy + custom domain — Not started
 - [ ] `scripts/deploy.sh` (local / ic), optional GitHub Actions workflow

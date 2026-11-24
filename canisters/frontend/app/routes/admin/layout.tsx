@@ -11,7 +11,7 @@ function Shell({ children, actions }: { children: React.ReactNode; actions?: Rea
   return (
     <div className="min-h-screen bg-surface">
       <header className="border-b border-border bg-bg">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-3">
           <div className="flex items-center gap-2.5">
             <LogoSymbol className="h-9 w-auto text-fg" />
             <span className="font-display text-xl font-bold uppercase">Axelkod admin</span>
@@ -72,13 +72,14 @@ export default function AdminLayout() {
     <AdminCtx.Provider value={ctx}>
       <Shell
         actions={
-          <div className="flex items-center gap-3">
-            <nav aria-label="Admin" className="flex gap-1">
+          <div className="flex flex-wrap items-center gap-3">
+            <nav aria-label="Admin" className="flex flex-wrap gap-1">
               <NavLink to="/admin" end className={tab}>
                 Inkorg{unread ? <span className="ml-1.5 rounded-full bg-[var(--color-teal-500)] px-2 py-0.5 text-xs font-semibold text-[var(--color-navy-900)]" aria-label={`${unread} olästa`}>{unread}</span> : null}
               </NavLink>
               <NavLink to="/admin/contact" className={tab}>Kontaktuppgifter</NavLink>
               <NavLink to="/admin/seo" className={tab}>SEO</NavLink>
+              <NavLink to="/admin/settings" className={tab}>Inställningar</NavLink>
             </nav>
             <button type="button" className="btn btn-secondary" onClick={() => void signOut()}>Logga ut</button>
           </div>

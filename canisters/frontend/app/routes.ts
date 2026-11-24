@@ -11,6 +11,7 @@ export default [
     index("routes/admin/inbox.tsx"),
     route("contact", "routes/admin/contact.tsx"),
     route("seo", "routes/admin/seo.tsx"),
+    route("settings", "routes/admin/settings.tsx"),
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;
