@@ -123,7 +123,7 @@ export function ContactForm({ lang, responseTime }: { lang: Lang; responseTime: 
         <p ref={doneRef} tabIndex={-1} className="font-display text-3xl font-bold uppercase outline-none">
           {f.thanks}
         </p>
-        <p className="mt-2 text-lg">{responseTime ?? t.why.items[3].text}</p>
+        <p className="mt-2 text-lg">{responseTime ?? t.trust[3].text}</p>
       </div>
     );
   }

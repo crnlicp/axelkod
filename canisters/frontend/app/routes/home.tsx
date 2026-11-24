@@ -1,17 +1,15 @@
 import { useLocation } from "react-router";
-import { CircuitBackground } from "../components/CircuitBackground";
 import { ContactDetails } from "../components/ContactDetails";
 import { ContactForm } from "../components/ContactForm";
-import {
-  IconArrowRight, IconClock, IconCode, IconCompany, IconLock, IconParts, IconPerson, IconShield,
-} from "../components/Icons";
-import { LogoSymbol } from "../components/Logo";
+import { Hero } from "../components/Hero";
+import { IconCode, IconParts, IconShield } from "../components/Icons";
 import { PageShell } from "../components/PageShell";
+import { Reveal } from "../components/Reveal";
+import { TrustStrip } from "../components/TrustStrip";
 import { dict, langFromPath } from "../lib/i18n";
 import { usePublicConfig } from "../lib/publicConfig";
 
 const serviceIcons = [IconParts, IconCode, IconShield];
-const whyIcons = [IconPerson, IconCompany, IconLock, IconClock];
 
 export default function Home() {
   const lang = langFromPath(useLocation().pathname);
@@ -20,65 +18,39 @@ export default function Home() {
 
   return (
     <PageShell lang={lang} page="home">
-      <section className="relative isolate overflow-hidden border-b border-border" aria-labelledby="hero-title">
-        <CircuitBackground className="-z-10" />
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-5 py-20 text-center sm:py-28">
-          <LogoSymbol className="h-24 w-auto text-fg sm:h-28" />
-          <h1 id="hero-title" className="text-5xl uppercase sm:text-7xl">
-            {t.hero.title}
-          </h1>
-          <p className="max-w-xl text-lg text-muted">{t.hero.subtitle}</p>
-          <a href={`#${t.anchors.contact}`} className="btn btn-primary">
-            {t.hero.cta} <IconArrowRight className="h-5 w-5" />
-          </a>
-        </div>
-      </section>
+      <Hero lang={lang} />
+      <TrustStrip lang={lang} />
 
-      <section id={t.anchors.services} className="scroll-mt-4 px-5 py-16 sm:py-20" aria-labelledby="services-title">
-        <div className="mx-auto max-w-6xl">
-          <h2 id="services-title" className="text-4xl uppercase">{t.services.title}</h2>
-          <ul className="mt-8 grid gap-5 md:grid-cols-3">
+      {/* Services: redesigned as a bento grid in R3. */}
+      <section id={t.anchors.services} className="px-5 py-24" aria-labelledby="services-title">
+        <div className="mx-auto max-w-7xl">
+          <Reveal self>
+            <p className="eyebrow">{t.nav.services}</p>
+            <h2 id="services-title" className="mt-3 text-5xl uppercase">{t.services.title}</h2>
+          </Reveal>
+          <Reveal as="ul" className="mt-10 grid gap-5 md:grid-cols-3">
             {t.services.items.map((item, i) => {
               const Icon = serviceIcons[i];
               return (
-                <li key={item.title} className="card">
-                  <Icon className="h-10 w-10 text-brand" />
+                <li key={item.title} data-reveal className="card">
+                  <Icon className="h-10 w-10 text-accent" />
                   <h3 className="mt-4 text-2xl">{item.title}</h3>
                   <p className="mt-1 text-muted">{item.text}</p>
                 </li>
               );
             })}
-          </ul>
+          </Reveal>
         </div>
       </section>
 
-      <section id={t.anchors.why} className="scroll-mt-4 border-y border-border bg-surface px-5 py-16 sm:py-20" aria-labelledby="why-title">
-        <div className="mx-auto max-w-6xl">
-          <h2 id="why-title" className="text-4xl uppercase">{t.why.title}</h2>
-          <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {t.why.items.map((item, i) => {
-              const Icon = whyIcons[i];
-              return (
-                <li key={item.title} className="flex gap-4">
-                  <Icon className="mt-0.5 h-7 w-7 shrink-0 text-brand" />
-                  <div>
-                    <h3 className="text-xl">{item.title}</h3>
-                    <p className="mt-1 text-muted">{item.text}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </section>
-
-      <section id={t.anchors.contact} className="scroll-mt-4 px-5 py-16 sm:py-20" aria-labelledby="contact-title">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_20rem]">
-          <div>
-            <h2 id="contact-title" className="text-4xl uppercase">{t.contact.title}</h2>
+      <section id={t.anchors.contact} className="px-5 py-24" aria-labelledby="contact-title">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_20rem]">
+          <Reveal self>
+            <p className="eyebrow">{t.nav.contact}</p>
+            <h2 id="contact-title" className="mt-3 text-5xl uppercase">{t.contact.title}</h2>
             <p className="mt-3 text-lg text-muted">{t.contact.intro}</p>
             <ContactForm lang={lang} responseTime={config ? config.responseTime[lang] : null} />
-          </div>
+          </Reveal>
           <ContactDetails lang={lang} contact={config?.contact ?? null} />
         </div>
       </section>

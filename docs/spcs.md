@@ -15,7 +15,7 @@ You are a senior full-stack engineer and UI designer experienced with the Intern
 
 ## Brand
 - Logo: `axelkod-logo.svg` (provided in `docs/brand/`). Symbol: shield, `</>`, circuit traces, hexagon chain, gear.
-- Colours: Navy `#032843`, Teal `#05A390`, white, neutral greys. Light theme by default, optional dark mode.
+- Colours: Navy `#032843`, Teal `#05A390`, white, neutral greys. **Dark theme by default** (deep navy with teal/cyan glow, redesign 2026-11-24), light theme via a toggle.
 - Typography: self-hosted fonts only (no Google Fonts calls, for GDPR), e.g. Barlow Condensed for headings and Inter for body.
 - Visual motif: thin animated circuit lines and hexagon nodes taken from the logo, used sparingly; respect `prefers-reduced-motion`.
 

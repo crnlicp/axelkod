@@ -4,10 +4,14 @@
   "skipLink": "Hoppa till innehållet",
   "nav": {
     "label": "Huvudmeny",
-    "services": "Vad vi gör",
-    "why": "Varför Axelkod",
+    "services": "Tjänster",
     "contact": "Kontakt",
-    "home": "Axelkod, startsida"
+    "home": "Axelkod, startsida",
+    "security": "Säkerhet",
+    "industries": "Branscher",
+    "news": "Nyheter",
+    "menu": "Meny",
+    "closeMenu": "Stäng menyn"
   },
   "langSwitch": {
     "label": "In English",
@@ -15,7 +19,9 @@
   },
   "anchors": {
     "services": "tjanster",
-    "why": "varfor",
+    "security": "sakerhet",
+    "industries": "branscher",
+    "news": "nyheter",
     "contact": "kontakt"
   },
   "seo": {
@@ -25,9 +31,17 @@
     "privacyDescription": "Så hanterar Axelkod AB personuppgifter som skickas via kontaktformuläret."
   },
   "hero": {
+    "eyebrow": "Axelkod AB · Mölndal",
+    "words": [
+      "Delar.",
+      "Kod.",
+      "Säkerhet."
+    ],
     "title": "Delar. Kod. Säkerhet.",
-    "subtitle": "Fordonsdelar, mjukvara och cybersäkerhet från ett svenskt bolag i Mölndal.",
-    "cta": "Kontakta oss"
+    "subtitle": "Reservdelar, mjukvara och cybersäkerhet, levererat med svensk noggrannhet.",
+    "cta": "Kontakta oss",
+    "cta2": "Se vad vi gör",
+    "scroll": "Scrolla vidare"
   },
   "services": {
     "title": "Vad vi gör",
@@ -46,27 +60,6 @@
       }
     ]
   },
-  "why": {
-    "title": "Varför Axelkod",
-    "items": [
-      {
-        "title": "Personlig kontakt",
-        "text": "Du pratar direkt med oss, inte med en växel."
-      },
-      {
-        "title": "Svenskt bolag",
-        "text": "Registrerat och verksamt i Mölndal."
-      },
-      {
-        "title": "Säkert från början",
-        "text": "Säkerhet är en del av allt vi bygger."
-      },
-      {
-        "title": "Snabbt svar",
-        "text": "Vi återkommer inom 1–2 arbetsdagar."
-      }
-    ]
-  },
   "contact": {
     "title": "Kontakta oss",
     "intro": "Berätta kort vad du behöver, så hör vi av oss."
@@ -76,7 +69,11 @@
     "city": "Mölndal",
     "privacy": "Integritetspolicy",
     "rights": "Alla rättigheter förbehållna.",
-    "orgNumber": "Org.nr"
+    "orgNumber": "Org.nr",
+    "tagline": "Delar, kod och säkerhet från Mölndal.",
+    "explore": "Utforska",
+    "contactHeading": "Kontakt",
+    "settings": "Inställningar"
   },
   "privacy": {
     "title": "Integritetspolicy",
@@ -156,5 +153,27 @@
     "phone": "Telefon",
     "address": "Adress",
     "orgNumber": "Org.nr"
-  }
+  },
+  "theme": {
+    "toLight": "Byt till ljust tema",
+    "toDark": "Byt till mörkt tema"
+  },
+  "trust": [
+    {
+      "title": "Personlig kontakt",
+      "text": "Du pratar direkt med oss, inte med en växel."
+    },
+    {
+      "title": "Svenskt bolag",
+      "text": "Registrerat och verksamt i Mölndal."
+    },
+    {
+      "title": "Säkert från början",
+      "text": "Säkerhet är en del av allt vi bygger."
+    },
+    {
+      "title": "Snabbt svar",
+      "text": "Vi återkommer inom 1–2 arbetsdagar."
+    }
+  ]
 }

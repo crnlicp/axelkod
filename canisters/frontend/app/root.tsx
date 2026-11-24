@@ -1,6 +1,7 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation } from "react-router";
 import { SeoHead } from "./components/SeoHead";
 import { langFromPath } from "./lib/i18n";
+import { HEAD_SCRIPT } from "./lib/theme";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -14,11 +15,13 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: React.ReactNode }) {
   const lang = langFromPath(useLocation().pathname);
   return (
-    <html lang={lang}>
+    // The head script sets data-theme / classes on <html> before hydration.
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#032843" />
+        <meta name="theme-color" content="#020d18" />
+        <script dangerouslySetInnerHTML={{ __html: HEAD_SCRIPT }} />
         <SeoHead />
         <Meta />
         <Links />

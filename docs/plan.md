@@ -20,7 +20,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 5c | Admin: SEO + Publish | Done | Playwright publish, then fetch the HTML head |
 | 5d | Admin: settings | Done | `mops test` + Playwright |
 | 6 | Deploy + custom domain | In progress | Mainnet deploy (approval at each step) |
-| 7 | Redesign + news (R0–R9 below) | Not started | Per step: screenshots, axe, Lighthouse ≥ 95, e2e |
+| 7 | Redesign + news (R0–R9 below) | In progress | Per step: screenshots, axe, Lighthouse ≥ 95, e2e |
 
 ## Phase details
 
@@ -102,7 +102,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [ ] Mainnet deploy (explicit approval at each step)
 - [ ] DNS, domain registration, first admin, first Publish (manual steps in README)
 
-### 7. Redesign + news — Not started
+### 7. Redesign + news — In progress
 
 Goal: a completely new, modern, animated look (dark-first glow), a news section with article pages, and two new sections replacing "Why Axelkod". Decided 2026-11-24: dark-first glow; **Security by design** + **Industries we serve**; news = cards + article pages baked into HTML; animations with the **Motion** library.
 
@@ -114,9 +114,9 @@ Goal: a completely new, modern, animated look (dark-first glow), a news section 
 - Light mode as an option via a toggle (theme script hashed into the CSP like the other inline scripts).
 
 **Steps** (each ends with a local deploy, screenshots, axe and e2e; R2 is a sign-off gate)
-- [ ] **R0 Content + inspiration**: draft sv/en copy for the new sections (industries list, security layers) for your approval; decide news fields.
-- [ ] **R1 Design system v2**: new tokens (surfaces, glows, gradients, glass), type scale, spacing, radius, shadows; Motion setup (`LazyMotion` + `domAnimation`, lazy-loaded, ~15–20 KB gz budget); `Reveal`/`Stagger` primitives with CSS start states; reduced-motion handling; theme toggle.
-- [ ] **R2 Shell + hero (gate)**: sticky glass header (shrinks on scroll, active-section indicator, animated mobile menu), new hero (animated network canvas, staggered gradient headline, two CTAs, scroll cue), new footer. **Screenshots for your sign-off before continuing.**
+- [x] **R0 Content**: sv/en copy approved 2026-11-24 (hero subline, Security by design: code/infrastructure/people/supply chain, Industries: haulage & logistics, workshops, SMEs, industry & manufacturing; trust points become a strip under the hero). News fields: status, publish date, slug, optional area tag, optional cover + alt text, per-language title/excerpt/body; English optional (article hidden on the English site without it).
+- [x] **R1 Design system v2** (done: dark-first tokens + light theme with AA-checked contrast, glass/gradient/eyebrow/aurora/grid utilities, pill buttons with glow, head script for theme + `html.anim` with a 4 s safety reveal, `useReveal`/`Reveal` on Motion's vanilla `animate`/`inView`/`stagger` loaded after paint, theme toggle; axe passes in both themes): new tokens (surfaces, glows, gradients, glass), type scale, spacing, radius, shadows; Motion setup (`LazyMotion` + `domAnimation`, lazy-loaded, ~15–20 KB gz budget); `Reveal`/`Stagger` primitives with CSS start states; reduced-motion handling; theme toggle.
+- [x] **R2 Shell + hero (gate; built, awaiting sign-off)**: hero network canvas (deterministic, paused off-screen, static for reduced motion, theme-aware, faded behind the text), CSS-only headline entrance (LCP-safe), rotating hex rings around the floating logo, trust strip, sticky glass header with active-section pill, lazy Motion mobile menu (Motion React only loads on first open), new footer. Original scope: sticky glass header (shrinks on scroll, active-section indicator, animated mobile menu), new hero (animated network canvas, staggered gradient headline, two CTAs, scroll cue), new footer. **Screenshots for your sign-off before continuing.**
 - [ ] **R3 Services**: bento grid of the three areas with spotlight hover, animated icons (gear turns, code types, shield scans), one sentence each.
 - [ ] **R4 Security by design**: interactive layered shield (code, infrastructure, people, supply chain); layers highlight on hover/focus/scroll, keyboard accessible (buttons + `aria-controls`), text panel per layer.
 - [ ] **R5 Industries we serve**: animated tiles (icon + one line each) with staggered reveal.

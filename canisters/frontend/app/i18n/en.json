@@ -4,10 +4,14 @@
   "skipLink": "Skip to content",
   "nav": {
     "label": "Main menu",
-    "services": "What we do",
-    "why": "Why Axelkod",
+    "services": "Services",
     "contact": "Contact",
-    "home": "Axelkod, home"
+    "home": "Axelkod, home",
+    "security": "Security",
+    "industries": "Industries",
+    "news": "News",
+    "menu": "Menu",
+    "closeMenu": "Close menu"
   },
   "langSwitch": {
     "label": "På svenska",
@@ -15,7 +19,9 @@
   },
   "anchors": {
     "services": "services",
-    "why": "why",
+    "security": "security",
+    "industries": "industries",
+    "news": "news",
     "contact": "contact"
   },
   "seo": {
@@ -25,9 +31,17 @@
     "privacyDescription": "How Axelkod AB handles personal data sent through the contact form."
   },
   "hero": {
+    "eyebrow": "Axelkod AB · Mölndal, Sweden",
+    "words": [
+      "Parts.",
+      "Code.",
+      "Security."
+    ],
     "title": "Parts. Code. Security.",
-    "subtitle": "Vehicle parts, software and cyber security from a Swedish company in Mölndal.",
-    "cta": "Contact us"
+    "subtitle": "Spare parts, software and cyber security, delivered with Swedish precision.",
+    "cta": "Contact us",
+    "cta2": "See what we do",
+    "scroll": "Scroll down"
   },
   "services": {
     "title": "What we do",
@@ -46,27 +60,6 @@
       }
     ]
   },
-  "why": {
-    "title": "Why Axelkod",
-    "items": [
-      {
-        "title": "Personal contact",
-        "text": "You talk to us directly, not to a switchboard."
-      },
-      {
-        "title": "Swedish company",
-        "text": "Registered and operating in Mölndal."
-      },
-      {
-        "title": "Secure by design",
-        "text": "Security is part of everything we build."
-      },
-      {
-        "title": "Quick response",
-        "text": "We get back to you within 1–2 business days."
-      }
-    ]
-  },
   "contact": {
     "title": "Contact us",
     "intro": "Tell us briefly what you need and we'll be in touch."
@@ -76,7 +69,11 @@
     "city": "Mölndal, Sweden",
     "privacy": "Privacy notice",
     "rights": "All rights reserved.",
-    "orgNumber": "Reg. no."
+    "orgNumber": "Reg. no.",
+    "tagline": "Parts, code and security from Mölndal.",
+    "explore": "Explore",
+    "contactHeading": "Contact",
+    "settings": "Settings"
   },
   "privacy": {
     "title": "Privacy notice",
@@ -156,5 +153,27 @@
     "phone": "Phone",
     "address": "Address",
     "orgNumber": "Reg. no."
-  }
+  },
+  "theme": {
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
+  "trust": [
+    {
+      "title": "Personal contact",
+      "text": "You talk to us directly, not to a switchboard."
+    },
+    {
+      "title": "Swedish company",
+      "text": "Registered and operating in Mölndal."
+    },
+    {
+      "title": "Secure by design",
+      "text": "Security is part of everything we build."
+    },
+    {
+      "title": "Quick response",
+      "text": "We get back to you within 1–2 business days."
+    }
+  ]
 }
