@@ -5,6 +5,7 @@ const email = () => `e2e-${Date.now()}-${Math.floor(Math.random() * 1e6)}@exampl
 
 test("client validation: errors announced, first invalid field focused", async ({ page }) => {
   await page.goto("/#kontakt");
+  await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: "Skicka" }).click();
   await expect(page.getByLabel("Namn")).toBeFocused();
   await expect(page.getByLabel("Namn")).toHaveAttribute("aria-invalid", "true");
@@ -19,6 +20,7 @@ test("submit (sv) stores the message and shows the thank-you text", async ({ pag
   const errors: string[] = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   await page.goto("/");
+  await page.waitForLoadState("networkidle"); // typing before hydration would be lost
   await page.getByLabel("Namn").fill("E2E Testsson");
   await page.getByLabel("E-post").fill(email());
   await page.getByLabel("Telefon").fill("+46 31-123 45 67");
@@ -34,6 +36,7 @@ test("submit (sv) stores the message and shows the thank-you text", async ({ pag
 
 test("submit (en) works with only required fields", async ({ page }) => {
   await page.goto("/en/");
+  await page.waitForLoadState("networkidle");
   await page.getByLabel("Name").fill("E2E Test");
   await page.getByLabel("Email").fill(email());
   await page.getByLabel("Area").selectOption("other");

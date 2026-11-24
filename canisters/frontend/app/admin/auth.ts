@@ -29,14 +29,31 @@ function derivationOrigin(): string | undefined {
   return `https://${frontendId}.icp.net`;
 }
 
+/** localStorage key that switches a local deployment to the local test II. */
+export const LOCAL_II_FLAG = "axelkod:ii";
+
+/**
+ * Local deployments sign in with the real Internet Identity (id.ai, passkeys) by
+ * default; the local network trusts mainnet II's signatures. The local II from
+ * `ii: true` runs in test mode (it asks for a "seed index" with window.prompt,
+ * which embedded browsers block), so only the e2e tests opt in to it by setting
+ * localStorage[LOCAL_II_FLAG] = "local".
+ */
+function useLocalII(): boolean {
+  if (!isLocal(location.hostname)) return false;
+  try {
+    return localStorage.getItem(LOCAL_II_FLAG) === "local";
+  } catch {
+    return false;
+  }
+}
+
 let client: AuthClient | null = null;
 
 export function authClient(): AuthClient {
   if (client) return client;
-  const local = isLocal(location.hostname);
   client = new AuthClient({
-    // Local network: the II that `ii: true` serves; mainnet: the default (id.ai).
-    ...(local
+    ...(useLocalII()
       ? { identityProvider: { authorizeUrl: `http://id.ai.localhost:${location.port || "8000"}/authorize`, canisterId: II_CANISTER } }
       : {}),
     derivationOrigin: derivationOrigin(),

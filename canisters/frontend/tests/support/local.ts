@@ -33,12 +33,17 @@ export async function submitMessage(fields: { name: string; email: string; messa
  * prompt instead of a passkey, so the test answers that prompt.
  */
 export async function signInWithLocalII(page: Page, context: BrowserContext) {
+  // Opt in to the local test II (the app defaults to id.ai, which needs a real passkey).
+  await context.addInitScript(() => localStorage.setItem("axelkod:ii", "local"));
   await page.goto("/admin");
   const [popup] = await Promise.all([
     context.waitForEvent("page"),
     page.getByRole("button", { name: "Logga in med Internet Identity" }).click(),
   ]);
-  popup.on("dialog", (d) => void d.accept(String(1 + Math.floor(Math.random() * 1000))));
+  // The seed picks the test credential; reusing one would try to register a
+  // credential II already has, so every sign-in gets a fresh seed.
+  const seed = String(Date.now() % 1_000_000_000);
+  popup.on("dialog", (d) => void d.accept(seed));
   await popup.getByRole("button", { name: "Create" }).first().click();
   await popup.getByRole("button", { name: "Create with passkey" }).click();
   await popup.getByLabel(/name/i).first().fill("E2E Admin");

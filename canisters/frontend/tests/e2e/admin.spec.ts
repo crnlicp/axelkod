@@ -20,8 +20,19 @@ test("/admin/* is served by the admin shell; unknown admin paths render the 404 
   await expect(page.getByRole("heading", { name: "Sidan hittades inte" })).toBeVisible();
 });
 
-test("sign-in opens the local Internet Identity /authorize page", async ({ page, context }) => {
+test("sign-in uses id.ai by default, the local test II only when opted in", async ({ page, context }) => {
   await page.goto("/admin");
+  // Asserted on the request: id.ai itself may be unreachable from the test machine.
+  const [request, idai] = await Promise.all([
+    context.waitForEvent("request", (r) => r.url().startsWith("https://id.ai/")),
+    context.waitForEvent("page"),
+    page.getByRole("button", { name: "Logga in med Internet Identity" }).click(),
+  ]);
+  expect(new URL(request.url()).pathname).toBe("/authorize");
+  await idai.close();
+
+  await page.evaluate(() => localStorage.setItem("axelkod:ii", "local"));
+  await page.reload();
   const [popup] = await Promise.all([
     context.waitForEvent("page"),
     page.getByRole("button", { name: "Logga in med Internet Identity" }).click(),

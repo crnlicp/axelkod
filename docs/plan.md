@@ -19,7 +19,8 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 5b | Admin: contact info | Done | Playwright edit |
 | 5c | Admin: SEO + Publish | Done | Playwright publish, then fetch the HTML head |
 | 5d | Admin: settings | Done | `mops test` + Playwright |
-| 6 | Deploy + custom domain | Not started | Mainnet deploy (approval at each step) |
+| 6 | Deploy + custom domain | In progress | Mainnet deploy (approval at each step) |
+| 7 | Redesign + news (R0–R9 below) | Not started | Per step: screenshots, axe, Lighthouse ≥ 95, e2e |
 
 ## Phase details
 
@@ -68,7 +69,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 
 ### 5a. Admin: inbox — Done
 - [x] `/admin` served from the SPA fallback renamed `admin.html` (`noindex` header + meta), `_redirects` `/admin/*` → `/admin.html` 200; admin/auth code in separate chunks, never loaded by public pages
-- [x] II login (`@icp-sdk/auth` 11): local II on `*.localhost`, mainnet default; `derivationOrigin` = frontend canister address on custom domains only; `ii-alternative-origins` with CORS header; "Åtkomst nekad" shows the principal to add
+- [x] II login (`@icp-sdk/auth` 11): id.ai (real passkeys) everywhere by default, also locally; the local test II (`ii: true`, seed-index prompt) only when `localStorage["axelkod:ii"] = "local"` (e2e tests); `derivationOrigin` = frontend canister address on custom domains only; `ii-alternative-origins` with CORS header; "Åtkomst nekad" shows the principal to add
 - [x] Inbox (Swedish UI): status filters with unread count, debounced search, paging (25), detail view, opening a new message marks it read, status buttons, internal note, delete with confirm, CSV export (UTF-8 BOM for Excel), unread badge
 - [x] Verified: 34 Playwright tests incl. admin shell (axe, noindex, CSP, popup to local II `/authorize`) and `tests/api/admin-api.spec.ts` (real admin with an in-memory key: list/search/status/note/export/delete, settings round-trip, anonymous refused)
 - [x] Browser login via local II (`tests/e2e/admin-login.spec.ts`): the local II runs with dummy auth, so identity creation asks for a "seed index" in a browser prompt instead of a passkey; the test answers it, gets "Åtkomst nekad", is granted admin by the local controller, then searches, opens, notes, marks handled, exports and deletes a message
@@ -92,12 +93,43 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] Admin pages pass axe (WCAG 2.1 AA); contact card `<dl>` structure fixed
 - [x] Verified: `tests/e2e/admin-settings.spec.ts` (validation, privacy page shows new retention, add/remove reflected in `list_authorized`), `tests/e2e/admin-a11y.spec.ts`; 40 tests pass
 
-### 6. Deploy + custom domain — Not started
-- [ ] `scripts/deploy.sh` (local / ic), optional GitHub Actions workflow
-- [ ] `.well-known/ic-domains`, DNS steps, domain registration, www → apex forwarding at the DNS provider
-- [ ] README (setup, deploy, domain, first admin, Publish, cycles, upgrades, backup)
-- [ ] Cycle-cost estimate and top-up plan; manual-steps checklist
+### 6. Deploy + custom domain — In progress (local parts done; mainnet awaits approval)
+- [x] `scripts/deploy.sh local|ic`: mainnet as prod-identity with `--identity-password-file`, typed confirmation before the deploy and before adding the backend as frontend controller, cycles balance shown, `mops check` before and `mops deployed` after
+- [x] `.well-known/ic-domains` (`axelkod.eu`, `www.axelkod.eu`); `ii-alternative-origins` already in place
+- [x] README: setup, local dev, tests, mainnet deploy, first admin, custom domain DNS + registration + www forwarding, Publish, cycles estimate (≈ 0.1T/month; ≈ 4.2T first deploy) and top-ups, safe upgrades, backup/export, manual-steps checklist
+- [x] Disk cleanup after local verification (unused PocketIC temp folders removed; `.icp/` kept)
+- [ ] Optional GitHub Actions workflow (not built; ask if wanted)
 - [ ] Mainnet deploy (explicit approval at each step)
+- [ ] DNS, domain registration, first admin, first Publish (manual steps in README)
+
+### 7. Redesign + news — Not started
+
+Goal: a completely new, modern, animated look (dark-first glow), a news section with article pages, and two new sections replacing "Why Axelkod". Decided 2026-11-24: dark-first glow; **Security by design** + **Industries we serve**; news = cards + article pages baked into HTML; animations with the **Motion** library.
+
+**Fixed constraints (unchanged from the spec):** strict CSP (no `unsafe-inline`; Motion's start states live in CSS classes, not prerendered `style=""` attributes), Lighthouse ≥ 95 mobile/desktop, WCAG 2.1 AA (contrast on gradients, focus, keyboard), `prefers-reduced-motion` turns every animation off, no third-party requests (no hotlinked fonts/images/video), sv/en for every text, "reveal little" copy, prerendered public pages.
+
+**Design direction**
+- Base: deep navy (`#020d18` → `#032843`), brand teal `#05A390` plus a lighter cyan glow; slow aurora gradient fields, fine grid/noise texture, glass panels (blur + 1 px light border), gradient text for headings, teal glow on primary buttons.
+- Motion language: short (200–600 ms), eased, staggered reveals on scroll; hover spotlight on cards (cursor-following radial glow); hero network (hexagon nodes + circuit traces from the logo) drawn on a lightweight canvas, paused off-screen.
+- Light mode as an option via a toggle (theme script hashed into the CSP like the other inline scripts).
+
+**Steps** (each ends with a local deploy, screenshots, axe and e2e; R2 is a sign-off gate)
+- [ ] **R0 Content + inspiration**: draft sv/en copy for the new sections (industries list, security layers) for your approval; decide news fields.
+- [ ] **R1 Design system v2**: new tokens (surfaces, glows, gradients, glass), type scale, spacing, radius, shadows; Motion setup (`LazyMotion` + `domAnimation`, lazy-loaded, ~15–20 KB gz budget); `Reveal`/`Stagger` primitives with CSS start states; reduced-motion handling; theme toggle.
+- [ ] **R2 Shell + hero (gate)**: sticky glass header (shrinks on scroll, active-section indicator, animated mobile menu), new hero (animated network canvas, staggered gradient headline, two CTAs, scroll cue), new footer. **Screenshots for your sign-off before continuing.**
+- [ ] **R3 Services**: bento grid of the three areas with spotlight hover, animated icons (gear turns, code types, shield scans), one sentence each.
+- [ ] **R4 Security by design**: interactive layered shield (code, infrastructure, people, supply chain); layers highlight on hover/focus/scroll, keyboard accessible (buttons + `aria-controls`), text panel per layer.
+- [ ] **R5 Industries we serve**: animated tiles (icon + one line each) with staggered reveal.
+- [ ] **R6 News backend**: `News` type (id, slug, status draft/published, publishedAt, cover image URL, sv/en title, excerpt, body); admin create/edit/delete/publish, public `listNews(lang, limit, offset)` and `getNews(slug)`; validation and size caps (body ≤ 20 000 chars); body in a safe Markdown subset (paragraphs, headings, lists, links, bold/italic; no raw HTML); added to the still-pending initial migration (local backend reinstall); `mops test`.
+- [ ] **R7 News admin**: "Nyheter" tab (list, editor with sv/en tabs, live preview, slug from title, cover upload to `/uploads/`, draft/publish, delete); site Publish also writes news.
+- [ ] **R8 News on the site**: 3 latest as cards on the landing page (cover or a generated gradient/hexagon artwork per article); list pages `/nyheter`, `/en/news`; article pages `/nyheter/<slug>`, `/en/news/<slug>`. Pages are generated from a prerendered article template: deploy (`presync`) and Publish write one HTML file per article with its content and SEO baked in (same marker + embedded-JSON method as the SEO head, so hydration matches); sitemap lists articles; `_redirects` sends unknown article URLs to 404. Publish batches uploads under the 2 MB limit.
+- [ ] **R9 Restyle the rest + QA**: contact section (glass form, animated success), privacy, 404, admin restyled to match (lighter touch); update spec; full e2e, axe in both themes, Lighthouse mobile/desktop, reduced-motion pass, bundle-size check, screenshots at 390/768/1280 px.
+
+**Risks and how they're handled**
+- Motion vs. CSP and hydration: animate only after hydration from CSS start states; no SSR inline styles.
+- Performance: Motion and the hero canvas load after first paint; the canvas pauses when hidden; budgets checked in R9 (Lighthouse needs the pending decision on how to run it).
+- Contrast on gradients: text sits on solid or blurred panels; axe in both themes.
+- News pages for SEO add generated files per article: kept small, uploaded in batches, reproduced at every deploy.
 
 ## Decisions
 | Decision | Choice |
@@ -108,4 +140,5 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | CSP | `sha256` hashes for inline hydration scripts, written into `_headers` for each file |
 | www → apex | Forwarding at the DNS provider (the IC can't redirect by hostname) |
 | II principals | Primary origin = frontend canister address; custom domain derives against it via `ii-alternative-origins` (user-sign-in skill; replaces the spec's `https://axelkod.eu`) |
+| Redesign | Dark-first glow; Motion library (CSS start states, no inline styles); news with article pages baked at Publish/deploy; Security by design + Industries replace Why Axelkod (2026-11-24) |
 | Admin → frontend authorize | Backend canister is a controller of the frontend canister (user decision 2026-11-24) |
