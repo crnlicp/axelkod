@@ -415,3 +415,17 @@
 @media (prefers-reduced-motion: reduce) {
   .group:hover .news-media img, .group:hover .news-art { transform: none; }
 }
+
+/* ── Form fields ───────────────────────────────────────────── */
+.field { transition: border-color 200ms, box-shadow 200ms; }
+.field:hover { border-color: var(--border-strong); }
+.field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--brand-soft); }
+.field:focus-visible { outline: none; }
+.success-check circle { animation: pop 500ms var(--ease-out-expo) both; transform-origin: center; }
+.success-check path { stroke-dasharray: 48; stroke-dashoffset: 48; animation: draw 600ms 250ms var(--ease-out-expo) forwards; }
+@keyframes pop { from { transform: scale(0.6); opacity: 0; } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .success-check circle { animation: none; }
+  .success-check path { animation: none; stroke-dashoffset: 0; }
+}

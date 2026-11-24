@@ -88,6 +88,7 @@ test("published news: landing cards, list pages, article pages, removal", async 
     await expect(site.getByRole("link", { name: "EN – In English" })).toHaveAttribute("href", "/en/news");
     expect((await site.goto(`/en/news/${tag}-4`))?.status()).toBe(404);
     expect((await site.goto(`/nyheter/${tag}-5`))?.status()).toBe(404); // draft never baked
+    await expect(site.locator("h1")).toHaveText("Sidan hittades inte"); // not a blank page
 
     const sitemap = await (await site.goto("/sitemap.xml"))!.text();
     expect(sitemap).toContain(`/nyheter/${tag}-1</loc>`);

@@ -13,12 +13,11 @@ export function MobileMenu({ lang, links }: { lang: Lang; links: LinkItem[] }) {
 
   useEffect(() => {
     if (!open) return;
-    const focus = setTimeout(() => panel.current?.querySelector<HTMLElement>("a")?.focus(), 50);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") { setOpen(false); button.current?.focus(); }
     };
     document.addEventListener("keydown", onKey);
-    return () => { clearTimeout(focus); document.removeEventListener("keydown", onKey); };
+    return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
   return (

@@ -13,15 +13,29 @@ export default function Privacy() {
 
   return (
     <PageShell lang={lang} page="privacy">
-      <article className="mx-auto max-w-3xl px-5 py-16">
-        <h1 className="text-5xl uppercase">{t.privacy.title}</h1>
-        <p className="mt-2 text-sm text-muted">{fmt(t.privacy.updated, { date: UPDATED })}</p>
-        {t.privacy.sections.map((s) => (
-          <section key={s.title} className="mt-8">
-            <h2 className="text-2xl">{s.title}</h2>
-            <p className="mt-2 leading-relaxed">{fmt(s.text, { months })}</p>
-          </section>
-        ))}
+      <article>
+        <header className="relative overflow-hidden border-b border-border px-5 pb-14 pt-20">
+          <div className="bg-aurora absolute inset-0 -z-10 opacity-60" aria-hidden="true" />
+          <div className="bg-grid absolute inset-0 -z-10 opacity-40" aria-hidden="true" />
+          <div className="mx-auto max-w-3xl">
+            <p className="eyebrow">Axelkod AB</p>
+            <h1 className="mt-3 text-5xl uppercase sm:text-6xl">{t.privacy.title}</h1>
+            <p className="mt-3 text-sm text-muted">{fmt(t.privacy.updated, { date: UPDATED })}</p>
+          </div>
+        </header>
+        <div className="mx-auto max-w-3xl px-5 py-14">
+          <ol className="glass divide-y divide-[var(--border)]">
+            {t.privacy.sections.map((s, i) => (
+              <li key={s.title} className="flex gap-5 p-6 sm:p-8">
+                <span className="font-mono text-sm text-accent">0{i + 1}</span>
+                <section>
+                  <h2 className="text-2xl uppercase">{s.title}</h2>
+                  <p className="mt-2 leading-relaxed text-muted">{fmt(s.text, { months })}</p>
+                </section>
+              </li>
+            ))}
+          </ol>
+        </div>
       </article>
     </PageShell>
   );

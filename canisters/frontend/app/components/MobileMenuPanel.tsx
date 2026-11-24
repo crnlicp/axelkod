@@ -16,7 +16,8 @@ const MobileMenuPanel = forwardRef<HTMLDivElement, { open: boolean; links: LinkI
               initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
               className="absolute inset-x-3 top-[4.25rem] z-50 rounded-2xl border border-border-strong bg-bg-elev/95 p-3 shadow-2xl backdrop-blur-xl">
-              <ul className="space-y-1">
+              {/* Focus the first link once the (lazily loaded) panel is in the DOM. */}
+              <ul className="space-y-1" ref={(el) => { el?.querySelector<HTMLElement>("a")?.focus(); }}>
                 {links.map((l, i) => (
                   <m.li key={l.key} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 * i + 0.05 }}>
                     <a href={l.href} onClick={onNavigate} aria-current={l.current ? "location" : undefined}

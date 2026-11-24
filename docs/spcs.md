@@ -17,7 +17,7 @@ You are a senior full-stack engineer and UI designer experienced with the Intern
 - Logo: `axelkod-logo.svg` (provided in `docs/brand/`). Symbol: shield, `</>`, circuit traces, hexagon chain, gear.
 - Colours: Navy `#032843`, Teal `#05A390`, white, neutral greys. **Dark theme by default** (deep navy with teal/cyan glow, redesign 2026-11-24), light theme via a toggle.
 - Typography: self-hosted fonts only (no Google Fonts calls, for GDPR), e.g. Barlow Condensed for headings and Inter for body.
-- Visual motif: thin animated circuit lines and hexagon nodes taken from the logo, used sparingly; respect `prefers-reduced-motion`.
+- Visual style (redesign 2026-11-24): modern and animated: glass panels, teal/cyan glow, slow aurora gradients, gradient headline text, cursor spotlight on cards, an animated hexagon/circuit network in the hero (canvas, paused off-screen). Animations use the **Motion** library (`motion/mini` for scroll reveals; Motion React only in lazily loaded parts) and CSS; start states live in CSS classes so the CSP stays strict; everything is still under `prefers-reduced-motion`.
 
 ## Languages
 - **Swedish (default) and English**, with routes `/` (sv) and `/en/`, a language switch, and `hreflang` links.
@@ -25,13 +25,24 @@ You are a senior full-stack engineer and UI designer experienced with the Intern
 - Clean URLs come from the certified-assets canister: `index.html` → `/`, `en/index.html` → `/en/`, `integritet.html` → `/integritet`, `en/privacy.html` → `/en/privacy`.
 
 ## Public site (single page with anchors, plus a few routes)
-1. **Hero:** logo, headline "Delar. Kod. Säkerhet." / "Parts. Code. Security.", one-line subtitle, a "Contact us" button scrolling to the form, and a subtle animated circuit background.
-2. **What we do:** three cards (Vehicle parts / Software / Cyber security), each with a line icon in the logo's style and one sentence.
-3. **Why Axelkod:** 3–4 short trust points (personal contact, Swedish company, secure by design, quick response).
-4. **Contact:** form plus contact details loaded from the backend (editable in admin).
-5. **Footer:** company name, org. nr, city, email, phone (each shown only if set in admin), links to the privacy notice and the language switch, and © year.
-6. **Privacy notice** (`/integritet`, `/en/privacy`): what the form collects, purpose, retention period, deletion requests, contact. The retention period text comes from the admin setting.
-7. **404 page** in the same style.
+1. **Header:** sticky glass bar (logo, section links with active indicator, theme toggle, language switch); animated menu on small screens.
+2. **Hero:** eyebrow, headline "Delar. Kod. Säkerhet." / "Parts. Code. Security." (CSS entrance, LCP-safe), subline "Reservdelar, mjukvara och cybersäkerhet, levererat med svensk noggrannhet.", buttons "Kontakta oss" and "Se vad vi gör", the logo inside rotating hexagon rings, animated circuit network background.
+3. **Trust strip:** personal contact, Swedish company, secure by design, quick response (one line each).
+4. **What we do:** bento grid of Vehicle parts / Software / Cyber security with animated visuals (turning gear, typing code window, scanning shield), one sentence each.
+5. **Security by design:** four nested layers around the logo (code, infrastructure, people, supply chain), chosen by hover/focus/click, one sentence per layer.
+6. **Who we help:** haulage & logistics, workshops, small and medium businesses, industry & manufacturing (tiles, one line each).
+7. **News:** the 3 latest published articles as cards (cover or generated artwork, date, area, title, excerpt) and a link to all news.
+8. **Contact:** form in a glass panel plus contact details loaded from the backend (editable in admin).
+9. **Footer:** company name, org. nr, city, email, phone (each shown only if set in admin), section links, privacy notice, language switch, © year.
+10. **News pages:** `/nyheter`, `/en/news` (all published articles) and one page per article, `/nyheter/<slug>` and `/en/news/<slug>` (English only when the article has an English version).
+11. **Privacy notice** (`/integritet`, `/en/privacy`): what the form collects, purpose, retention period, deletion requests, contact. The retention period text comes from the admin setting.
+12. **404 page** in the same style.
+
+## News
+- Article: slug (unique), draft/published, publish date (future dates stay hidden until then), optional area (vehicle parts, software, cyber security, company), optional cover image (`/uploads/…` or https) with alt text, Swedish title/excerpt/body (required) and English (optional).
+- Body: a safe Markdown subset (paragraphs, `##`/`###` headings, lists, quotes, bold, italic, code, links to https or same-site paths). Raw HTML is never rendered.
+- Backend: `listNews(lang, offset, limit)`, `getNews(slug, lang)`, `publishedNews()` (public, published only); `adminListNews`, `createNews`, `updateNews`, `deleteNews` (admins). Max 500 articles.
+- Landing cards, list pages and article pages are baked into the static HTML at every deploy (`presync`) and by Publish, from prerendered article templates, with per-article SEO (NewsArticle JSON-LD, canonical, hreflang only where a translation exists) and sitemap entries. A removed article shows a noindex "not found" page after Publish and is deleted at the next deploy.
 
 ## Contact form (simple)
 - Fields: name*, email*, phone (optional), company (optional), area of interest (select: Vehicle parts / Software / Cyber security / Other)*, message* (max 2,000 characters), GDPR consent checkbox* linking to the privacy notice.
@@ -78,6 +89,7 @@ Follow RULES.md "Motoko backend" and "Motoko conventions": `mo:core` only, `mops
   - `index.html` for `/` and `/en/`, plus the privacy pages (their canonical/hreflang/robots follow the same settings), with the `<head>` filled in (title, description, canonical, hreflang, OG/Twitter tags, JSON-LD Organization with contact info)
   - `sitemap.xml` (both languages, lastmod) and `robots.txt` (respects the index toggle, blocks `/admin`)
   - Show "last published" time and a diff warning if settings changed but weren't published.
+- **News:** list (draft/published/scheduled, languages), editor with sv/en tabs, slug generated from the Swedish title, cover upload to `/uploads/`, live preview; changes go live with Publish.
 - **Settings:** retention months, response-time text, manage admin principals.
 
 ## Architecture
