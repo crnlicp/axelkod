@@ -211,6 +211,9 @@ type Backend =
    listMessages: (filter: MessageFilter, page: PageRequest) ->
     (Result_6) query;
    removeAdmin: (p: principal) -> (Result_2);
+   /// Controller-only: clears the global rate-limit window, e.g. after a bot used up
+   /// the daily quota (or between local test runs). Single-use tokens stay recorded.
+   resetFormLimits: () -> (Result_2);
    setContactInfo: (c: ContactInfo) -> (Result_5);
    setNote: (id: nat, note: text) -> (Result_2);
    setSeoSettings: (s: SeoSettings) -> (Result_4);

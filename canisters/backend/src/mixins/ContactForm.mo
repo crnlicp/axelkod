@@ -2,6 +2,7 @@
 // only stored for the admin inbox.
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
+import Principal "mo:core/Principal";
 import Queue "mo:core/Queue";
 import Result "mo:core/Result";
 import Text "mo:core/Text";
@@ -11,6 +12,14 @@ import FormToken "../lib/FormToken";
 import Types "../types";
 
 mixin (messages : Types.Messages, counters : Types.Counters, form : Types.FormState) {
+  /// Controller-only: clears the global rate-limit window, e.g. after a bot used up
+  /// the daily quota (or between local test runs). Single-use tokens stay recorded.
+  public shared ({ caller }) func resetFormLimits() : async Result.Result<(), Types.Error> {
+    if (not caller.isController()) return #err(#notAuthorized);
+    form.recent.clear();
+    #ok(());
+  };
+
   public query func getFormToken(nonce : Text) : async Result.Result<Text, Types.SubmitError> {
     if (form.secret.size() == 0) return #err(#unavailable);
     if (not FormToken.isNonce(nonce)) return #err(#tokenInvalid);

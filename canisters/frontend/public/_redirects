@@ -1,0 +1,3 @@
+# Admin sub-routes are client-rendered from admin.html (rewrite, status 200).
+# Nothing else falls back: unknown paths get 404.html.
+/admin/*  /admin.html  200

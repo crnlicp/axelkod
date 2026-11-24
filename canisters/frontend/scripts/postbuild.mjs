@@ -5,7 +5,7 @@
 // 3. Appends a per-file Content-Security-Policy to _headers, allowing each file's
 //    inline scripts (React Router hydration) by sha256 hash, never 'unsafe-inline'.
 import { createHash } from "node:crypto";
-import { appendFileSync, readdirSync, readFileSync, renameSync, rmSync, rmdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, readdirSync, readFileSync, renameSync, rmdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,8 +16,10 @@ for (const page of ["integritet", "en/privacy", "404"]) {
   renameSync(join(out, page, "index.html"), join(out, `${page}.html`));
   rmdirSync(join(out, page));
 }
-// SPA mode's fallback shell is unused: unknown paths get 404.html. (Admin shell: Phase 5a.)
-rmSync(join(out, "__spa-fallback.html"), { force: true });
+// The SPA fallback renders only the root HydrateFallback and lets the client router
+// take over, which is what the client-only admin needs. Served at /admin (clean URL)
+// and, via _redirects, for /admin/*.
+renameSync(join(out, "__spa-fallback.html"), join(out, "admin.html"));
 
 const pages = [
   { sv: "/", en: "/en/" },

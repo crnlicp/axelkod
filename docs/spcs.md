@@ -63,7 +63,7 @@ Follow RULES.md "Motoko backend" and "Motoko conventions": `mo:core` only, `mops
 
 ## Admin panel (`/admin`, `noindex`, excluded from the sitemap)
 - Login with **Internet Identity**; non-admins see "Access denied".
-- II principals depend on the origin. Set a derivation origin (`https://axelkod.eu`, published via `.well-known/ii-alternative-origins`) so an admin keeps the same principal on the canister URL and the custom domain. Follow the `user-sign-in` skill.
+- II principals depend on the origin. Per the `user-sign-in` skill the primary origin is the **frontend canister address** (`https://<frontend-id>.icp.net`), not the domain (a domain can lapse; a canister ID can't). The canister serves `/.well-known/ii-alternative-origins` listing `https://axelkod.eu` and `https://www.axelkod.eu`, and on the custom domain the client passes `derivationOrigin: https://<frontend-id>.icp.net`, so an admin keeps one principal on both.
 - **Inbox:** list with new/read/handled filters, search, detail view, internal note, mark status, delete, CSV export, unread counter.
 - **Contact info:** edit all ContactInfo fields with a live preview.
 - **SEO** (per language tab): title (with a character counter, ~60), meta description (~155), OG title/description, OG image upload (written to the frontend canister under `/uploads/*` with `upload_asset`, ≤ 2 MB, kept across deploys by `_preserve`), canonical URL, index/noindex toggle, organisation JSON-LD fields, verification tokens, and a Google search-result preview.

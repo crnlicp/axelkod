@@ -27,3 +27,12 @@
 
 /manifest.webmanifest
   Content-Type: application/manifest+json
+
+/admin.html
+  X-Robots-Tag: noindex, nofollow
+
+# Read by Internet Identity to allow the custom domain to derive admin principals
+# against the canister address (the primary origin).
+/.well-known/ii-alternative-origins
+  Content-Type: application/json
+  Access-Control-Allow-Origin: *

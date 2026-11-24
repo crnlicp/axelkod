@@ -34,6 +34,11 @@ export default function App() {
   return <Outlet />;
 }
 
+// Rendered into admin.html (the SPA fallback) until the client takes over.
+export function HydrateFallback() {
+  return <p className="p-8" role="status">Laddar…</p>;
+}
+
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const message = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : "Error";
   return (

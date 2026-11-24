@@ -15,7 +15,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 2 | Public pages (sv/en) | In progress | Lighthouse ≥ 95, axe, one h1 per page |
 | 3 | Backend canister | Done | `mops test` (auth, validation, retention) |
 | 4 | Contact form | Done | `mops test` + Playwright form submit |
-| 5a | Admin: inbox | Not started | Playwright: local II login, read message |
+| 5a | Admin: inbox | Done | Playwright: local II login, read message |
 | 5b | Admin: contact info | Not started | Playwright edit |
 | 5c | Admin: SEO + Publish | Not started | Playwright publish, then fetch the HTML head |
 | 5d | Admin: settings | Not started | `mops test` + Playwright |
@@ -60,15 +60,18 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 
 ### 4. Contact form — Done
 - [x] `getFormToken(nonce)` query: `<issuedAt>.<clientNonce>.<HMAC-SHA256>` (secret from `raw_rand` via a timer after install; `sha2` dependency, HMAC tested against RFC 4231), ≥ 3 s, ≤ 2 h, single use (used tokens pruned after 2 h)
-- [x] `submitContact`: honeypot (fake success, nothing stored), global limits 20/h and 100/day, 3 per email per day, field caps, control-character stripping, consent required; `inspect` drops calls > 16 KB
+- [x] `submitContact`: honeypot (fake success, nothing stored), global limits 20/h and 100/day, 3 per email per day, field caps, control-character stripping, consent required; `inspect` drops calls > 16 KB; controller-only `resetFormLimits()` clears the global window (ops + local test setup)
 - [x] Form (sv/en): client validation mirroring the canister, inline errors with `aria-invalid`/`aria-describedby`, focus on first invalid field, `aria-live` status, success text uses the admin's response-time text, automatic token refresh + one retry
 - [x] Contact details card, footer (org. nr, email, phone) and privacy retention loaded from `getPublicConfig`; agent loaded lazily (not in the initial bundle)
 - [x] CSP `connect-src 'self' https://icp-api.io`; `presync` adds `http://localhost:*` on non-mainnet networks
 - [x] Verified: `mops test` (4 files), local canister calls (too fast, reuse, tamper, honeypot, consent, per-email limit, oversized arg), 27 Playwright tests incl. real submits in sv/en and axe in both themes
 
-### 5a. Admin: inbox — Not started
-- [ ] Lazy `/admin` chunk, `noindex`, II login with derivation origin, "Access denied"
-- [ ] Filters, search, detail view, note, status, delete, CSV export, unread counter
+### 5a. Admin: inbox — Done
+- [x] `/admin` served from the SPA fallback renamed `admin.html` (`noindex` header + meta), `_redirects` `/admin/*` → `/admin.html` 200; admin/auth code in separate chunks, never loaded by public pages
+- [x] II login (`@icp-sdk/auth` 11): local II on `*.localhost`, mainnet default; `derivationOrigin` = frontend canister address on custom domains only; `ii-alternative-origins` with CORS header; "Åtkomst nekad" shows the principal to add
+- [x] Inbox (Swedish UI): status filters with unread count, debounced search, paging (25), detail view, opening a new message marks it read, status buttons, internal note, delete with confirm, CSV export (UTF-8 BOM for Excel), unread badge
+- [x] Verified: 34 Playwright tests incl. admin shell (axe, noindex, CSP, popup to local II `/authorize`) and `tests/api/admin-api.spec.ts` (real admin with an in-memory key: list/search/status/note/export/delete, settings round-trip, anonymous refused)
+- [x] Browser login via local II (`tests/e2e/admin-login.spec.ts`): the local II runs with dummy auth, so identity creation asks for a "seed index" in a browser prompt instead of a passkey; the test answers it, gets "Åtkomst nekad", is granted admin by the local controller, then searches, opens, notes, marks handled, exports and deletes a message
 
 ### 5b. Admin: contact info — Not started
 - [ ] Edit all ContactInfo fields with a live preview
@@ -99,5 +102,5 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | SEO publish | Backend holds the SEO settings. `presync` bakes them in at deploy; the admin's Publish uses `upload_assets` from an `authorize`d principal |
 | CSP | `sha256` hashes for inline hydration scripts, written into `_headers` for each file |
 | www → apex | Forwarding at the DNS provider (the IC can't redirect by hostname) |
-| II principals | Derivation origin `https://axelkod.eu` |
+| II principals | Primary origin = frontend canister address; custom domain derives against it via `ii-alternative-origins` (user-sign-in skill; replaces the spec's `https://axelkod.eu`) |
 | Admin → frontend authorize | Backend canister is a controller of the frontend canister (user decision 2026-11-24) |
