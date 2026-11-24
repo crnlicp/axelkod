@@ -58,7 +58,8 @@
         "title": "Cyber security",
         "text": "Consulting in IT and information security."
       }
-    ]
+    ],
+    "intro": "Three areas, one company. Ask us and we'll tell you more."
   },
   "contact": {
     "title": "Contact us",
@@ -175,5 +176,51 @@
       "title": "Quick response",
       "text": "We get back to you within 1–2 business days."
     }
-  ]
+  ],
+  "security": {
+    "eyebrow": "Security",
+    "title": "Security in every layer",
+    "intro": "We build protection in from the start, not as an afterthought.",
+    "hint": "Choose a layer",
+    "layers": [
+      {
+        "title": "Code",
+        "text": "Secure development, reviewed code and dependencies we keep track of."
+      },
+      {
+        "title": "Infrastructure",
+        "text": "Hardened systems, least privilege and monitoring."
+      },
+      {
+        "title": "People",
+        "text": "Awareness and routines that make people hard to fool."
+      },
+      {
+        "title": "Supply chain",
+        "text": "Traceable parts and suppliers we can vouch for."
+      }
+    ]
+  },
+  "industries": {
+    "eyebrow": "Industries",
+    "title": "Who we help",
+    "items": [
+      {
+        "title": "Haulage & logistics",
+        "text": "The right parts, fast, to keep vehicles moving."
+      },
+      {
+        "title": "Workshops",
+        "text": "A reliable source of spare parts and accessories."
+      },
+      {
+        "title": "Small and medium businesses",
+        "text": "Websites and systems that grow with you."
+      },
+      {
+        "title": "Industry & manufacturing",
+        "text": "Protection for systems that can't stop."
+      }
+    ]
+  }
 }

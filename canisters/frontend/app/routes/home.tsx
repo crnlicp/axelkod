@@ -2,14 +2,14 @@ import { useLocation } from "react-router";
 import { ContactDetails } from "../components/ContactDetails";
 import { ContactForm } from "../components/ContactForm";
 import { Hero } from "../components/Hero";
-import { IconCode, IconParts, IconShield } from "../components/Icons";
+import { Industries } from "../components/Industries";
 import { PageShell } from "../components/PageShell";
 import { Reveal } from "../components/Reveal";
+import { SecurityLayers } from "../components/SecurityLayers";
+import { Services } from "../components/Services";
 import { TrustStrip } from "../components/TrustStrip";
 import { dict, langFromPath } from "../lib/i18n";
 import { usePublicConfig } from "../lib/publicConfig";
-
-const serviceIcons = [IconParts, IconCode, IconShield];
 
 export default function Home() {
   const lang = langFromPath(useLocation().pathname);
@@ -21,27 +21,9 @@ export default function Home() {
       <Hero lang={lang} />
       <TrustStrip lang={lang} />
 
-      {/* Services: redesigned as a bento grid in R3. */}
-      <section id={t.anchors.services} className="px-5 py-24" aria-labelledby="services-title">
-        <div className="mx-auto max-w-7xl">
-          <Reveal self>
-            <p className="eyebrow">{t.nav.services}</p>
-            <h2 id="services-title" className="mt-3 text-5xl uppercase">{t.services.title}</h2>
-          </Reveal>
-          <Reveal as="ul" className="mt-10 grid gap-5 md:grid-cols-3">
-            {t.services.items.map((item, i) => {
-              const Icon = serviceIcons[i];
-              return (
-                <li key={item.title} data-reveal className="card">
-                  <Icon className="h-10 w-10 text-accent" />
-                  <h3 className="mt-4 text-2xl">{item.title}</h3>
-                  <p className="mt-1 text-muted">{item.text}</p>
-                </li>
-              );
-            })}
-          </Reveal>
-        </div>
-      </section>
+      <Services lang={lang} />
+      <SecurityLayers lang={lang} />
+      <Industries lang={lang} />
 
       <section id={t.anchors.contact} className="px-5 py-24" aria-labelledby="contact-title">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_20rem]">

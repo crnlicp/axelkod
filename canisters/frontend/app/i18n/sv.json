@@ -58,7 +58,8 @@
         "title": "Cybersäkerhet",
         "text": "Rådgivning inom IT- och informationssäkerhet."
       }
-    ]
+    ],
+    "intro": "Tre områden, ett bolag. Fråga oss så berättar vi mer."
   },
   "contact": {
     "title": "Kontakta oss",
@@ -175,5 +176,51 @@
       "title": "Snabbt svar",
       "text": "Vi återkommer inom 1–2 arbetsdagar."
     }
-  ]
+  ],
+  "security": {
+    "eyebrow": "Säkerhet",
+    "title": "Säkerhet i varje lager",
+    "intro": "Vi bygger in skydd från början, inte i efterhand.",
+    "hint": "Välj ett lager",
+    "layers": [
+      {
+        "title": "Kod",
+        "text": "Säker utveckling, granskad kod och beroenden vi har koll på."
+      },
+      {
+        "title": "Infrastruktur",
+        "text": "Härdade system, minsta möjliga behörighet och övervakning."
+      },
+      {
+        "title": "Människor",
+        "text": "Medvetenhet och rutiner som gör det svårt att bli lurad."
+      },
+      {
+        "title": "Leverantörskedja",
+        "text": "Spårbara delar och leverantörer vi kan stå för."
+      }
+    ]
+  },
+  "industries": {
+    "eyebrow": "Branscher",
+    "title": "Vi hjälper",
+    "items": [
+      {
+        "title": "Åkerier & logistik",
+        "text": "Rätt delar snabbt, så att fordonen rullar."
+      },
+      {
+        "title": "Verkstäder",
+        "text": "En pålitlig källa för reservdelar och tillbehör."
+      },
+      {
+        "title": "Små och medelstora företag",
+        "text": "Webbplatser och system som växer med er."
+      },
+      {
+        "title": "Industri & tillverkning",
+        "text": "Skydd för system som inte får stanna."
+      }
+    ]
+  }
 }

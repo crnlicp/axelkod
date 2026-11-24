@@ -37,13 +37,15 @@ export function useReveal(ref: RefObject<HTMLElement | null>, opts: { stagger?: 
         ([entry]) => {
           if (!entry.isIntersecting) return;
           io?.disconnect();
-          targets.forEach((target, i) =>
+          targets.forEach((target, i) => {
+            // data-revealed lets CSS start effects inside (e.g. the typing code window).
+            target.setAttribute("data-revealed", "");
             animate(
               target,
               { opacity: [0, 1], transform: ["translateY(24px)", "translateY(0px)"] },
               { duration: 0.8, ease: EASE_OUT_EXPO, delay: delay + i * step },
-            ),
-          );
+            );
+          });
         },
         { rootMargin: "0px 0px -12% 0px" },
       );

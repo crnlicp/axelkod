@@ -317,3 +317,76 @@
 @media (max-width: 1023px) {
   .hero-network { mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.3), #000 70%); }
 }
+
+/* ── Cards: cursor spotlight + gradient border ─────────────── */
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), var(--glow-soft), transparent 45%);
+  opacity: 0;
+  transition: opacity 400ms;
+  pointer-events: none;
+}
+.spotlight:hover::before { opacity: 1; }
+.spotlight > :not(.absolute) { position: relative; }
+.gradient-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, var(--brand), transparent 40%, transparent 60%, var(--glow));
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  transition: opacity 400ms;
+  pointer-events: none;
+}
+.gradient-border:hover::after { opacity: 1; }
+
+/* ── Service visuals ───────────────────────────────────────── */
+.service-gear { animation: spin 40s linear infinite; }
+.spotlight:hover .service-gear { animation-duration: 8s; }
+.code-line > span { display: inline-block; }
+/* Typed once the card has been revealed; plain text without JS or with reduced motion. */
+.anim:not(.anim-timeout) .code-line > span { clip-path: inset(0 100% 0 0); }
+.anim [data-revealed] .code-line > span { animation: type 0.9s steps(18, end) 0.5s forwards; }
+.anim [data-revealed] .code-line[data-line="1"] > span { animation-delay: 1.4s; }
+.anim [data-revealed] .code-line[data-line="2"] > span { animation-delay: 2.3s; }
+.anim [data-revealed] .code-line[data-line="3"] > span { animation-delay: 3.2s; }
+.anim [data-revealed] .code-line[data-line="4"] > span { animation-delay: 4.1s; }
+.code-line:last-child::after {
+  content: "▍";
+  color: var(--accent);
+  animation: caret 1s steps(1) infinite;
+}
+@keyframes type { to { clip-path: inset(0 0 0 0); } }
+@keyframes caret { 50% { opacity: 0; } }
+.shield-scan { animation: scan 3.2s ease-in-out infinite; }
+@keyframes scan {
+  0%, 100% { transform: translateY(10px); }
+  50% { transform: translateY(125px); }
+}
+
+/* ── Security layers ───────────────────────────────────────── */
+.layer-ring {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  transition: stroke 400ms, stroke-width 400ms, fill 400ms, filter 400ms;
+}
+.layer-ring[data-inner] { stroke: var(--brand); stroke-opacity: 0.45; }
+.layer-ring[data-active] {
+  stroke: var(--accent);
+  stroke-width: 3;
+  fill: var(--brand-soft);
+  filter: drop-shadow(0 0 12px var(--brand));
+}
+.layer-text { animation: layer-in 450ms var(--ease-out-expo); }
+@keyframes layer-in { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .service-gear, .shield-scan, .code-line:last-child::after, .layer-text { animation: none; }
+  .code-line > span { clip-path: none !important; animation: none !important; }
+}

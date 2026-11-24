@@ -121,3 +121,39 @@ export const IconArrowRight = (p: IconProps) => (
     <path d="M13.5,6.5 L19,12 L13.5,17.5" />
   </Icon>
 );
+
+/** Haulage & logistics: truck. */
+export const IconTruck = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2.5,6 H14 V16 H2.5Z" />
+    <path d="M14,9.5 H18 L21.5,13 V16 H14" />
+    <circle cx={6.5} cy={17.5} r={1.8} />
+    <circle cx={17.5} cy={17.5} r={1.8} />
+  </Icon>
+);
+
+/** Workshops: wrench. */
+export const IconWrench = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14.5,3.5 A5,5 0 0 0 9.8,10.3 L3.5,16.6 L7.4,20.5 L13.7,14.2 A5,5 0 0 0 20.5,9.5 L17.5,12.5 L14.5,12.5 L11.5,9.5 L11.5,6.5Z" />
+  </Icon>
+);
+
+/** Small and medium businesses: shopfront. */
+export const IconStore = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3,9 L5,3.5 H19 L21,9" />
+    <path d="M3,9 H21 C21,10.7 19.7,12 18,12 C16.3,12 15,10.7 15,9 C15,10.7 13.7,12 12,12 C10.3,12 9,10.7 9,9 C9,10.7 7.7,12 6,12 C4.3,12 3,10.7 3,9Z" />
+    <path d="M4.5,12 V20.5 H19.5 V12" />
+    <path d="M10,20.5 V15.5 H14 V20.5" />
+  </Icon>
+);
+
+/** Industry & manufacturing: factory. */
+export const IconFactory = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2.5,20.5 V10 L8,13 V10 L13.5,13 V4 H17.5 V20.5Z" />
+    <path d="M17.5,20.5 H21.5 V8 H17.5" />
+    <path d="M6,17 H8 M10.5,17 H12.5" />
+  </Icon>
+);
