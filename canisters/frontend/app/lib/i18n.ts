@@ -14,8 +14,10 @@ export const DEFAULT_RETENTION_MONTHS = 12;
 export const PATHS = {
   home: { sv: "/", en: "/en/" },
   privacy: { sv: "/integritet", en: "/en/privacy" },
+  news: { sv: "/nyheter", en: "/en/news" },
 } as const;
-export type Page = keyof typeof PATHS;
+/** "article" pages have per-article paths (see otherLangPath in seo.ts). */
+export type Page = keyof typeof PATHS | "article";
 
 export function langFromPath(pathname: string): Lang {
   return pathname === "/en" || pathname.startsWith("/en/") ? "en" : "sv";

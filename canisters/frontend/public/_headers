@@ -36,3 +36,7 @@
 /.well-known/ii-alternative-origins
   Content-Type: application/json
   Access-Control-Allow-Origin: *
+
+# Article templates (copied per article at deploy/Publish); never indexed.
+/_tpl/*
+  X-Robots-Tag: noindex, nofollow

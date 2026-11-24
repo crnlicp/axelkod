@@ -6,6 +6,10 @@ export default [
   route("en", "routes/home.tsx", { id: "home-en" }),
   route("integritet", "routes/privacy.tsx", { id: "privacy-sv" }),
   route("en/privacy", "routes/privacy.tsx", { id: "privacy-en" }),
+  route("nyheter", "routes/news.tsx", { id: "news-sv" }),
+  route("en/news", "routes/news.tsx", { id: "news-en" }),
+  route("nyheter/:slug", "routes/article.tsx", { id: "article-sv" }),
+  route("en/news/:slug", "routes/article.tsx", { id: "article-en" }),
   // Admin: client-rendered from admin.html (the SPA fallback), never prerendered.
   route("admin", "routes/admin/layout.tsx", [
     index("routes/admin/inbox.tsx"),

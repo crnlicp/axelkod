@@ -1,7 +1,8 @@
 // SEO data for the shared head renderer (seo-head.ts): build-time defaults (same as
 // the backend migration's), page texts from i18n, and mapping from the backend.
+import { useEffect, useState } from "react";
 import type { PublicConfig, SeoSettings } from "../bindings/backend";
-import { dict } from "./i18n";
+import { dict, PATHS, type Lang, type Page } from "./i18n";
 import { DATA_ID, type PageTexts, type SeoData } from "./seo-head";
 
 const base = "https://axelkod.eu";
@@ -78,4 +79,20 @@ export function currentSeoData(): SeoData {
     }
   }
   return embedded;
+}
+
+/** Where the language switch goes: an article's other version, else the same page type. */
+export function otherLangPath(page: Page | null, other: Lang): string {
+  if (page === "article") return currentSeoData().doc?.paths[other] ?? PATHS.news[other];
+  return PATHS[page ?? "home"][other];
+}
+
+/**
+ * otherLangPath as state, corrected after mount: article pages are copies of one
+ * prerendered template, and hydration keeps the template's attribute values.
+ */
+export function useOtherLangPath(page: Page | null, other: Lang): string {
+  const [path, setPath] = useState(() => (page === "article" ? PATHS.news[other] : otherLangPath(page, other)));
+  useEffect(() => setPath(otherLangPath(page, other)), [page, other]);
+  return path;
 }

@@ -5,14 +5,20 @@
 // 3. Appends a per-file Content-Security-Policy to _headers, allowing each file's
 //    inline scripts (React Router hydration) by sha256 hash, never 'unsafe-inline'.
 import { createHash } from "node:crypto";
-import { appendFileSync, readdirSync, readFileSync, renameSync, rmdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, readdirSync, readFileSync, renameSync, rmdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { robotsTxt, sitemapXml } from "../app/lib/seo-head.ts";
 
 const out = resolve(dirname(fileURLToPath(import.meta.url)), "../build/client");
 
-for (const page of ["integritet", "en/privacy", "404"]) {
+// Article templates first (they sit inside the news folders), then the pages.
+mkdirSync(join(out, "_tpl"), { recursive: true });
+for (const [dir, lang] of [["nyheter", "sv"], ["en/news", "en"]]) {
+  renameSync(join(out, dir, "__template", "index.html"), join(out, "_tpl", `article-${lang}.html`));
+  rmdirSync(join(out, dir, "__template"));
+}
+for (const page of ["integritet", "en/privacy", "404", "nyheter", "en/news"]) {
   renameSync(join(out, page, "index.html"), join(out, `${page}.html`));
   rmdirSync(join(out, page));
 }
@@ -36,7 +42,7 @@ const home = readFileSync(join(out, "index.html"), "utf8");
 const seoJson = /<script type="application\/json" id="seo-data">([\s\S]*?)<\/script>/.exec(home);
 if (!seoJson) throw new Error("postbuild: seo-data block missing in index.html");
 const seo = JSON.parse(seoJson[1]);
-writeFileSync(join(out, "sitemap.xml"), sitemapXml(seo, new Date().toISOString().slice(0, 10)));
+writeFileSync(join(out, "sitemap.xml"), sitemapXml(seo, new Date().toISOString().slice(0, 10), [{ paths: { sv: "/nyheter", en: "/en/news" } }]));
 writeFileSync(join(out, "robots.txt"), robotsTxt(seo));
 
 const htmlFiles = (dir) =>

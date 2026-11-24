@@ -222,5 +222,12 @@
         "text": "Skydd för system som inte får stanna."
       }
     ]
+  },
+  "news": {
+    "eyebrow": "Nyheter",
+    "title": "Senaste nytt",
+    "all": "Alla nyheter",
+    "pageTitle": "Nyheter",
+    "pageIntro": "Det senaste från Axelkod."
   }
 }

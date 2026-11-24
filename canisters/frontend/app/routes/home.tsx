@@ -3,6 +3,7 @@ import { ContactDetails } from "../components/ContactDetails";
 import { ContactForm } from "../components/ContactForm";
 import { Hero } from "../components/Hero";
 import { Industries } from "../components/Industries";
+import { NewsSection } from "../components/NewsSection";
 import { PageShell } from "../components/PageShell";
 import { Reveal } from "../components/Reveal";
 import { SecurityLayers } from "../components/SecurityLayers";
@@ -24,6 +25,7 @@ export default function Home() {
       <Services lang={lang} />
       <SecurityLayers lang={lang} />
       <Industries lang={lang} />
+      <NewsSection lang={lang} />
 
       <section id={t.anchors.contact} className="px-5 py-24" aria-labelledby="contact-title">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_20rem]">

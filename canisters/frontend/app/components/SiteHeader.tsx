@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { dict, otherLang, PATHS, type Lang, type Page } from "../lib/i18n";
+import { useOtherLangPath } from "../lib/seo";
 import { LogoSymbol } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 import { ThemeToggle } from "./ThemeToggle";
 
 /** Sections in the main navigation (ones that exist on the landing page). */
-export const NAV_SECTIONS = ["services", "security", "industries", "contact"] as const;
+export const NAV_SECTIONS = ["services", "security", "industries", "news", "contact"] as const;
 export type NavSection = (typeof NAV_SECTIONS)[number];
 
 /** Tracks which landing-page section is in view (for the active indicator). */
@@ -31,6 +32,7 @@ function useActiveSection(ids: string[], enabled: boolean) {
 export function SiteHeader({ lang, page }: { lang: Lang; page: Page | null }) {
   const t = dict(lang);
   const other = otherLang(lang);
+  const switchTo = useOtherLangPath(page, other);
   const home = PATHS.home[lang];
   const anchor = (id: string) => (page === "home" ? `#${id}` : `${home}#${id}`);
   const ids = NAV_SECTIONS.map((k) => t.anchors[k]);
@@ -65,7 +67,7 @@ export function SiteHeader({ lang, page }: { lang: Lang; page: Page | null }) {
             ))}
           </ul>
           <ThemeToggle lang={lang} />
-          <Link to={PATHS[page ?? "home"][other]} hrefLang={other} lang={other}
+          <Link to={switchTo} reloadDocument={page === "article"} hrefLang={other} lang={other}
             className="grid h-10 min-w-10 place-items-center rounded-full border border-border bg-surface px-3 text-sm font-semibold text-fg no-underline transition-colors hover:border-accent hover:text-accent">
             {t.langSwitch.short}
             <span className="sr-only"> – {t.langSwitch.label}</span>

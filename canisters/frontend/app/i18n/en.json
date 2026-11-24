@@ -222,5 +222,12 @@
         "text": "Protection for systems that can't stop."
       }
     ]
+  },
+  "news": {
+    "eyebrow": "News",
+    "title": "Latest news",
+    "all": "All news",
+    "pageTitle": "News",
+    "pageIntro": "The latest from Axelkod."
   }
 }

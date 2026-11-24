@@ -7,6 +7,8 @@ function pageFromPath(pathname: string): SeoPage | null {
   const p = pathname.replace(/\/+$/, "") || "/";
   if (p === "/" || p === "/en") return "home";
   if (p === "/integritet" || p === "/en/privacy") return "privacy";
+  if (p === "/nyheter" || p === "/en/news") return "news";
+  if (/^\/(nyheter|en\/news)\/[^/]+$/.test(p)) return "article";
   return null;
 }
 

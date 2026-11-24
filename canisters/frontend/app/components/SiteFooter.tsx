@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { dict, otherLang, PATHS, type Lang, type Page } from "../lib/i18n";
+import { useOtherLangPath } from "../lib/seo";
 import { usePublicConfig } from "../lib/publicConfig";
 import { LogoSymbol } from "./Logo";
 import { NAV_SECTIONS } from "./SiteHeader";
@@ -8,6 +9,7 @@ import { NAV_SECTIONS } from "./SiteHeader";
 export function SiteFooter({ lang, page }: { lang: Lang; page: Page | null }) {
   const t = dict(lang);
   const other = otherLang(lang);
+  const switchTo = useOtherLangPath(page, other);
   const c = usePublicConfig()?.contact;
   const home = PATHS.home[lang];
   const anchor = (id: string) => (page === "home" ? `#${id}` : `${home}#${id}`);
@@ -29,7 +31,7 @@ export function SiteFooter({ lang, page }: { lang: Lang; page: Page | null }) {
               <li key={k}><a href={anchor(t.anchors[k])} className="text-fg no-underline hover:text-accent">{t.nav[k]}</a></li>
             ))}
             <li><Link to={PATHS.privacy[lang]} className="text-fg no-underline hover:text-accent">{t.footer.privacy}</Link></li>
-            <li><Link to={PATHS[page ?? "home"][other]} hrefLang={other} lang={other} className="text-fg no-underline hover:text-accent">{t.langSwitch.label}</Link></li>
+            <li><Link to={switchTo} reloadDocument={page === "article"} hrefLang={other} lang={other} className="text-fg no-underline hover:text-accent">{t.langSwitch.label}</Link></li>
           </ul>
         </nav>
         <div>
