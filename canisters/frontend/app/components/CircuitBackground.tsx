@@ -35,8 +35,9 @@ export function CircuitBackground({ className = "" }: { className?: string }) {
         ))}
       </g>
       <g fill="none" strokeWidth={2} className="circuit-bg__pulses">
-        {traces.map((d, i) => (
-          <path key={d} d={d} pathLength={100} style={{ animationDelay: `${i * -1.7}s` }} />
+        {/* Staggered via nth-child in app.css: no inline styles under the CSP. */}
+        {traces.map((d) => (
+          <path key={d} d={d} pathLength={100} />
         ))}
       </g>
       <g className="circuit-bg__nodes" strokeWidth={1.5}>

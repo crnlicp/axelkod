@@ -1,89 +1,84 @@
-// Temporary design-system preview (Phase 1). Replaced by the real pages in Phase 2.
+import { useLocation } from "react-router";
 import { CircuitBackground } from "../components/CircuitBackground";
 import {
-  IconArrowRight, IconClock, IconCode, IconCompany, IconLock, IconMail,
-  IconParts, IconPerson, IconPhone, IconPin, IconShield,
+  IconArrowRight, IconClock, IconCode, IconCompany, IconLock, IconParts, IconPerson, IconShield,
 } from "../components/Icons";
-import { Logo, LogoSymbol } from "../components/Logo";
+import { LogoSymbol } from "../components/Logo";
+import { PageShell } from "../components/PageShell";
+import { dict, langFromPath } from "../lib/i18n";
+import { pageMeta } from "../lib/seo";
+import type { Route } from "./+types/home";
 
-export function meta() {
-  return [{ title: "Axelkod AB" }, { name: "robots", content: "noindex" }];
-}
+export const meta: Route.MetaFunction = ({ location }) => pageMeta("home", langFromPath(location.pathname));
 
-const icons = [
-  ["Parts", IconParts], ["Code", IconCode], ["Shield", IconShield], ["Person", IconPerson],
-  ["Company", IconCompany], ["Lock", IconLock], ["Clock", IconClock], ["Mail", IconMail],
-  ["Phone", IconPhone], ["Pin", IconPin],
-] as const;
-
-const swatches = [
-  "bg-navy-950", "bg-navy-900", "bg-navy-800", "bg-navy-700", "bg-teal-700", "bg-teal-500",
-  "bg-teal-300", "bg-grey-600", "bg-grey-400", "bg-grey-200", "bg-grey-50",
-];
+const serviceIcons = [IconParts, IconCode, IconShield];
+const whyIcons = [IconPerson, IconCompany, IconLock, IconClock];
 
 export default function Home() {
+  const lang = langFromPath(useLocation().pathname);
+  const t = dict(lang);
+
   return (
-    <main>
-      <section className="relative isolate overflow-hidden border-b border-border">
+    <PageShell lang={lang} page="home">
+      <section className="relative isolate overflow-hidden border-b border-border" aria-labelledby="hero-title">
         <CircuitBackground className="-z-10" />
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 px-6 py-20 text-center">
-          <LogoSymbol className="h-24 w-auto text-fg" />
-          <h1 className="text-5xl uppercase sm:text-7xl">Delar. Kod. Säkerhet.</h1>
-          <p className="max-w-xl text-lg text-muted">
-            Fordonsdelar, mjukvara och cybersäkerhet – från ett svenskt bolag.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <a href="#kontakt" className="btn btn-primary">
-              Kontakta oss <IconArrowRight className="h-5 w-5" />
-            </a>
-            <a href="#" className="btn btn-secondary">Sekundär knapp</a>
-          </div>
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-5 py-20 text-center sm:py-28">
+          <LogoSymbol className="h-24 w-auto text-fg sm:h-28" />
+          <h1 id="hero-title" className="text-5xl uppercase sm:text-7xl">
+            {t.hero.title}
+          </h1>
+          <p className="max-w-xl text-lg text-muted">{t.hero.subtitle}</p>
+          <a href={`#${t.anchors.contact}`} className="btn btn-primary">
+            {t.hero.cta} <IconArrowRight className="h-5 w-5" />
+          </a>
         </div>
       </section>
 
-      <div className="mx-auto max-w-5xl space-y-12 px-6 py-12">
-        <section className="grid gap-6 sm:grid-cols-[12rem_1fr] sm:items-center">
-          <Logo className="h-auto w-48 text-fg" />
-          <div className="space-y-2">
-            <h2 className="text-4xl">Rubrik H2 i Barlow Condensed</h2>
-            <h3 className="text-2xl">Rubrik H3</h3>
-            <p className="text-muted">
-              Brödtext i Inter. Åäö ÅÄÖ. <a href="#">En länk i accentfärg</a> med
-              tillräcklig kontrast.
-            </p>
-          </div>
-        </section>
-
-        <section className="grid gap-4 sm:grid-cols-3">
-          {[[IconParts, "Fordonsdelar"], [IconCode, "Mjukvara"], [IconShield, "Cybersäkerhet"]].map(
-            ([I, label]) => {
-              const C = I as typeof IconParts;
+      <section id={t.anchors.services} className="scroll-mt-4 px-5 py-16 sm:py-20" aria-labelledby="services-title">
+        <div className="mx-auto max-w-6xl">
+          <h2 id="services-title" className="text-4xl uppercase">{t.services.title}</h2>
+          <ul className="mt-8 grid gap-5 md:grid-cols-3">
+            {t.services.items.map((item, i) => {
+              const Icon = serviceIcons[i];
               return (
-                <div key={label as string} className="card">
-                  <C className="h-10 w-10 text-brand" />
-                  <h3 className="mt-4 text-2xl">{label as string}</h3>
-                  <p className="mt-1 text-muted">En mening om vad vi gör.</p>
-                </div>
+                <li key={item.title} className="card">
+                  <Icon className="h-10 w-10 text-brand" />
+                  <h3 className="mt-4 text-2xl">{item.title}</h3>
+                  <p className="mt-1 text-muted">{item.text}</p>
+                </li>
               );
-            },
-          )}
-        </section>
+            })}
+          </ul>
+        </div>
+      </section>
 
-        <section className="flex flex-wrap gap-6">
-          {icons.map(([name, I]) => (
-            <div key={name} className="flex flex-col items-center gap-1 text-sm text-muted">
-              <I className="h-8 w-8 text-fg" />
-              {name}
-            </div>
-          ))}
-        </section>
+      <section id={t.anchors.why} className="scroll-mt-4 border-y border-border bg-surface px-5 py-16 sm:py-20" aria-labelledby="why-title">
+        <div className="mx-auto max-w-6xl">
+          <h2 id="why-title" className="text-4xl uppercase">{t.why.title}</h2>
+          <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {t.why.items.map((item, i) => {
+              const Icon = whyIcons[i];
+              return (
+                <li key={item.title} className="flex gap-4">
+                  <Icon className="mt-0.5 h-7 w-7 shrink-0 text-brand" />
+                  <div>
+                    <h3 className="text-xl">{item.title}</h3>
+                    <p className="mt-1 text-muted">{item.text}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
 
-        <section className="flex flex-wrap gap-2">
-          {swatches.map((s) => (
-            <div key={s} className={`h-12 w-12 rounded border border-border ${s}`} title={s} />
-          ))}
-        </section>
-      </div>
-    </main>
+      <section id={t.anchors.contact} className="scroll-mt-4 px-5 py-16 sm:py-20" aria-labelledby="contact-title">
+        <div className="mx-auto max-w-3xl">
+          <h2 id="contact-title" className="text-4xl uppercase">{t.contact.title}</h2>
+          <p className="mt-3 text-lg text-muted">{t.contact.intro}</p>
+          {/* Contact form and details: Phase 4. */}
+        </div>
+      </section>
+    </PageShell>
   );
 }

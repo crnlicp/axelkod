@@ -133,8 +133,12 @@
   stroke: var(--brand);
   opacity: 0.7;
   stroke-dasharray: 6 94;
-  animation: circuit-pulse 9s linear infinite;
 }
+.circuit-bg__pulses path { animation: circuit-pulse 9s linear infinite; }
+.circuit-bg__pulses path:nth-child(2) { animation-delay: -1.7s; }
+.circuit-bg__pulses path:nth-child(3) { animation-delay: -3.4s; }
+.circuit-bg__pulses path:nth-child(4) { animation-delay: -5.1s; }
+.circuit-bg__pulses path:nth-child(5) { animation-delay: -6.8s; }
 @keyframes circuit-pulse {
   from { stroke-dashoffset: 100; }
   to { stroke-dashoffset: 0; }

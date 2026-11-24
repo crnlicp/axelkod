@@ -1,3 +1,10 @@
-import { type RouteConfig, index } from "@react-router/dev/routes";
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
-export default [index("routes/home.tsx")] satisfies RouteConfig;
+// One module per page, mounted once per language. The language comes from the URL.
+export default [
+  index("routes/home.tsx", { id: "home-sv" }),
+  route("en", "routes/home.tsx", { id: "home-en" }),
+  route("integritet", "routes/privacy.tsx", { id: "privacy-sv" }),
+  route("en/privacy", "routes/privacy.tsx", { id: "privacy-en" }),
+  route("*", "routes/not-found.tsx"),
+] satisfies RouteConfig;

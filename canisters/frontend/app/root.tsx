@@ -1,12 +1,23 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation } from "react-router";
+import { langFromPath } from "./lib/i18n";
+import type { Route } from "./+types/root";
 import "./app.css";
 
+export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+  { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+  { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+  { rel: "manifest", href: "/manifest.webmanifest" },
+];
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const lang = langFromPath(useLocation().pathname);
   return (
-    <html lang="sv">
+    <html lang={lang}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#032843" />
         <Meta />
         <Links />
       </head>
@@ -21,4 +32,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return <Outlet />;
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const message = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : "Error";
+  return (
+    <main className="mx-auto max-w-2xl px-5 py-24 text-center">
+      <h1 className="text-4xl uppercase">{message}</h1>
+    </main>
+  );
 }

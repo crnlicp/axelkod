@@ -1,0 +1,87 @@
+{
+  "lang": "sv",
+  "locale": "sv_SE",
+  "skipLink": "Hoppa till innehållet",
+  "nav": {
+    "label": "Huvudmeny",
+    "services": "Vad vi gör",
+    "why": "Varför Axelkod",
+    "contact": "Kontakt",
+    "home": "Axelkod, startsida"
+  },
+  "langSwitch": { "label": "In English", "short": "EN" },
+  "anchors": { "services": "tjanster", "why": "varfor", "contact": "kontakt" },
+  "seo": {
+    "homeTitle": "Axelkod AB – Fordonsdelar, mjukvara och cybersäkerhet",
+    "homeDescription": "Axelkod AB i Mölndal levererar reservdelar till tunga fordon, utvecklar mjukvara och ger råd inom cybersäkerhet. Kontakta oss så berättar vi mer.",
+    "privacyTitle": "Integritetspolicy – Axelkod AB",
+    "privacyDescription": "Så hanterar Axelkod AB personuppgifter som skickas via kontaktformuläret."
+  },
+  "hero": {
+    "title": "Delar. Kod. Säkerhet.",
+    "subtitle": "Fordonsdelar, mjukvara och cybersäkerhet från ett svenskt bolag i Mölndal.",
+    "cta": "Kontakta oss"
+  },
+  "services": {
+    "title": "Vad vi gör",
+    "items": [
+      { "title": "Fordonsdelar", "text": "Reservdelar och tillbehör till lastbilar och tunga fordon." },
+      { "title": "Mjukvaruutveckling", "text": "Mjukvara, webbapplikationer och webbplatser byggda för att hålla." },
+      { "title": "Cybersäkerhet", "text": "Rådgivning inom IT- och informationssäkerhet." }
+    ]
+  },
+  "why": {
+    "title": "Varför Axelkod",
+    "items": [
+      { "title": "Personlig kontakt", "text": "Du pratar direkt med oss, inte med en växel." },
+      { "title": "Svenskt bolag", "text": "Registrerat och verksamt i Mölndal." },
+      { "title": "Säkert från början", "text": "Säkerhet är en del av allt vi bygger." },
+      { "title": "Snabbt svar", "text": "Vi återkommer inom 1–2 arbetsdagar." }
+    ]
+  },
+  "contact": {
+    "title": "Kontakta oss",
+    "intro": "Berätta kort vad du behöver, så hör vi av oss."
+  },
+  "footer": {
+    "company": "Axelkod AB",
+    "city": "Mölndal",
+    "privacy": "Integritetspolicy",
+    "rights": "Alla rättigheter förbehållna."
+  },
+  "privacy": {
+    "title": "Integritetspolicy",
+    "updated": "Senast uppdaterad: {date}",
+    "sections": [
+      {
+        "title": "Personuppgiftsansvarig",
+        "text": "Axelkod AB, Mölndal, är ansvarig för de personuppgifter som skickas via kontaktformuläret på den här webbplatsen."
+      },
+      {
+        "title": "Vad vi samlar in",
+        "text": "Namn, e-postadress, telefonnummer (frivilligt), företag (frivilligt), vilket område du är intresserad av och ditt meddelande. Vi använder inga cookies, ingen analys och inga tredjepartstjänster på webbplatsen."
+      },
+      {
+        "title": "Varför",
+        "text": "Uppgifterna används enbart för att besvara din förfrågan. Den rättsliga grunden är ditt samtycke, som du lämnar när du skickar formuläret."
+      },
+      {
+        "title": "Var uppgifterna lagras",
+        "text": "Meddelanden lagras i en canister (ett program med egen lagring) på Internet Computer, ett decentraliserat nätverk vars servrar drivs av oberoende operatörer. Endast behöriga personer på Axelkod kan läsa dem. Vi skickar inga e-postmeddelanden och delar inte uppgifterna med någon."
+      },
+      {
+        "title": "Hur länge",
+        "text": "Meddelanden raderas automatiskt efter {months} månader."
+      },
+      {
+        "title": "Dina rättigheter",
+        "text": "Du kan när som helst begära att få veta vilka uppgifter vi har om dig, få dem rättade eller raderade, eller återkalla ditt samtycke. Kontakta oss via formuläret så hjälper vi dig. Du har också rätt att klaga hos Integritetsskyddsmyndigheten (IMY)."
+      }
+    ]
+  },
+  "notFound": {
+    "title": "Sidan hittades inte",
+    "text": "Sidan du letar efter finns inte eller har flyttats.",
+    "home": "Till startsidan"
+  }
+}

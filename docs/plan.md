@@ -12,7 +12,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | — | Plan, spec reconciliation | Done | Spec matches RULES.md |
 | 0 | Scaffold | Done | Local `icp deploy`, both canisters respond |
 | 1 | Design system | Done | Visual check, contrast check |
-| 2 | Public pages (sv/en) | Not started | Lighthouse ≥ 95, axe, one h1 per page |
+| 2 | Public pages (sv/en) | In progress | Lighthouse ≥ 95, axe, one h1 per page |
 | 3 | Backend canister | Not started | `mops test` (auth, validation, retention) |
 | 4 | Contact form | Not started | `mops test` + Playwright form submit |
 | 5a | Admin: inbox | Not started | Playwright: local II login, read message |
@@ -39,12 +39,15 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 - [x] Verified: screenshots (light, dark, 390 px), `tests/e2e/a11y.spec.ts` (axe WCAG 2.1 AA incl. contrast, one h1, focus) passes in both themes
 - Note: `app/routes/home.tsx` is a temporary design preview, replaced in Phase 2
 
-### 2. Public pages (sv/en) — Not started
-- [ ] Prerendered `/`, `/en/`, `/integritet`, `/en/privacy`, `404.html`
-- [ ] Hero, What we do (3 cards), Why Axelkod, Contact placeholder, Footer
-- [ ] i18n files `app/i18n/{sv,en}.json`, language switch, hreflang, canonical
-- [ ] Favicon set, web manifest, OG image 1200×630 generated from the logo
-- [ ] `_headers` (CSP with per-file script hashes, HSTS, caching), `_redirects` (admin fallback only), `_preserve`
+### 2. Public pages (sv/en) — In progress (Lighthouse run pending)
+- [x] Prerendered `/`, `/en/`, `/integritet`, `/en/privacy`, `404.html` (`scripts/postbuild.mjs` renames `<page>/index.html` to `<page>.html` for the canister's clean URLs)
+- [x] Header (logo, anchors, language switch), Hero, What we do (3 cards), Why Axelkod (4 points), Contact placeholder, Footer, skip link
+- [x] i18n files `app/i18n/{sv,en}.json` (en typed against sv), `lang` attribute, hreflang + x-default, canonical, OG/Twitter tags, Organization JSON-LD (defaults in `app/lib/seo.ts`, replaced by backend SEO settings in 5c)
+- [x] Favicon set (svg follows theme, ico, apple-touch, 192/512/maskable), web manifest, OG image 1200×630 (`npm run brand-assets`, output committed)
+- [x] `_headers` (base security + caching; postbuild appends per-file CSP with sha256 script hashes, no `unsafe-inline`), `_preserve` (`/uploads/*`), `sitemap.xml`, `robots.txt`
+- [ ] `_redirects` admin rewrite: added in 5a together with the admin shell
+- [x] Verified: 21 Playwright tests (axe AA on all pages in both themes, one h1, skip link/focus, lang/canonical/hreflang, no console or CSP errors, client-side hydration, 404 status, sitemap/robots, no third-party requests); screenshots desktop/mobile
+- [ ] Lighthouse ≥ 95 mobile + desktop (blocked: needs permission to run `npx lighthouse`)
 
 ### 3. Backend canister — Not started
 - [ ] `types.mo`: Message, ContactInfo, SeoSettings, SiteSettings
