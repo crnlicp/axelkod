@@ -66,13 +66,16 @@ for (const file of htmlFiles(out).sort()) {
     `script-src 'self' ${[...hashes].join(" ")}`.trim(),
     "style-src 'self'",
     // https: so news covers can point at an external image address (set by admins).
-    "img-src 'self' data: https:",
+    // blob: on admin only: decrypted received documents are previewed from memory.
+    `img-src 'self' data: https:${relative(out, file) === "admin.html" ? " blob:" : ""}`,
     "font-src 'self'",
     // The agent calls the page origin locally and icp-api.io on custom domains.
     "connect-src 'self' https://icp-api.io",
     "manifest-src 'self'",
     "base-uri 'self'",
     "form-action 'self'",
+    // Admin only (C13): the PDF worker is a same-origin file; the preview frames a blob: URL.
+    ...(relative(out, file) === "admin.html" ? ["worker-src 'self'", "frame-src blob:"] : []),
     "frame-ancestors 'none'",
     "object-src 'none'",
   ].join("; ");

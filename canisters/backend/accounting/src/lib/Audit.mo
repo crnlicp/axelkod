@@ -2,6 +2,7 @@
 // one, so any later edit or removal breaks the chain.
 import Array "mo:core/Array";
 import Int "mo:core/Int";
+import Iter "mo:core/Iter";
 import List "mo:core/List";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
@@ -54,6 +55,11 @@ module {
     let hi : Int = n - offset;
     let lo : Int = Int.max(0, hi - limit);
     audit.sliceToArray(lo, hi).reverse();
+  };
+
+  /// Entries about one record, oldest first (at most `limit`).
+  public func forEntity(audit : Types.Audit, entity : Text, id : Nat, limit : Nat) : [Types.AuditEntry] {
+    audit.values().filter(func(e : Types.AuditEntry) : Bool = e.entity == entity and e.entityId == ?id).take(limit).toArray();
   };
 
 };

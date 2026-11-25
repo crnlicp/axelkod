@@ -160,6 +160,11 @@ type Result_3 =
    err: Error;
    ok;
  };
+type Result_25 = 
+ variant {
+   err: Error;
+   ok: vec AuditEntry;
+ };
 type Result_24 = 
  variant {
    err: Error;
@@ -402,6 +407,8 @@ type Accounting =
     nat) -> (Result_17) query;
    addAccount: (number: nat, name: text, vatCode: opt text, sruCode:
     opt text) -> (Result_2);
+   /// The audit trail of one record (e.g. "voucher", id), oldest first.
+   auditFor: (entity: text, id: nat) -> (Result_25) query;
    auditLog: (offset: nat, limit: nat) -> (Result_24) query;
    /// Net amount per account and month: the trial balance and reports read this.
    balances: (fiscalYearId: nat) -> (Result_23) query;

@@ -222,3 +222,45 @@ export const IconHome = (p: IconProps) => (
     <path d="M10,20.5 V14.5 H14 V20.5" />
   </Icon>
 );
+
+/** Ekonomi: overview (bars). */
+export const IconChart = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3.5,20.5 H20.5" />
+    <path d="M6.5,17 V12 M11,17 V7 M15.5,17 V10 M20,17 V5" />
+  </Icon>
+);
+
+/** Ekonomi: ledger (book with lines). */
+export const IconLedger = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5,3.5 H18.5 V20.5 H5 Z" />
+    <path d="M8.5,3.5 V20.5 M11.5,8 H16 M11.5,12 H16 M11.5,16 H14" />
+  </Icon>
+);
+
+export const IconPlus = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12,5 V19 M5,12 H19" />
+  </Icon>
+);
+
+export const IconBell = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6,16.5 V11 A6,6 0 0 1 18,11 V16.5 L19.5,18 H4.5 Z" />
+    <path d="M10,20.5 H14" />
+  </Icon>
+);
+
+export const IconDownload = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12,4 V15 M7.5,10.5 L12,15 L16.5,10.5" />
+    <path d="M4.5,19.5 H19.5" />
+  </Icon>
+);
+
+export const IconPaperclip = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M15.5,7 L8.5,14 A2,2 0 0 0 11.3,16.8 L18.3,9.8 A4,4 0 0 0 12.7,4.2 L5.7,11.2 A6,6 0 0 0 14.2,19.7 L19.5,14.4" />
+  </Icon>
+);

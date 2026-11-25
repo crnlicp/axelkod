@@ -19,6 +19,20 @@ export default [
     route("settings", "routes/admin/settings.tsx"),
     route("news", "routes/admin/news-list.tsx"),
     route("news/:id", "routes/admin/news-edit.tsx"),
+    // Ekonomi (accounting workspace).
+    route("accounting", "routes/admin/accounting/layout.tsx", [
+      index("routes/admin/accounting/overview.tsx"),
+      route("setup", "routes/admin/accounting/setup.tsx"),
+      route("ledger", "routes/admin/accounting/ledger/list.tsx"),
+      route("ledger/drafts", "routes/admin/accounting/ledger/drafts.tsx"),
+      route("ledger/new", "routes/admin/accounting/ledger/edit.tsx"),
+      route("ledger/journal", "routes/admin/accounting/ledger/journal.tsx"),
+      route("ledger/general", "routes/admin/accounting/ledger/general.tsx", { id: "acc-general" }),
+      route("ledger/accounts/:number", "routes/admin/accounting/ledger/general.tsx", { id: "acc-account" }),
+      route("ledger/trial-balance", "routes/admin/accounting/ledger/trial-balance.tsx"),
+      route("ledger/:id", "routes/admin/accounting/ledger/voucher.tsx"),
+      route("settings/:tab?", "routes/admin/accounting/settings.tsx"),
+    ]),
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

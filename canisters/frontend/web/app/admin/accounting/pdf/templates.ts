@@ -1,0 +1,90 @@
+// Document templates, versioned by name. A published version never changes: a new
+// layout is a new version, so re-rendering an old document gives the same output.
+import { formatOre } from "../money";
+import { type Assets, type Col, Doc, MUTED } from "./layout";
+import type { Job, PdfVoucher } from "./types";
+
+const debit = (a: bigint) => (a > 0n ? formatOre(a) : "");
+const credit = (a: bigint) => (a < 0n ? formatOre(-a) : "");
+const sum = (xs: bigint[]) => xs.reduce((a, b) => a + b, 0n);
+
+const lineCols = (d: Doc): Col[] => [
+  { title: "Konto", width: 46 },
+  { title: "Benämning", width: d.width - 46 - 40 - 150 - 80 },
+  { title: "Moms", width: 40 },
+  { title: "Text", width: 80 },
+  { title: "Debet", width: 75, align: "right" },
+  { title: "Kredit", width: 75, align: "right" },
+];
+
+function voucherBody(d: Doc, v: PdfVoucher) {
+  d.facts([
+    ["Verifikation", v.ref],
+    ["Bokföringsdatum", v.eventDate],
+    ["Registrerad", v.registeredAt],
+    ["Text", v.description],
+    ...(v.counterparty ? [["Motpart", v.counterparty] as [string, string]] : []),
+    ["Källa", v.source],
+    ["Upprättad av", v.createdBy],
+    ...(v.corrects ? [["Rättar", v.corrects] as [string, string]] : []),
+    ...(v.correctedBy.length ? [["Rättad genom", v.correctedBy.join(", ")] as [string, string]] : []),
+    ["Arkiveras t.o.m.", v.retainUntil],
+  ]);
+  d.y -= 6;
+  d.table(lineCols(d), v.lines.map((l) => [String(l.account), l.name, l.vatCode ?? "", l.text ?? "", debit(l.amount), credit(l.amount)]), {
+    totals: ["", "Summa", "", "", formatOre(sum(v.lines.filter((l) => l.amount > 0n).map((l) => l.amount))), formatOre(-sum(v.lines.filter((l) => l.amount < 0n).map((l) => l.amount)))],
+  });
+  d.heading("Underlag", 10);
+  if (!v.attachments.length) d.facts([["", "Inga bifogade underlag."]], 0);
+  else d.table([{ title: "Fil", width: d.width - 140 }, { title: "SHA-256 (början)", width: 140 }], v.attachments.map((a) => [a.filename, a.sha]));
+}
+
+async function render(job: Job, assets: Assets): Promise<Uint8Array> {
+  const d = await Doc.create(assets, { ...job.meta, template: job.template });
+  switch (job.template) {
+    case "voucher@1":
+      voucherBody(d, job.voucher);
+      break;
+    case "journal@1": {
+      const cols: Col[] = [
+        { title: "Ver", width: 52 }, { title: "Datum", width: 58 }, { title: "Konto / text", width: d.width - 52 - 58 - 150 },
+        { title: "Debet", width: 75, align: "right" }, { title: "Kredit", width: 75, align: "right" },
+      ];
+      const rows = job.vouchers.flatMap((v) => [
+        [{ text: v.ref, bold: true }, v.eventDate, { text: v.description + (v.corrects ? ` (rättar ${v.corrects})` : ""), bold: true }, "", ""],
+        ...v.lines.map((l) => ["", "", `${l.account} ${l.name}`, debit(l.amount), credit(l.amount)]),
+      ]);
+      const all = job.vouchers.flatMap((v) => v.lines.map((l) => l.amount));
+      d.table(cols, rows, { totals: ["", "", `Summa ${job.vouchers.length} verifikationer`, formatOre(sum(all.filter((a) => a > 0n))), formatOre(-sum(all.filter((a) => a < 0n)))] });
+      break;
+    }
+    case "ledger@1": {
+      const cols: Col[] = [
+        { title: "Datum", width: 58 }, { title: "Ver", width: 52 }, { title: "Text", width: d.width - 58 - 52 - 225 },
+        { title: "Debet", width: 75, align: "right" }, { title: "Kredit", width: 75, align: "right" }, { title: "Saldo", width: 75, align: "right" },
+      ];
+      for (const a of job.accounts) {
+        d.heading(`${a.number} ${a.name}`, 10);
+        let bal = a.opening;
+        const rows = [["", "", { text: "Ingående saldo", color: MUTED }, "", "", formatOre(bal)]];
+        for (const r of a.rows) { bal += r.amount; rows.push([r.date, r.ref, r.text, debit(r.amount), credit(r.amount), formatOre(bal)]); }
+        d.table(cols, rows, { totals: ["", "", "Utgående saldo", formatOre(sum(a.rows.filter((r) => r.amount > 0n).map((r) => r.amount))), formatOre(-sum(a.rows.filter((r) => r.amount < 0n).map((r) => r.amount))), formatOre(bal)] });
+      }
+      if (!job.accounts.length) d.facts([["", "Inga transaktioner i urvalet."]], 0);
+      break;
+    }
+    case "trial-balance@1": {
+      const cols: Col[] = [
+        { title: "Konto", width: 46 }, { title: "Benämning", width: d.width - 46 - 255 },
+        { title: "Ingående", width: 85, align: "right" }, { title: "Period", width: 85, align: "right" }, { title: "Utgående", width: 85, align: "right" },
+      ];
+      d.table(cols, job.rows.map((r) => [String(r.number), r.name, formatOre(r.opening), formatOre(r.change), formatOre(r.opening + r.change)]), {
+        totals: ["", "Summa", formatOre(sum(job.rows.map((r) => r.opening))), formatOre(sum(job.rows.map((r) => r.change))), formatOre(sum(job.rows.map((r) => r.opening + r.change)))],
+      });
+      break;
+    }
+  }
+  return d.save();
+}
+
+export { render };

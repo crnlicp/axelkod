@@ -33,4 +33,16 @@ suite("Audit chain", func() {
     expect.nat(page[1].seq).equal(1);
     expect.nat(Audit.page(log, 9, 2).size()).equal(0);
   });
+  test("the trail of one record, oldest first", func() {
+    let log : Types.Audit = List.empty();
+    ignore Audit.append(log, 1, p, "voucher.post", "voucher", ?7, #null_);
+    ignore Audit.append(log, 2, p, "draft.save", "draft", ?7, #null_);
+    ignore Audit.append(log, 3, p, "voucher.correct", "voucher", ?8, #null_);
+    ignore Audit.append(log, 4, p, "attachment.link", "voucher", ?7, #null_);
+    let trail = Audit.forEntity(log, "voucher", 7, 10);
+    expect.nat(trail.size()).equal(2);
+    expect.text(trail[0].action).equal("voucher.post");
+    expect.text(trail[1].action).equal("attachment.link");
+    expect.nat(Audit.forEntity(log, "voucher", 7, 1).size()).equal(1);
+  });
 });

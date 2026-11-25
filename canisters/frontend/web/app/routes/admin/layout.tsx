@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { NavLink, Outlet, useLocation } from "react-router";
+import { Navigate, NavLink, Outlet, useLocation } from "react-router";
+import { Role } from "../../bindings/accounting";
 import { ToastProvider } from "../../admin/toast";
 import { AdminLangProvider, useAdminLang, type AdminLang } from "../../admin/i18n";
-import { AdminCtx, useSession, type AdminContext } from "../../admin/session";
-import { IconArrowRight, IconCheck, IconHome, IconCompany, IconCopy, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
+import { AccSessionCtx, AdminCtx, useSession, type AdminContext } from "../../admin/session";
+import type { AccSession } from "../../admin/accounting/context";
+import accSv from "../../admin/accounting/i18n/sv";
+import accEn from "../../admin/accounting/i18n/en";
+import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconLedger, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
 import { LogoSymbol } from "../../components/Logo";
 
 export function meta() {
@@ -35,9 +39,9 @@ function Brand() {
 }
 
 /** Signed in, but not an admin (yet): show the ID to send to an admin, with a copy button. */
-function RequestAccess({ principal }: { principal: string }) {
+function RequestAccess({ principal, title, lead, body }: { principal: string; title?: string; lead?: string; body?: string }) {
   const { t } = useAdminLang();
-  const a = t.access;
+  const a = { ...t.access, ...(title ? { title } : {}), ...(lead ? { lead } : {}), ...(body ? { body } : {}) };
   const [copied, setCopied] = useState<"yes" | "failed" | null>(null);
   async function copy() {
     try {
@@ -89,20 +93,55 @@ function Shell({ children, actions }: { children: ReactNode; actions?: ReactNode
 const link =
   "flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium text-fg no-underline transition-colors hover:bg-surface-strong aria-[current=page]:bg-[var(--brand-soft)] aria-[current=page]:text-accent";
 
-/** Signed-in admin: sidebar navigation (a drawer below lg). */
-function AdminShell({ unread, onSignOut, children }: { unread: number | null; onSignOut: () => void; children: ReactNode }) {
-  const { t } = useAdminLang();
-  const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
-  useEffect(() => setOpen(false), [pathname]);
-  const items = [
+type NavItem = { to: string; end?: boolean; label: string; icon: (p: { className?: string }) => ReactNode; badge?: number | null };
+type NavGroup = { title?: string; items: NavItem[] };
+
+/** Workspace switch: shown only to users with access to both. */
+function WorkspaceSwitch({ current }: { current: "site" | "accounting" }) {
+  const { lang } = useAdminLang();
+  const w = (lang === "en" ? accEn : accSv).workspace;
+  return (
+    <nav aria-label={w.label} className="grid grid-cols-2 rounded-full border border-border bg-surface p-1 text-sm font-semibold">
+      {(["site", "accounting"] as const).map((k) => (
+        <NavLink key={k} to={k === "site" ? "/admin" : "/admin/accounting"} aria-current={current === k ? "page" : undefined}
+          className="rounded-full px-3 py-1.5 text-center text-muted no-underline hover:text-fg aria-[current=page]:bg-[var(--brand-soft)] aria-[current=page]:text-accent">
+          {w[k]}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
+function siteNav(t: ReturnType<typeof useAdminLang>["t"], unread: number | null): NavGroup[] {
+  return [{ items: [
     { to: "/admin", end: true, label: t.nav.inbox, icon: IconMail, badge: unread },
     { to: "/admin/home", label: t.nav.home, icon: IconHome },
     { to: "/admin/news", label: t.nav.news, icon: IconNews },
     { to: "/admin/contact", label: t.nav.contact, icon: IconCompany },
     { to: "/admin/seo", label: t.nav.seo, icon: IconSearch },
     { to: "/admin/settings", label: t.nav.settings, icon: IconSliders },
+  ] }];
+}
+
+/** Ekonomi navigation by how often the work happens; filtered by role (the canister enforces it too). */
+function accountingNav(lang: AdminLang, role: Role): NavGroup[] {
+  const n = (lang === "en" ? accEn : accSv).nav;
+  const books = role !== Role.payroll;
+  return [
+    { items: [{ to: "/admin/accounting", end: true, label: n.overview, icon: IconChart }] },
+    ...(books ? [{ title: n.groupDaily, items: [{ to: "/admin/accounting/ledger", label: n.ledger, icon: IconLedger }] }] : []),
+    { items: [{ to: "/admin/accounting/settings", label: n.settings, icon: IconSliders }] },
   ];
+}
+
+/** Signed-in admin: sidebar navigation (a drawer below lg). */
+function AdminShell({ groups, workspace, both, onSignOut, children }: {
+  groups: NavGroup[]; workspace: "site" | "accounting"; both: boolean; onSignOut: () => void; children: ReactNode;
+}) {
+  const { t } = useAdminLang();
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  useEffect(() => setOpen(false), [pathname]);
   return (
     <div className="min-h-screen bg-surface lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
       <header className="flex items-center justify-between gap-4 border-b border-border bg-bg px-5 py-3 lg:hidden">
@@ -113,22 +152,28 @@ function AdminShell({ unread, onSignOut, children }: { unread: number | null; on
         </button>
       </header>
       <aside id="admin-sidebar"
-        className={`${open ? "flex" : "hidden"} flex-col gap-6 border-b border-border bg-bg p-5 lg:sticky lg:top-0 lg:flex lg:h-screen lg:border-r lg:border-b-0`}>
+        className={`${open ? "flex" : "hidden"} flex-col gap-6 overflow-y-auto border-b border-border bg-bg p-5 lg:sticky lg:top-0 lg:flex lg:h-screen lg:border-r lg:border-b-0`}>
         <div className="hidden lg:block"><Brand /></div>
-        <nav aria-label={t.nav.label}>
-          <ul className="space-y-1">
-            {items.map(({ to, end, label, icon: Icon, badge }) => (
-              <li key={to}>
-                <NavLink to={to} end={end} className={link}>
-                  <Icon className="h-5 w-5 shrink-0" />
-                  <span className="flex-1">{label}</span>
-                  {badge ? (
-                    <span className="rounded-full bg-[var(--color-teal-500)] px-2 py-0.5 text-xs font-semibold text-[var(--color-navy-900)]" aria-label={t.nav.unread(badge)}>{badge}</span>
-                  ) : null}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        {both && <WorkspaceSwitch current={workspace} />}
+        <nav aria-label={t.nav.label} className="space-y-4">
+          {groups.map((g, gi) => (
+            <div key={gi}>
+              {g.title && <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-muted">{g.title}</p>}
+              <ul className="space-y-1">
+                {g.items.map(({ to, end, label, icon: Icon, badge }) => (
+                  <li key={to}>
+                    <NavLink to={to} end={end} className={link}>
+                      <Icon className="h-5 w-5 shrink-0" />
+                      <span className="flex-1">{label}</span>
+                      {badge ? (
+                        <span className="rounded-full bg-[var(--color-teal-500)] px-2 py-0.5 text-xs font-semibold text-[var(--color-navy-900)]" aria-label={t.nav.unread(badge)}>{badge}</span>
+                      ) : null}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
         <div className="mt-auto space-y-4 border-t border-border pt-5">
           <LangSwitch />
@@ -156,17 +201,21 @@ export default function AdminLayout() {
 }
 
 function AdminRoot() {
-  const { t } = useAdminLang();
+  const { t, lang } = useAdminLang();
   const { session, signIn, signOut } = useSession();
+  const { pathname } = useLocation();
   const [unread, setUnread] = useState<number | null>(null);
   const [unreadTick, setUnreadTick] = useState(0);
   const refreshUnread = useCallback(() => setUnreadTick((n) => n + 1), []);
 
   const ctx = useMemo<AdminContext | null>(
-    () => (session.state === "admin" ? { actor: session.actor, identity: session.identity, principal: session.principal, refreshUnread, setUnread } : null),
+    () => (session.state === "admin" && session.site ? { actor: session.site, identity: session.identity, principal: session.principal, refreshUnread, setUnread } : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [session.state === "admin" ? session.principal : null, unreadTick],
+    [session.state === "admin" ? session.principal : null, session.state === "admin" && !!session.site, unreadTick],
   );
+  const accSession = session.state === "admin" ? session.accounting : null;
+  const acc = useMemo<AccSession | null>(() => accSession, // eslint-disable-line react-hooks/exhaustive-deps
+    [accSession?.principal, accSession?.role]);
 
   if (session.state === "loading") {
     return <Shell><p role="status">{t.loading}</p></Shell>;
@@ -193,11 +242,21 @@ function AdminRoot() {
     );
   }
 
+  const workspace = pathname.startsWith("/admin/accounting") ? "accounting" : "site";
+  // Accounting-only users never see the website admin; site-only admins never see Ekonomi.
+  if (workspace === "site" && !session.site) return <Navigate to="/admin/accounting" replace />;
+  const groups = workspace === "site" ? siteNav(t, unread) : acc ? accountingNav(lang, acc.role) : [];
+  const a = (lang === "en" ? accEn : accSv).shell;
+
   return (
     <AdminCtx.Provider value={ctx}>
-      <AdminShell unread={unread} onSignOut={() => void signOut()}>
-        <Outlet />
-      </AdminShell>
+      <AccSessionCtx.Provider value={acc}>
+        <AdminShell groups={groups} workspace={workspace} both={!!session.site && !!acc} onSignOut={() => void signOut()}>
+          {workspace === "accounting" && !acc
+            ? <RequestAccess principal={session.principal} title={a.noAccess} lead={a.noAccess} body={a.noAccessBody} />
+            : <Outlet />}
+        </AdminShell>
+      </AccSessionCtx.Provider>
     </AdminCtx.Provider>
   );
 }

@@ -11,8 +11,8 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 |---|---|---|---|
 | A0 | Plan, spec reconciliation, decisions | Done (2026-11-25) | Your sign-off |
 | A1 | Repo restructure to grouped layout | Done (2026-11-25, branch `accounting`) | Local deploy, all existing tests pass unchanged |
-| A2 | Ledger core (backend): roles, settings, fiscal years, BAS, numbering, vouchers, audit, vault | Done (2026-11-25), awaiting sign-off | `mops test` both canisters |
-| A3 | Ekonomi shell + UI kit + PDF pipeline + setup wizard + Bokföring UI | Not started | Playwright, axe, PDF snapshot test |
+| A2 | Ledger core (backend): roles, settings, fiscal years, BAS, numbering, vouchers, audit, vault | Done (2026-11-25) | `mops test` both canisters |
+| A3 | Ekonomi shell + UI kit + PDF pipeline + setup wizard + Bokföring UI | Done (2026-11-25) | Playwright, axe, PDF snapshot test |
 | A4 | Sales | Not started | `mops test` + Playwright (hash-stable re-render) |
 | A5 | Purchases, bank, tax account | Not started | `mops test` + Playwright upload/match |
 | A6 | VAT and EU sales list | Not started | Box fixtures, file checked in Skatteverket's test service |
@@ -76,7 +76,7 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V3 | VAT return box list, file format, whether file upload still exists | Skatteverket "Fylla i momsdeklarationen" + technical description for file submission | A6 | Not started |
 | V4 | EU sales list file format and deadlines | Skatteverket "Periodisk sammanställning" + Filöverföring format description | A6 | Not started |
 | V5 | VIES REST API, and whether IC HTTPS outcalls can reach it (IPv4/IPv6) | ec.europa.eu VIES technical info, `https-outcalls` skill | A6 | Not started |
-| V6 | VAT and AGI deadlines including the 17th exceptions; prepaid tax dates | Skatteverket "Deklarations- och betalningsdagar" | A3 (deadlines) | Not started |
+| V6 | VAT and AGI deadlines including the 17th exceptions; prepaid tax dates | Skatteverket "Deklarations- och betalningsdagar" | A3 (deadlines) | Done (A3); preliminary tax Jan/Aug exception open |
 | V7 | AGI XML schema and current document version, field codes | Skatteverket developer portal (Utvecklarportalen): Arbetsgivardeklaration teknisk beskrivning + XSD | A7 | Not started |
 | V8 | Employer contribution rates 2026, youth reduction dates, rate and birth years | Skatteverket "Arbetsgivaravgifter" + the enacted law (SFS) | A7 | Not started |
 | V9 | Växa-stöd as a refund application from 2026 | Skatteverket "Växa-stöd" | A7 | Not started |
@@ -325,7 +325,7 @@ You can stop and resume the wizard. The dashboard shows it until it is done.
 - [x] Local redeploy (the canister names change, so the local state is recreated). Re-seed with the deploy script. All existing `mops test` and Playwright tests pass.
 - Result: `mops check` + 50 `mops test` pass; local deploy as `site`/`web`; 50/50 Playwright pass. pnpm 12.23.0 via corepack, lockfile imported from npm's (same versions). Local URL is now `http://web.local.localhost:8000`.
 
-### A2. Ledger core (backend) — Done (2026-11-25), awaiting your sign-off
+### A2. Ledger core (backend) — Done (2026-11-25)
 - [x] `accounting` + `vault` scaffolds (`@dfinity/motoko` recipe, migrations chain, `deployed/*.most` baseline, `.did`)
 - [x] Roles mixin (first owner install arg, ≥ 1 owner, anonymous rejected, mirror to vault)
 - [x] Company profile, accounting settings, fiscal years (`#open/#closing/#locked`, lock date)
@@ -344,14 +344,25 @@ You can stop and resume the wizard. The dashboard shows it until it is done.
   - **`acj-1` vectors:** live in `accounting/test/canonical.test.mo`. The TS test (A3) reads the canonical strings and hashes from that file.
   - **Frontend:** `@icp-sdk/vetkeys` added (D3), and bindings are generated for `accounting.did` and `vault.did`.
 
-### A3. Ekonomi shell, UI kit, PDF pipeline, Bokföring UI — Not started
-- [ ] Workspace switch, Ekonomi nav with role filtering and module toggles, top bar (year, search, + Ny, deadlines)
-- [ ] UI kit components (table above), i18n files per section
-- [ ] PDF worker (`pdf-lib`, fonts), shared header/footer, `voucher@1`, `journal@1`, `ledger@1`, `trial-balance@1`
-- [ ] Setup wizard, Bokföring section, attachment upload with encryption
-- [ ] Deadlines engine (`deadlines.ts`, holidays) after V6
-- [ ] CSP additions for `admin.html` (C13)
-- [ ] Playwright: wizard → post voucher → PDF shows the header → correction voucher; axe; read-only auditor
+### A3. Ekonomi shell, UI kit, PDF pipeline, Bokföring UI — Done (2026-11-25)
+- [x] Workspace switch, Ekonomi nav with role filtering, top bar (year, search, + Ny, deadlines)
+- [x] UI kit components (table above), i18n files
+- [x] PDF worker (`pdf-lib`, fonts), shared header/footer, `voucher@1`, `journal@1`, `ledger@1`, `trial-balance@1`
+- [x] Setup wizard, Bokföring section, attachment upload with encryption
+- [x] Deadlines engine (`deadlines.ts`, holidays) after V6
+- [x] CSP additions for `admin.html` (C13)
+- [x] Playwright: wizard → post voucher → PDF shows the header → correction voucher; axe; read-only auditor
+- Result: `mops test` site 50, accounting 27 (new `auditFor` test), vault 5. Full Playwright 74/74, then the Ekonomi e2e again after the last fixes (2/2). Unit tests (`tests/unit/`): acj-1 parity with the Motoko vectors, deadlines against Skatteverket's 2026 AGI tables (both turnover classes), PDF header/footer content, page breaks and byte-reproducible output per template. E2E (`tests/e2e/accounting.spec.ts`): an accounting-only owner signs in through local II, runs the wizard, posts a voucher, checks the PDF header and the audit hash, uploads an encrypted document and opens it decrypted, posts a correction; an auditor gets the read-only view; axe passes on every page.
+- Changes against this plan:
+  - **Sections shown:** Översikt, Bokföring and Inställningar only. The other sections appear in the nav when their phase ships, so there are no dead links.
+  - **i18n:** one Ekonomi dictionary (`app/admin/accounting/i18n/{sv,en}.ts`) instead of one file per section. It is about 8 kB gzipped; split per section when A4+ grow it.
+  - **PDF text layout:** pdf-lib is given a cmap-only glyph lookup instead of fontkit's OpenType shaping, which cost about 100 ms per text run with Inter. No ligatures or kerning are applied, so copied text is exact. The worker is 508 kB gzipped (mostly fontkit) and loads only when a PDF is made.
+  - **Template fingerprints:** `tests/unit/pdf.spec.ts` pins a SHA-256 per template version for fixed test data, so a published template cannot change silently; a layout change needs a new version.
+  - **Backend addition:** `auditFor(entity, id)` query, so a voucher page can show its own audit trail and check its content hash (acj-1, the same bytes as the audit entry's `detailHash`).
+  - **Setup steps 5–6** (opening balances, bank mapping) show what to do now and are marked "later": SIE4 import is A9, bank import A5.
+  - **Deadlines:** turnover ≤ 40 MSEK is assumed until A6 adds turnover and EU trade settings. Yearly VAT uses the earliest (EU trade) date until then. Preliminary tax shows the 12th (the only day Skatteverket's page states).
+  - **Opening a stored document** shows it in a preview dialog (with download) instead of a new tab, which browsers block after an async decrypt. `admin.html` also gets `img-src blob:` for image documents.
+  - **Brand script:** fixed the logo path broken by A1, and added `pdf/logo@1.png` (C7).
 
 ### A4–A9
 Scope as in spec §13 phases 2–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.

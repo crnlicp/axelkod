@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const pub = join(root, "public");
-const logo = readFileSync(resolve(root, "../../docs/brand/axelkod-logo.svg"), "utf8");
+const logo = readFileSync(resolve(root, "../../../docs/brand/axelkod-logo.svg"), "utf8");
 
 const NAVY = "#032843";
 const TEAL = "#05A390";
@@ -60,6 +60,10 @@ await render(centred("#fff", "18%", symbolSvg()), 512, 512, join(pub, "icon-mask
 await render(centred("#fff", "10%", symbolSvg()), 180, 180, join(pub, "apple-touch-icon.png"));
 const png32 = await render(centred("transparent", "0", symbolSvg()), 32, 32, join(tmp, "32.png"));
 const png16 = await render(centred("transparent", "0", symbolSvg()), 16, 16, join(tmp, "16.png"));
+
+// PDF header logo (pdf/logo@1.png): part of the template version (C7), so a new
+// logo needs a new file name and template version; old documents keep the old one.
+await render(centred("transparent", "0", symbolSvg()), 210, 245, join(root, "app/admin/accounting/pdf/logo@1.png"));
 
 // favicon.ico holding PNG images (supported by every current browser).
 function ico(images) {
