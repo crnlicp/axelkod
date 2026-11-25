@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Area, Status, type Message, type MessagePage } from "../../bindings/backend";
 import { useAdminLang, type AdminDict } from "../../admin/i18n";
 import { useAdmin } from "../../admin/session";
+import { Toast, type Feedback } from "../../admin/toast";
 
 const PAGE = 25;
 const statusLabel = (t: AdminDict, s: Status) => t.inbox.status[s as "new" | "read" | "handled"];
@@ -27,8 +28,7 @@ export default function Inbox() {
   const [offset, setOffset] = useState(0);
   const [page, setPage] = useState<MessagePage | null>(null);
   const [selected, setSelected] = useState<Message | null>(null);
-  const [notice, setNotice] = useState("");
-  const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState<Feedback>(null);
 
   useEffect(() => {
     const t = setTimeout(() => { setQuery(search.trim()); setOffset(0); }, 300);
@@ -44,10 +44,9 @@ export default function Inbox() {
       if (res.__kind__ === "err") throw new Error(res.err.__kind__);
       setPage(res.ok);
       setUnread(Number(res.ok.unread));
-      setError("");
       return res.ok;
     } catch (e) {
-      setError(x.loadFailed(errText(e)));
+      setFeedback({ ok: false, text: x.loadFailed(errText(e)) });
       return null;
     }
   }, [actor, filter, query, offset, setUnread, x]);
@@ -58,17 +57,16 @@ export default function Inbox() {
     try {
       const res = await call();
       if (res.__kind__ === "err") throw new Error(res.err.__kind__);
-      setNotice(label);
+      setFeedback({ ok: true, text: label });
       const fresh = await load();
       if (selected && fresh) setSelected(fresh.items.find((m) => m.id === selected.id) ?? null);
     } catch (e) {
-      setError(t.actionFailed(errText(e)));
+      setFeedback({ ok: false, text: t.actionFailed(errText(e)) });
     }
   }
 
   async function open(m: Message) {
     setSelected(m);
-    setNotice("");
     if (m.status === Status.new) {
       await run(x.markedAs(statusLabel(t, Status.read)), () => actor.setStatus(m.id, Status.read));
     }
@@ -85,7 +83,7 @@ export default function Inbox() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      setError(x.exportFailed(errText(e)));
+      setFeedback({ ok: false, text: x.exportFailed(errText(e)) });
     }
   }
 
@@ -115,29 +113,31 @@ export default function Inbox() {
         </label>
       </div>
 
-      <p role="status" aria-live="polite" className="mt-3 min-h-6 text-sm">
-        {error ? <span className="text-[var(--error)]">{error}</span> : notice}
-      </p>
+      <Toast status={feedback} />
 
       <div className="mt-2 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <section aria-label={x.messages}>
           {page && page.items.length === 0 && <p className="card text-muted">{x.none}</p>}
           <ul className="space-y-2">
-            {page?.items.map((m) => (
+            {page?.items.map((m) => {
+              const unread = m.status === Status.new;
+              return (
               <li key={m.id.toString()}>
                 <button type="button" onClick={() => void open(m)} aria-current={selected?.id === m.id ? "true" : undefined}
-                  className="w-full rounded-lg border border-border bg-bg p-4 text-left aria-[current=true]:border-accent">
+                  className={`relative w-full rounded-lg border p-4 pl-9 text-left aria-[current=true]:border-accent ${unread ? "border-brand/40 bg-[var(--bg-elev)]" : "border-border bg-bg"}`}>
+                  {unread && <span aria-hidden="true" className="absolute left-3.5 top-[1.4rem] h-2.5 w-2.5 rounded-full bg-brand shadow-[0_0_8px_var(--color-brand)]" />}
                   <span className="flex items-center justify-between gap-3">
-                    <span className={`truncate ${m.status === Status.new ? "font-bold" : "font-medium"}`}>{m.name}</span>
-                    <span className="shrink-0 text-xs text-muted">{date(m.createdAt, t)}</span>
+                    <span className={`truncate ${unread ? "font-extrabold text-fg" : "font-normal text-muted"}`}>{m.name}</span>
+                    <span className={`shrink-0 text-xs ${unread ? "font-semibold text-brand" : "text-muted"}`}>{date(m.createdAt, t)}</span>
                   </span>
-                  <span className="mt-1 flex items-center justify-between gap-3 text-sm text-muted">
+                  <span className={`mt-1 flex items-center justify-between gap-3 text-sm ${unread ? "font-medium text-fg/80" : "text-muted"}`}>
                     <span className="truncate">{areaLabel(t, m.area)} · {m.email}</span>
-                    <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-xs">{statusLabel(t, m.status)}</span>
+                    <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${unread ? "border-brand/50 bg-brand/15 font-semibold text-fg" : "border-border"}`}>{statusLabel(t, m.status)}</span>
                   </span>
                 </button>
               </li>
-            ))}
+              );
+            })}
           </ul>
           {total > PAGE && (
             <div className="mt-4 flex items-center justify-between text-sm">

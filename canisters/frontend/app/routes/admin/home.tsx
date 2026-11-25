@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
 import { HomeKey as HomeKeyEnum, type HomeContent, type HomeHero, type HomeItem, type HomeSection } from "../../bindings/backend";
 import { useAdminLang, type AdminDict, type AdminLang } from "../../admin/i18n";
 import { errMessage, type BackendErr } from "../../admin/result";
 import { useAdmin } from "../../admin/session";
+import { Toast } from "../../admin/toast";
+import { publishSeo } from "../../admin/publish";
 import { HOME_ICON_KEYS, iconSvg } from "../../lib/home-icons";
 
 type SectionKey = "services" | "security" | "industries";
@@ -74,6 +75,7 @@ export default function HomeAdmin() {
   const [lang, setLang] = useState<AdminLang>("sv");
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [saves, setSaves] = useState(0);
 
   useEffect(() => {
     void actor.adminGetHome().then((r) => {
@@ -87,7 +89,7 @@ export default function HomeAdmin() {
 
   if (key === "hero") {
     return (
-      <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }}>
+      <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }} dirty={dirty} saves={saves}>
         <HeroEditor hero={draft.hero} saved={saved!.hero} lang={lang} setLang={setLang} status={status} busy={busy}
           onChange={(hero) => { setDraft({ ...draft, hero }); setStatus(null); }}
           onSave={() => void saveHero()} />
@@ -107,6 +109,7 @@ export default function HomeAdmin() {
       setSaved({ ...saved!, hero: r.ok });
       setDraft({ ...draft!, hero: r.ok });
       setStatus({ ok: true, text: h.saved });
+      setSaves((n) => n + 1);
     } catch (e) {
       setStatus({ ok: false, text: t.saveFailed(e instanceof Error ? e.message : String(e)) });
     } finally { setBusy(false); }
@@ -141,6 +144,7 @@ export default function HomeAdmin() {
       setSaved({ ...saved!, [key]: r.ok });
       setDraft({ ...draft!, [key]: r.ok });
       setStatus({ ok: true, text: h.saved });
+      setSaves((n) => n + 1);
     } catch (e) {
       setStatus({ ok: false, text: t.saveFailed(e instanceof Error ? e.message : String(e)) });
     } finally { setBusy(false); }
@@ -148,7 +152,7 @@ export default function HomeAdmin() {
 
   const head = section[lang];
   return (
-    <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }}>
+    <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }} dirty={dirty} saves={saves}>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div role="tablist" aria-label={t.nav.language} className="flex gap-1">
@@ -166,7 +170,7 @@ export default function HomeAdmin() {
           <button type="button" className="btn btn-primary" disabled={busy || !dirty} onClick={() => void save()}>{busy ? t.saving : t.save}</button>
         </div>
       </div>
-      <p role="status" aria-live="polite" className={`mt-3 min-h-6 ${status && !status.ok ? "text-[var(--error)]" : ""}`}>{status?.text}</p>
+      <Toast status={status} />
 
       <section className="card mt-2 grid gap-4 sm:grid-cols-2" aria-labelledby="home-head">
         <h2 id="home-head" className="text-xl sm:col-span-2">{h.head}</h2>
@@ -243,12 +247,17 @@ export default function HomeAdmin() {
 }
 
 /** Page title, intro and section tabs around each editor. */
-function Shell({ t, k, setKey, children }: { t: AdminDict; k: Key; setKey: (k: Key) => void; children: React.ReactNode }) {
+function Shell({ t, k, setKey, dirty, saves, children }: {
+  t: AdminDict; k: Key; setKey: (k: Key) => void; dirty: boolean; saves: number; children: React.ReactNode;
+}) {
   const h = t.home;
   return (
     <div>
-      <h1 className="text-4xl uppercase">{h.title}</h1>
-      <p className="mt-2 text-muted">{h.intro} <Link to="/admin/seo">{t.news.publishLink}</Link> {t.news.publishWhere}</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-4xl uppercase">{h.title}</h1>
+        <PublishBar t={t} dirty={dirty} saves={saves} />
+      </div>
+      <p className="mt-2 text-muted">{h.intro}</p>
       <div role="tablist" aria-label={h.title} className="mt-6 flex flex-wrap gap-1 border-b border-border">
         {KEYS.map((x) => (
           <button key={x} type="button" role="tab" aria-selected={k === x} onClick={() => setKey(x)}
@@ -258,6 +267,54 @@ function Shell({ t, k, setKey, children }: { t: AdminDict; k: Key; setKey: (k: K
         ))}
       </div>
       {children}
+    </div>
+  );
+}
+
+const when = (t: AdminDict, ns?: bigint) => (ns ? new Date(Number(ns / 1_000_000n)).toLocaleString(t.locale) : t.seo.never);
+
+/** Publishes the whole site (same as the SEO page), so home edits can go live from here. */
+function PublishBar({ t, dirty, saves }: { t: AdminDict; dirty: boolean; saves: number }) {
+  const { actor, identity } = useAdmin();
+  const x = t.seo;
+  const [times, setTimes] = useState<{ updatedAt: bigint; publishedAt?: bigint } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function load() {
+    const r = await actor.getSeoSettings();
+    if (r.__kind__ === "ok") setTimes({ updatedAt: r.ok.updatedAt, publishedAt: r.ok.publishedAt });
+    else setStatus({ ok: false, text: errMessage(r.err as BackendErr, t) });
+  }
+  useEffect(() => { void load(); }, [actor, saves]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function publish() {
+    setBusy(true);
+    setStatus({ ok: true, text: x.publishing });
+    try {
+      await publishSeo(actor, identity);
+      await load();
+      setStatus({ ok: true, text: x.published });
+    } catch (err) {
+      setStatus({ ok: false, text: x.publishFailed(err instanceof Error ? err.message : String(err)) });
+    } finally { setBusy(false); }
+  }
+
+  const unpublished = !!times && (!times.publishedAt || times.updatedAt > times.publishedAt);
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <p className="text-sm text-muted">
+          {x.lastPublished} <span data-testid="published-at">{when(t, times?.publishedAt)}</span>
+          {unpublished && !busy && <span className="ml-2 inline-block h-2 w-2 rounded-full bg-brand align-middle" title={x.changed} aria-label={x.changed} />}
+        </p>
+        <button type="button" className="btn btn-primary" title={t.home.publishAll}
+          disabled={busy || dirty || !times} onClick={() => void publish()}>
+          {busy ? x.publishing : x.publish}
+        </button>
+      </div>
+      <Toast status={status} />
+      {dirty && <p className="text-sm text-muted">{x.saveFirst}</p>}
     </div>
   );
 }
@@ -303,7 +360,7 @@ function HeroEditor({ hero, saved, lang, setLang, status, busy, onChange, onSave
           <button type="button" className="btn btn-primary" disabled={busy || !dirty} onClick={onSave}>{busy ? t.saving : t.save}</button>
         </div>
       </div>
-      <p role="status" aria-live="polite" className={`mt-3 min-h-6 ${status && !status.ok ? "text-[var(--error)]" : ""}`}>{status?.text}</p>
+      <Toast status={status} />
 
       <section className="card mt-2 grid gap-4 lg:grid-cols-2" aria-labelledby="hero-text">
         <h2 id="hero-text" className="text-xl lg:col-span-2">{x.text}</h2>

@@ -40,7 +40,8 @@ test("admin writes, edits and deletes a news article", async ({ page, context })
     await page.getByLabel("Brödtext").fill("Come and see us.");
     await page.getByRole("button", { name: "Spara" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Sparat." })).toBeVisible();
-    expect((await anon.getNews(slug, Lang.en))?.summary.title).toBe("Open house at the workshop");
+    // The first "Sparat." toast may still be showing, so wait for the save itself.
+    await expect.poll(async () => (await anon.getNews(slug, Lang.en))?.summary.title).toBe("Open house at the workshop");
 
     await page.getByRole("link", { name: "← Alla nyheter" }).click();
     const list = page.getByTestId("news-list");

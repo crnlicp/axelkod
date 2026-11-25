@@ -4,6 +4,7 @@ import { NewsStatus, type News } from "../../bindings/backend";
 import { useAdminLang } from "../../admin/i18n";
 import { errMessage, type BackendErr } from "../../admin/result";
 import { useAdmin } from "../../admin/session";
+import { Toast } from "../../admin/toast";
 
 const date = (ns: bigint, locale: string) => new Date(Number(ns / 1_000_000n)).toLocaleDateString(locale);
 
@@ -36,7 +37,7 @@ export default function NewsList() {
         <Link to="/admin/news/new" className="btn btn-primary">{x.new}</Link>
       </div>
       <p className="mt-2 text-muted">{x.publishHint} <Link to="/admin/seo">{x.publishLink}</Link> {x.publishWhere}</p>
-      <p role="status" aria-live="polite" className={`mt-3 min-h-6 ${status && !status.ok ? "text-[var(--error)]" : ""}`}>{status?.text}</p>
+      <Toast status={status} />
       {items && items.length === 0 && <p className="card mt-4 text-muted">{x.none}</p>}
       <ul className="mt-4 space-y-2" data-testid="news-list">
         {items?.map((n) => {

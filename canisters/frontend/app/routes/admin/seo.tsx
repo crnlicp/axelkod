@@ -4,6 +4,7 @@ import { publishSeo, uploadImage } from "../../admin/publish";
 import { errMessage, type BackendErr } from "../../admin/result";
 import { useAdminLang, type AdminDict } from "../../admin/i18n";
 import { useAdmin } from "../../admin/session";
+import { Toast } from "../../admin/toast";
 
 type Lang = "sv" | "en";
 const LANGS: Array<{ key: Lang; path: string }> = [
@@ -142,7 +143,7 @@ export default function SeoAdmin() {
         </p>
       )}
       {dirty && <p className="mt-3 text-sm text-muted">{x.saveFirst}</p>}
-      <p role="status" aria-live="polite" className={`mt-3 min-h-6 ${status && !status.ok ? "text-[var(--error)]" : ""}`}>{status?.text}</p>
+      <Toast status={status} />
 
       <form onSubmit={save} className="mt-4 space-y-6" noValidate>
         <section className="card space-y-4" aria-labelledby="lang-tabs">

@@ -9,6 +9,7 @@ test("admin edits home sections, publishes, and the site shows them", async ({ p
   const api = await apiAdmin();
   const original = await api.actor.adminGetHome();
   if (original.__kind__ !== "ok") throw new Error(original.err.__kind__);
+  const live = (await api.actor.getHome()).services.items.length;
   const tag = `T${Date.now()}`;
   const session = await signInAsAdmin(page, context);
   try {
@@ -55,7 +56,7 @@ test("admin edits home sections, publishes, and the site shows them", async ({ p
     await expect(page.getByRole("status").filter({ hasText: "Sparat." })).toBeVisible();
 
     // Drafts stay off the public query until Publish.
-    expect((await api.actor.getHome()).services.items).toHaveLength(n - 1);
+    expect((await api.actor.getHome()).services.items).toHaveLength(live);
     await page.getByRole("link", { name: "SEO" }).click();
     await page.getByRole("button", { name: "Publicera", exact: true }).click();
     await expect(page.getByRole("status").filter({ hasText: "Publicerat." })).toBeVisible({ timeout: 60_000 });
@@ -150,7 +151,7 @@ test("admin edits the hero and trust points, publishes, and the site shows them"
     await page.getByRole("button", { name: "Spara", exact: true }).click();
     await expect(page.getByRole("status").filter({ hasText: "Sparat." })).toBeVisible();
 
-    await page.getByRole("link", { name: "SEO" }).click();
+    // Publish straight from the home editor.
     await page.getByRole("button", { name: "Publicera", exact: true }).click();
     await expect(page.getByRole("status").filter({ hasText: "Publicerat." })).toBeVisible({ timeout: 60_000 });
 

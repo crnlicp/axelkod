@@ -6,6 +6,7 @@ import { fromLocalInput, isCoverUrl, slugify, toLocalInput } from "../../admin/n
 import { uploadImage } from "../../admin/publish";
 import { errMessage, type BackendErr } from "../../admin/result";
 import { useAdmin } from "../../admin/session";
+import { Toast } from "../../admin/toast";
 import { Markdown } from "../../components/Markdown";
 
 type Lang = "sv" | "en";
@@ -86,7 +87,7 @@ export default function NewsEdit() {
     <div>
       <p><Link to="/admin/news">{x.all}</Link></p>
       <h1 className="mt-2 text-4xl uppercase">{isNew ? x.new : x.editTitle}</h1>
-      <p role="status" aria-live="polite" className={`mt-3 min-h-6 ${status && !status.ok ? "text-[var(--error)]" : ""}`}>{status?.text}</p>
+      <Toast status={status} />
 
       <form onSubmit={save} noValidate className="mt-2 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-6">

@@ -72,7 +72,8 @@ const sv = {
     alt: "Bildtext för omslagsbilden (alt)", previewOf: (l: string) => `Förhandsvisning (${l})`, removeCover: "Ta bort bild",
   },
   home: {
-    title: "Startsida", intro: "Texter, ikoner och kort i startsidans sektioner. Ändringarna syns på webbplatsen efter",
+    title: "Startsida", intro: "Texter, ikoner och kort i startsidans sektioner. Spara först, publicera sedan för att uppdatera webbplatsen.",
+    publishAll: "Publicera publicerar hela webbplatsen: startsidan, nyheter, kontaktuppgifter och SEO.",
     tabs: { hero: "Hero", services: "Vad vi gör", security: "Säkerhetslager", industries: "Branscher" },
     hero: {
       text: "Text", words: "Rubrikens ord (en rad per ord, högst 4)", word: (n: number) => `Ord ${n}`, addWord: "Lägg till ord",
@@ -221,7 +222,8 @@ const en: AdminDict = {
     alt: "Cover image description (alt)", previewOf: (l) => `Preview (${l})`, removeCover: "Remove image",
   },
   home: {
-    title: "Home page", intro: "Texts, icons and cards in the home page sections. Changes appear on the website after",
+    title: "Home page", intro: "Texts, icons and cards in the home page sections. Save first, then publish to update the website.",
+    publishAll: "Publish updates the whole website: home page, news, contact details and SEO.",
     tabs: { hero: "Hero", services: "What we do", security: "Security layers", industries: "Industries" },
     hero: {
       text: "Text", words: "Headline words (one line each, at most 4)", word: (n) => `Word ${n}`, addWord: "Add word",

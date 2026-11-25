@@ -5,6 +5,7 @@ import { useAdminLang } from "../../admin/i18n";
 import { mapSnapshot } from "../../admin/map";
 import { uploadImage } from "../../admin/publish";
 import { useAdmin } from "../../admin/session";
+import { Toast } from "../../admin/toast";
 import { ContactDetails } from "../../components/ContactDetails";
 
 type TextField = "email" | "phone" | "street" | "postalCode" | "city" | "orgNumber";
@@ -166,9 +167,8 @@ export default function ContactSettings() {
           <div className="flex flex-wrap items-center gap-4">
             <button type="submit" className="btn btn-primary" disabled={busy || !dirty}>{busy ? t.saving : t.save}</button>
             {dirty && <button type="button" className="btn btn-secondary" onClick={() => { setForm(saved); setLat(coordText(saved?.mapLat)); setLon(coordText(saved?.mapLon)); setInvalid(null); setStatus(null); }}>{t.undo}</button>}
-            <p role="status" aria-live="polite" className={status && !status.ok ? "text-[var(--error)]" : "text-muted"}>
-              {status?.text ?? (dirty ? t.unsaved : "")}
-            </p>
+            <Toast status={status} />
+            {dirty && <p className="text-muted">{t.unsaved}</p>}
           </div>
         </form>
         {/* The label sits above the card on wide screens so both cards share a top edge. */}

@@ -4,6 +4,7 @@ import type { AdminView, SiteSettings } from "../../bindings/backend";
 import { errMessage, type BackendErr } from "../../admin/result";
 import { useAdminLang } from "../../admin/i18n";
 import { useAdmin } from "../../admin/session";
+import { Toast } from "../../admin/toast";
 
 type Status = { ok: boolean; text: string } | null;
 const input = "mt-1 w-full rounded-md border border-[var(--input-border)] bg-bg px-3 py-2";
@@ -57,7 +58,7 @@ function SiteForm() {
       </div>
       <div className="flex flex-wrap items-center gap-4">
         <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? t.saving : t.save}</button>
-        <p role="status" aria-live="polite" className={status && !status.ok ? "text-[var(--error)]" : "text-muted"}>{status?.text}</p>
+        <Toast status={status} />
       </div>
     </form>
   );
@@ -138,7 +139,7 @@ function Admins() {
         </div>
         <button type="submit" className="btn btn-primary" disabled={busy || !newId.trim()}>{x.add}</button>
       </form>
-      <p role="status" aria-live="polite" className={status && !status.ok ? "text-[var(--error)]" : "text-muted"}>{status?.text}</p>
+      <Toast status={status} />
     </section>
   );
 }

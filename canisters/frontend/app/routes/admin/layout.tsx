@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation } from "react-router";
+import { ToastProvider } from "../../admin/toast";
 import { AdminLangProvider, useAdminLang, type AdminLang } from "../../admin/i18n";
 import { AdminCtx, useSession, type AdminContext } from "../../admin/session";
 import { IconArrowRight, IconCheck, IconHome, IconCompany, IconCopy, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
@@ -147,7 +148,9 @@ function AdminShell({ unread, onSignOut, children }: { unread: number | null; on
 export default function AdminLayout() {
   return (
     <AdminLangProvider>
+      <ToastProvider>
       <AdminRoot />
+      </ToastProvider>
     </AdminLangProvider>
   );
 }
