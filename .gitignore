@@ -3,7 +3,7 @@
 node_modules/
 build/
 .react-router/
-canisters/frontend/app/bindings/
+canisters/frontend/web/app/bindings/
 .mops/
 .migrations-*/
 test-results/

@@ -2,13 +2,14 @@
   "name": "axelkod",
   "private": true,
   "scripts": {
-    "install:all": "npm --prefix canisters/frontend ci && cd canisters/backend && mops install",
-    "check": "cd canisters/backend && mops check",
-    "test:backend": "cd canisters/backend && mops test",
-    "dev": "npm --prefix canisters/frontend run dev",
-    "build": "npm --prefix canisters/frontend run build",
+    "install:all": "pnpm --dir canisters/frontend install --frozen-lockfile && cd canisters/backend/site && mops install",
+    "check": "cd canisters/backend/site && mops check",
+    "test:backend": "cd canisters/backend/site && mops test",
+    "dev": "pnpm --dir canisters/frontend dev",
+    "build": "pnpm --dir canisters/frontend build",
+    "typecheck": "pnpm --dir canisters/frontend typecheck",
     "deploy:local": "scripts/deploy.sh local",
-    "test:e2e": "npm --prefix canisters/frontend run test:e2e",
-    "admin:add": "printf \"Principal to add as admin: \" && read p && [ -n \"$p\" ] && icp canister call backend addAdmin \"(principal \\\"$p\\\")\" --identity \"${ICP_IDENTITY:-anonymous}\""
+    "test:e2e": "pnpm --dir canisters/frontend test:e2e",
+    "admin:add": "printf \"Principal to add as admin: \" && read p && [ -n \"$p\" ] && icp canister call site addAdmin \"(principal \\\"$p\\\")\" --identity \"${ICP_IDENTITY:-anonymous}\""
   }
 }

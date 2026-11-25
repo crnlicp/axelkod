@@ -39,31 +39,31 @@ if [[ "$target" == "ic" ]]; then
   icp cycles balance -n ic "${id_flags[@]}" || true
   [[ -f "$ids" ]] || echo "First deploy: creating 2 canisters needs about 4.2T cycles (2 × (2T + fee))."
   # Stable-memory compatibility against the last mainnet deploy, before anything ships.
-  (cd canisters/backend && mops check)
-  confirm "Deploy backend + frontend to MAINNET (upgrade keeps state)?"
+  (cd canisters/backend/site && mops check)
+  confirm "Deploy site + web to MAINNET (upgrade keeps state)?"
 fi
 
 icp deploy "${env_flags[@]}" "${id_flags[@]}"
-backend=$(jq -r .backend "$ids")
+backend=$(jq -r .site "$ids")
 
 # The backend authorizes admins on the frontend canister, which only its
 # controllers may do. Idempotent: skipped when it already is a controller.
-if ! icp canister status frontend "${env_flags[@]}" "${id_flags[@]}" | grep -q "controller: $backend"; then
-  confirm "Add the backend canister ($backend) as a CONTROLLER of the frontend canister?"
-  icp canister settings update frontend --add-controller "$backend" "${env_flags[@]}" "${id_flags[@]}"
+if ! icp canister status web "${env_flags[@]}" "${id_flags[@]}" | grep -q "controller: $backend"; then
+  confirm "Add the site canister ($backend) as a CONTROLLER of the web canister?"
+  icp canister settings update web --add-controller "$backend" "${env_flags[@]}" "${id_flags[@]}"
 fi
 
 if [[ -n "${FIRST_ADMIN:-}" ]]; then
   confirm "Add admin $FIRST_ADMIN?"
-  icp canister call backend addAdmin "(principal \"$FIRST_ADMIN\")" "${env_flags[@]}" "${id_flags[@]}"
+  icp canister call site addAdmin "(principal \"$FIRST_ADMIN\")" "${env_flags[@]}" "${id_flags[@]}"
 fi
 
 # Re-applies the admin set to the frontend (a frontend reinstall clears it).
-icp canister call backend syncAdminsToFrontend '()' "${env_flags[@]}" "${id_flags[@]}"
+icp canister call site syncAdminsToFrontend '()' "${env_flags[@]}" "${id_flags[@]}"
 
 if [[ "$target" == "ic" ]]; then
   # Promote the deployed stable signature: the baseline for the next upgrade check.
-  (cd canisters/backend && mops deployed backend)
-  echo "Commit .icp/data/ and canisters/backend/deployed/ now."
-  echo "Frontend: https://$(jq -r .frontend "$ids").icp.net"
+  (cd canisters/backend/site && mops deployed site)
+  echo "Commit .icp/data/ and canisters/backend/site/deployed/ now."
+  echo "Frontend: https://$(jq -r .web "$ids").icp.net"
 fi

@@ -21,6 +21,7 @@ At the end of each phase: deploy locally, run that phase's checks, and get sign-
 | 5d | Admin: settings | Done | `mops test` + Playwright |
 | 6 | Deploy + custom domain | In progress | Mainnet deploy (approval at each step) |
 | 7 | Redesign + news (R0–R9 below) | In progress | Per step: screenshots, axe, Lighthouse ≥ 95, e2e |
+| 8 | Accounting module | In progress (planning) | See [accounting/plan.md](accounting/plan.md) |
 
 ## Phase details
 

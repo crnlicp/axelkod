@@ -1,0 +1,10 @@
+name: web
+recipe:
+  type: "@dfinity/static-site@v1.0.0"
+  configuration:
+    build:
+      - pnpm install --frozen-lockfile
+      - pnpm run build
+    presync:
+      - node scripts/presync.mjs
+    dir: build/client
