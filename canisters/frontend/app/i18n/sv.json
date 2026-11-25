@@ -31,39 +31,12 @@
     "privacyDescription": "Så hanterar Axelkod AB personuppgifter som skickas via kontaktformuläret."
   },
   "hero": {
-    "eyebrow": "Axelkod AB · Mölndal",
-    "words": [
-      "Delar.",
-      "Kod.",
-      "Säkerhet."
-    ],
-    "title": "Delar. Kod. Säkerhet.",
-    "subtitle": "Reservdelar, mjukvara och cybersäkerhet, levererat med svensk noggrannhet.",
-    "cta": "Kontakta oss",
-    "cta2": "Se vad vi gör",
     "scroll": "Scrolla vidare"
-  },
-  "services": {
-    "title": "Vad vi gör",
-    "items": [
-      {
-        "title": "Fordonsdelar",
-        "text": "Reservdelar och tillbehör till lastbilar och tunga fordon."
-      },
-      {
-        "title": "Mjukvaruutveckling",
-        "text": "Mjukvara, webbapplikationer och webbplatser byggda för att hålla."
-      },
-      {
-        "title": "Cybersäkerhet",
-        "text": "Rådgivning inom IT- och informationssäkerhet."
-      }
-    ],
-    "intro": "Tre områden, ett bolag. Fråga oss så berättar vi mer."
   },
   "contact": {
     "title": "Kontakta oss",
-    "intro": "Berätta kort vad du behöver, så hör vi av oss."
+    "intro": "Berätta kort vad du behöver, så hör vi av oss.",
+    "responseFallback": "Vi återkommer inom 1–2 arbetsdagar."
   },
   "footer": {
     "company": "Axelkod AB",
@@ -153,75 +126,13 @@
     "email": "E-post",
     "phone": "Telefon",
     "address": "Adress",
-    "orgNumber": "Org.nr"
+    "orgNumber": "Org.nr",
+    "openMap": "Visa på karta",
+    "newTab": "öppnas i en ny flik"
   },
   "theme": {
     "toLight": "Byt till ljust tema",
     "toDark": "Byt till mörkt tema"
-  },
-  "trust": [
-    {
-      "title": "Personlig kontakt",
-      "text": "Du pratar direkt med oss, inte med en växel."
-    },
-    {
-      "title": "Svenskt bolag",
-      "text": "Registrerat och verksamt i Mölndal."
-    },
-    {
-      "title": "Säkert från början",
-      "text": "Säkerhet är en del av allt vi bygger."
-    },
-    {
-      "title": "Snabbt svar",
-      "text": "Vi återkommer inom 1–2 arbetsdagar."
-    }
-  ],
-  "security": {
-    "eyebrow": "Säkerhet",
-    "title": "Säkerhet i varje lager",
-    "intro": "Vi bygger in skydd från början, inte i efterhand.",
-    "hint": "Välj ett lager",
-    "layers": [
-      {
-        "title": "Kod",
-        "text": "Säker utveckling, granskad kod och beroenden vi har koll på."
-      },
-      {
-        "title": "Infrastruktur",
-        "text": "Härdade system, minsta möjliga behörighet och övervakning."
-      },
-      {
-        "title": "Människor",
-        "text": "Medvetenhet och rutiner som gör det svårt att bli lurad."
-      },
-      {
-        "title": "Leverantörskedja",
-        "text": "Spårbara delar och leverantörer vi kan stå för."
-      }
-    ]
-  },
-  "industries": {
-    "eyebrow": "Branscher",
-    "title": "Vi hjälper",
-    "items": [
-      {
-        "title": "Åkerier & logistik",
-        "text": "Rätt delar snabbt, så att fordonen rullar."
-      },
-      {
-        "title": "Verkstäder",
-        "text": "En pålitlig källa för reservdelar och tillbehör."
-      },
-      {
-        "title": "Små och medelstora företag",
-        "text": "Webbplatser och system som växer med er."
-      },
-      {
-        "title": "Industri & tillverkning",
-        "text": "Skydd för system som inte får stanna."
-      }
-    ]
   },
   "news": {
     "eyebrow": "Nyheter",

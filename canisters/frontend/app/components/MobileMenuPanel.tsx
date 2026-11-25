@@ -19,7 +19,7 @@ const MobileMenuPanel = forwardRef<HTMLDivElement, { open: boolean; links: LinkI
               {/* Focus the first link once the (lazily loaded) panel is in the DOM. */}
               <ul className="space-y-1" ref={(el) => { el?.querySelector<HTMLElement>("a")?.focus(); }}>
                 {links.map((l, i) => (
-                  <m.li key={l.key} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 * i + 0.05 }}>
+                  <m.li key={l.key} data-nav={l.key} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 * i + 0.05 }}>
                     <a href={l.href} onClick={onNavigate} aria-current={l.current ? "location" : undefined}
                       className="block rounded-xl px-4 py-3 text-lg font-medium text-fg no-underline hover:bg-surface-strong aria-[current=location]:text-accent">
                       {l.label}

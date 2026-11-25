@@ -7,6 +7,7 @@ import Timer "mo:core/Timer";
 import MessagesLib "lib/Messages";
 import AdminsMixin "mixins/Admins";
 import ContactFormMixin "mixins/ContactForm";
+import HomeMixin "mixins/Home";
 import MessagesMixin "mixins/Messages";
 import NewsMixin "mixins/News";
 import SettingsMixin "mixins/Settings";
@@ -34,6 +35,7 @@ actor class Backend(firstAdmin : ?Principal) {
   include SettingsMixin(admins, config);
   include ContactFormMixin(messages, counters, form);
   include NewsMixin(admins, news, counters, config);
+  include HomeMixin(admins, config);
 
   // raw_rand is async, so the form secret is created right after the first install.
   transient let _secretTimer = Timer.setTimer<system>(

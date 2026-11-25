@@ -7,7 +7,7 @@ test("local II login: non-admin is denied, admin manages a message in the inbox"
   const msgId = await submitMessage({ name: `UI Test ${marker}`, email: `${marker}@example.se`, message: "Hej från UI-testet.\nRad två." });
 
   await signInWithLocalII(page, context);
-  await expect(page.getByRole("heading", { name: "Åtkomst nekad" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Begär åtkomst" })).toBeVisible();
   const principal = (await page.getByTestId("principal").textContent())!.trim();
   expect(principal).not.toBe("2vxsx-fae");
 

@@ -57,22 +57,22 @@ type SeoLang =
 type Result_9 = 
  variant {
    err: Error;
-   ok: vec AdminView;
+   ok: int;
  };
 type Result_8 = 
  variant {
    err: Error;
-   ok: MessagePage;
+   ok: ContactInfo;
  };
 type Result_7 = 
  variant {
    err: Error;
-   ok: int;
+   ok: HomeHero;
  };
 type Result_6 = 
  variant {
    err: Error;
-   ok: ContactInfo;
+   ok: HomeSection;
  };
 type Result_5 = 
  variant {
@@ -94,25 +94,40 @@ type Result_2 =
    err: SubmitError;
    ok: nat;
  };
-type Result_13 = 
+type Result_16 = 
+ variant {
+   err: Error;
+   ok: HomeContent;
+ };
+type Result_15 = 
  variant {
    err: Error;
    ok: vec News;
  };
-type Result_12 = 
+type Result_14 = 
  variant {
    err: Error;
    ok: text;
  };
-type Result_11 = 
+type Result_13 = 
  variant {
    err: SubmitError;
    ok: text;
  };
-type Result_10 = 
+type Result_12 = 
  variant {
    err: Error;
    ok: SeoState;
+ };
+type Result_11 = 
+ variant {
+   err: Error;
+   ok: vec AdminView;
+ };
+type Result_10 = 
+ variant {
+   err: Error;
+   ok: MessagePage;
  };
 type Result_1 = 
  variant {
@@ -131,6 +146,9 @@ type PublicContact =
  record {
    city: text;
    email: opt text;
+   mapLat: opt float64;
+   mapLon: opt float64;
+   mapUrl: opt text;
    orgNumber: opt text;
    phone: opt text;
    postalCode: opt text;
@@ -244,6 +262,58 @@ type Lang =
    en;
    sv;
  };
+type HomeText = 
+ record {
+   "text": text;
+   title: text;
+ };
+type HomeSection = 
+ record {
+   en: HomeHead;
+   items: vec HomeItem;
+   sv: HomeHead;
+ };
+type HomeKey = 
+ variant {
+   industries;
+   security;
+   services;
+ };
+type HomeItem = 
+ record {
+   en: HomeText;
+   icon: text;
+   sv: HomeText;
+   visual: text;
+ };
+type HomeHero = 
+ record {
+   en: HeroLang;
+   highlight: nat;
+   sv: HeroLang;
+   trust: vec HomeItem;
+ };
+type HomeHead = 
+ record {
+   eyebrow: text;
+   intro: text;
+   title: text;
+ };
+type HomeContent = 
+ record {
+   hero: HomeHero;
+   industries: HomeSection;
+   security: HomeSection;
+   services: HomeSection;
+ };
+type HeroLang = 
+ record {
+   cta: text;
+   cta2: text;
+   eyebrow: text;
+   subtitle: text;
+   words: vec text;
+ };
 type Error = 
  variant {
    conflict: text;
@@ -269,6 +339,9 @@ type ContactInfo =
  record {
    city: text;
    email: text;
+   mapLat: opt float64;
+   mapLon: opt float64;
+   mapUrl: opt text;
    orgNumber: opt text;
    phone: opt text;
    postalCode: opt text;
@@ -279,30 +352,36 @@ type ContactInfo =
 type Backend = 
  service {
    addAdmin: (p: principal) -> (Result_3);
-   adminListNews: () -> (Result_13) query;
+   adminGetHome: () -> (Result_16) query;
+   adminListNews: () -> (Result_15) query;
    createNews: (input: NewsInput) -> (Result);
    deleteMessage: (id: nat) -> (Result_3);
    deleteNews: (id: nat) -> (Result_3);
-   exportMessagesCsv: () -> (Result_12) query;
-   getContactInfo: () -> (Result_6) query;
-   getFormToken: (nonce: text) -> (Result_11) query;
+   exportMessagesCsv: () -> (Result_14) query;
+   getContactInfo: () -> (Result_8) query;
+   getFormToken: (nonce: text) -> (Result_13) query;
+   /// The published sections, as baked into the site.
+   getHome: () -> (HomeContent) query;
    getNews: (slug: text, lang: Lang) -> (opt NewsArticle) query;
    getPublicConfig: () -> (PublicConfig) query;
-   getSeoSettings: () -> (Result_10) query;
+   getSeoSettings: () -> (Result_12) query;
    getSiteSettings: () -> (Result_4) query;
-   listAdmins: () -> (Result_9) query;
+   listAdmins: () -> (Result_11) query;
    listMessages: (filter: MessageFilter, page: PageRequest) ->
-    (Result_8) query;
+    (Result_10) query;
    listNews: (lang: Lang, offset: nat, limit: nat) -> (NewsPage) query;
    /// Called by the admin UI after Publish has written the SEO files to the frontend.
-   markSeoPublished: () -> (Result_7);
+   markSeoPublished: () -> (Result_9);
    /// All published articles in both languages (public data), for baking pages.
    publishedNews: () -> (vec News) query;
    removeAdmin: (p: principal) -> (Result_3);
    /// Controller-only: clears the global rate-limit window, e.g. after a bot used up
    /// the daily quota (or between local test runs). Single-use tokens stay recorded.
    resetFormLimits: () -> (Result_3);
-   setContactInfo: (c: ContactInfo) -> (Result_6);
+   setContactInfo: (c: ContactInfo) -> (Result_8);
+   setHomeHero: (hero: HomeHero) -> (Result_7);
+   /// One section per call keeps each request well under the ingress size limit.
+   setHomeSection: (key: HomeKey, section: HomeSection) -> (Result_6);
    setNote: (id: nat, note: text) -> (Result_3);
    setSeoSettings: (s: SeoSettings) -> (Result_5);
    setSiteSettings: (s: SiteSettings) -> (Result_4);

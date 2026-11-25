@@ -1,0 +1,329 @@
+// Admin UI language (sv default, en optional). Separate from the public site's
+// language, which comes from the URL; the choice is remembered per browser.
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+
+export type AdminLang = "sv" | "en";
+const KEY = "axelkod:admin-lang";
+
+const sv = {
+  locale: "sv-SE",
+  brand: "Axelkod admin",
+  loading: "Laddar…",
+  saving: "Sparar…",
+  save: "Spara",
+  undo: "Ångra ändringar",
+  unsaved: "Osparade ändringar.",
+  savedLive: "Sparat. Ändringen syns direkt på webbplatsen.",
+  savedPublish: "Sparat. Publicera för att uppdatera webbplatsen.",
+  saveFailed: (m: string) => `Kunde inte spara: ${m}`,
+  actionFailed: (m: string) => `Åtgärden misslyckades: ${m}`,
+  uploadFailed: (m: string) => `Uppladdningen misslyckades: ${m}`,
+  uploaded: "Bilden är uppladdad.",
+  upload: "Ladda upp",
+  uploading: "Laddar upp…",
+  remove: "Radera",
+  edit: "Redigera",
+  preview: "Förhandsvisning",
+  langSv: "Svenska",
+  langEn: "Engelska",
+  langName: (l: AdminLang): string => (l === "sv" ? "svenska" : "engelska"),
+  imageTypes: "Endast PNG, JPEG eller WebP.",
+  imageTooBig: "Bilden är större än 1,9 MB.",
+  nav: {
+    label: "Admin", inbox: "Inkorg", home: "Startsida", news: "Nyheter", contact: "Kontaktuppgifter", seo: "SEO", settings: "Inställningar",
+    unread: (n: number) => `${n} olästa`, signOut: "Logga ut", language: "Språk", menu: "Meny", viewSite: "Visa webbplatsen",
+  },
+  login: {
+    title: "Logga in", intro: "Administratörer loggar in med Internet Identity (passkey).",
+    button: "Logga in med Internet Identity", failed: (m: string) => `Inloggningen misslyckades: ${m}`,
+  },
+  access: {
+    title: "Begär åtkomst",
+    lead: "Du är inloggad, men den här identiteten är inte administratör ännu.",
+    body: "Kopiera ditt ID nedan och skicka det till en befintlig administratör, eller till den som driftsätter sajten, och be om åtkomst. Ladda om sidan när du har lagts till.",
+    idLabel: "Ditt ID (principal)", copy: "Kopiera ID", copied: "ID kopierat.",
+    copyFailed: "Kunde inte kopiera. Markera ID:t och kopiera det manuellt.",
+  },
+  inbox: {
+    title: "Inkorg", export: "Exportera CSV", exportFailed: (m: string) => `Exporten misslyckades: ${m}`,
+    loadFailed: (m: string) => `Kunde inte hämta meddelanden: ${m}`,
+    filterLabel: "Filtrera på status", all: "Alla", newPl: "Nya", readPl: "Lästa", handledPl: "Hanterade",
+    search: "Sök", searchPlaceholder: "Namn, e-post, företag, text", messages: "Meddelanden", none: "Inga meddelanden.",
+    prev: "Föregående", next: "Nästa", range: (a: number, b: number, n: number) => `${a}–${b} av ${n}`,
+    choose: "Välj ett meddelande.", csvName: "axelkod-meddelanden",
+    status: { new: "Ny", read: "Läst", handled: "Hanterad" },
+    markedAs: (s: string) => `Markerad som ${s.toLowerCase()}`, markAs: (s: string) => `Markera som ${s.toLowerCase()}`,
+    received: "Mottaget", email: "E-post", phone: "Telefon", company: "Företag", area: "Område", language: "Språk", statusLabel: "Status",
+    message: "Meddelande", note: "Intern anteckning", saveNote: "Spara anteckning", noteSaved: "Anteckningen sparad",
+    confirmDelete: (name: string) => `Radera meddelandet från ${name}? Det går inte att ångra.`, deleted: "Meddelandet raderat",
+  },
+  areas: { parts: "Fordonsdelar", software: "Mjukvara", security: "Cybersäkerhet", other: "Annat", company: "Företaget" },
+  news: {
+    title: "Nyheter", new: "Ny nyhet", editTitle: "Redigera nyhet", all: "← Alla nyheter",
+    publishHint: "Ändringar syns på webbplatsen efter", publishLink: "Publicera", publishWhere: "(SEO-sidan).",
+    none: "Inga nyheter ännu.", draft: "Utkast", published: "Publicerad", scheduled: "Schemalagd", svOnly: "endast sv",
+    confirmDelete: (t: string) => `Radera "${t}"? Det går inte att ångra.`, deleted: "Nyheten är raderad. Publicera för att uppdatera webbplatsen.",
+    notFound: "Nyheten finns inte.", settings: "Inställningar", status: "Status", date: "Publiceringsdatum", area: "Område (valfritt)",
+    slug: "Adress (slug)", cover: "Omslagsbild (valfritt)",
+    coverHint: "Ladda upp en bild, eller klistra in en bildadress (https://…). En extern bild hämtas från den andra webbplatsen när besökare läser nyheten.",
+    coverInvalid: "Omslagsbilden måste vara en uppladdad bild (/uploads/…) eller en https://-adress.",
+    text: "Text", english: "Engelsk version", heading: "Rubrik", excerpt: "Ingress (visas på korten)", body: "Brödtext",
+    bodyHint: "Tom rad = nytt stycke · ## Rubrik · - lista · 1. lista · > citat · **fet** · *kursiv* · [länk](https://…)",
+    alt: "Bildtext för omslagsbilden (alt)", previewOf: (l: string) => `Förhandsvisning (${l})`, removeCover: "Ta bort bild",
+  },
+  home: {
+    title: "Startsida", intro: "Texter, ikoner och kort i startsidans sektioner. Ändringarna syns på webbplatsen efter",
+    tabs: { hero: "Hero", services: "Vad vi gör", security: "Säkerhetslager", industries: "Branscher" },
+    hero: {
+      text: "Text", words: "Rubrikens ord (en rad per ord, högst 4)", word: (n: number) => `Ord ${n}`, addWord: "Lägg till ord",
+      highlight: "Färgmarkerat", highlightHint: "Ordet med färgad gradient.", subtitle: "Underrubrik",
+      cta: "Huvudknapp (till kontakt)", cta2: "Andra knappen (till tjänster)",
+      trust: "Förtroendepunkter", trustHint: "Raden under hero-bilden. Kolumnerna anpassas efter antalet.", addTrust: "Lägg till punkt",
+      point: (n: number) => `Punkt ${n}`,
+    },
+    head: "Rubrik", eyebrow: "Överrubrik", heading: "Rubrik", introField: "Ingress (valfritt)",
+    items: "Kort", layers: "Lager", item: (n: number) => `Kort ${n}`, layer: (n: number) => `Lager ${n}`,
+    add: "Lägg till kort", addLayer: "Lägg till lager", max: (n: number) => `Högst ${n}.`,
+    up: "Flytta upp", down: "Flytta ner", removeItem: "Ta bort", icon: "Ikon", chooseIcon: "Välj ikon",
+    visual: "Bild i kortet", visuals: { "": "Ingen", gear: "Kugghjul", code: "Kodfönster", shield: "Sköld" } as Record<string, string>,
+    itemTitle: "Titel", itemText: "Text", missing: "Saknar text",
+    featured: "De tre första korten visas stora (som i dag); fler kort läggs till under dem.",
+    layersHint: "Varje lager blir en ring i hexagonen. Hovra över en ring eller ett lager för att markera båda.",
+    colsHint: "Antalet kolumner anpassas efter antal kort och skärmbredd.",
+    confirmRemove: "Ta bort kortet?", saved: "Sparat. Publicera för att uppdatera webbplatsen.",
+    invalidItem: (n: number, l: string, f: string) => `Kort ${n} (${l}): ${f} saknas eller är för lång.`,
+    invalidHead: (l: string, f: string) => `Rubrik (${l}): ${f} saknas eller är för lång.`,
+    fieldNames: { title: "titel", text: "text", eyebrow: "överrubrik", intro: "ingress", icon: "ikon", visual: "bild", words: "rubrikens ord", subtitle: "underrubrik", cta: "huvudknapp", cta2: "andra knappen", sv: "svensk text", en: "engelsk text" } as Record<string, string>,
+  },
+  contact: {
+    title: "Kontaktuppgifter", intro: "Visas i kontaktsektionen och sidfoten på webbplatsen (båda språken).",
+    email: "E-post", emailHint: "Lämna tomt för att dölja.", phone: "Telefon", street: "Gatuadress", postalCode: "Postnummer",
+    city: "Ort", orgNumber: "Org.nr", visibility: "Synlighet", showPhone: "Visa telefonnummer", showAddress: "Visa gatuadress och postnummer",
+    map: "Karta i bakgrunden", lat: "Latitud", lon: "Longitud",
+    mapHint: "Till exempel 57.6554 och 12.0138. Vid sparning skapas en kartbild från OpenStreetMap som laddas upp till webbplatsen; besökare hämtar inget från andra servrar. Lämna tomt för att inte visa någon karta.",
+    mapBoth: "Fyll i både latitud och longitud (eller ingen av dem).", mapMaking: "Skapar kartbild…",
+    mapFailed: (m: string) => `Kunde inte skapa kartbilden: ${m}`, removeMap: "Ta bort karta",
+  },
+  seo: {
+    lastPublished: "Senast publicerat:", never: "aldrig", publish: "Publicera", publishing: "Publicerar…",
+    changed: "Inställningar, kontaktuppgifter, nyheter eller startsidan har ändrats sedan senaste publiceringen. Publicera för att uppdatera webbplatsen.",
+    saveFirst: "Spara innan du publicerar.",
+    published: "Publicerat. Sidorna, sitemap.xml och robots.txt är uppdaterade.",
+    publishFailed: (m: string) => `Publiceringen misslyckades: ${m}`,
+    uploadedOg: "Bilden är uppladdad. Spara och publicera för att använda den.",
+    chars: (n: number, ideal: number) => `${n} / ~${ideal} tecken`,
+    titleField: "Titel", desc: "Metabeskrivning", keywords: "Nyckelord (valfritt)", ogTitle: "OG-titel (valfritt, annars titeln)",
+    ogDesc: "OG-beskrivning (valfritt)", ogImage: "OG-bild (URL, 1200×630)", uploadImage: "Ladda upp bild",
+    imageHint: "PNG, JPEG eller WebP, högst 1,9 MB.", canonical: "Kanonisk bas-URL",
+    indexable: (l: string) => `Låt sökmotorer indexera (${l} sidor)`, googlePreview: "Förhandsvisning i Google", ogAlt: "Vald OG-bild",
+    org: "Organisation (JSON-LD)", orgName: "Organisationsnamn", logo: "Logotyp-URL", sameAs: "Profiler, en URL per rad (LinkedIn m.fl.)",
+    google: "Google-verifiering (valfritt)", bing: "Bing-verifiering (valfritt)",
+  },
+  settings: {
+    title: "Inställningar", site: "Webbplats", months: "Lagringstid för meddelanden (månader)",
+    monthsHint: "Äldre meddelanden raderas automatiskt en gång per dygn. Visas i integritetspolicyn.",
+    monthsInvalid: "Lagringstiden måste vara 1–60 månader.", responseSv: "Svarstid (svenska)", responseEn: "Svarstid (engelska)",
+    responseHint: "Visas efter att någon skickat kontaktformuläret.",
+    admins: "Administratörer",
+    adminsHint: "Nya administratörer loggar in på /admin, kopierar sitt ID från sidan \"Begär åtkomst\" och skickar det till dig. De får även rätt att publicera SEO-filer på webbplatsen.",
+    added: (d: string) => `Tillagd ${d}`, you: " · du", removeAdmin: "Ta bort", removeAria: (p: string) => `Ta bort ${p}`,
+    lastAdmin: "Den sista administratören kan inte tas bort.", addLabel: "Lägg till administratör (ID)", add: "Lägg till",
+    invalidId: "Ogiltigt ID (principal).", anonymous: "Det anonyma ID:t kan inte bli administratör.",
+    addedOk: "Administratören är tillagd.", removedOk: "Administratören är borttagen.",
+    confirmSelf: "Ta bort dig själv som administratör? Du förlorar åtkomsten direkt.",
+    confirmOther: (p: string) => `Ta bort ${p} som administratör?`,
+  },
+  errors: {
+    invalid: (f: string) => `Ogiltigt värde: ${f}`, notAuthorized: "Du har inte behörighet.", notFound: "Hittades inte.",
+    lastAdmin: "Den sista administratören kan inte tas bort.", slugTaken: "Adressen (slug) används redan av en annan nyhet.",
+    conflict: (c: string) => `Konflikt: ${c}`, frontend: (m: string) => `Frontend-canistern svarade: ${m}`,
+    fields: {
+      email: "E-post", phone: "Telefon", street: "Gatuadress", postalCode: "Postnummer", city: "Ort", orgNumber: "Org.nr",
+      organisationName: "Organisationsnamn", logoUrl: "Logotyp-URL", sameAs: "Profiler (sameAs)",
+      googleVerification: "Google-verifiering", bingVerification: "Bing-verifiering",
+      slug: "Adress (slug)", coverUrl: "Omslagsbild", publishedAt: "Publiceringsdatum", limit: "Max antal nyheter (500)",
+      map: "Koordinater", mapUrl: "Kartbild", retentionMonths: "Lagringstid", "responseTime.sv": "Svarstid (svenska)", "responseTime.en": "Svarstid (engelska)", principal: "ID",
+    } as Record<string, string>,
+    langFields: {
+      title: "titel", metaDescription: "metabeskrivning", keywords: "nyckelord", ogTitle: "OG-titel",
+      ogDescription: "OG-beskrivning", ogImageUrl: "OG-bild", canonicalBaseUrl: "kanonisk bas-URL",
+      excerpt: "ingress", body: "brödtext", coverAlt: "bildtext (alt)",
+    } as Record<string, string>,
+  },
+};
+
+export type AdminDict = typeof sv;
+
+const en: AdminDict = {
+  locale: "en-GB",
+  brand: "Axelkod admin",
+  loading: "Loading…",
+  saving: "Saving…",
+  save: "Save",
+  undo: "Discard changes",
+  unsaved: "Unsaved changes.",
+  savedLive: "Saved. The change is live on the website.",
+  savedPublish: "Saved. Publish to update the website.",
+  saveFailed: (m) => `Could not save: ${m}`,
+  actionFailed: (m) => `The action failed: ${m}`,
+  uploadFailed: (m) => `Upload failed: ${m}`,
+  uploaded: "The image is uploaded.",
+  upload: "Upload",
+  uploading: "Uploading…",
+  remove: "Delete",
+  edit: "Edit",
+  preview: "Preview",
+  langSv: "Swedish",
+  langEn: "English",
+  langName: (l) => (l === "sv" ? "Swedish" : "English"),
+  imageTypes: "PNG, JPEG or WebP only.",
+  imageTooBig: "The image is larger than 1.9 MB.",
+  nav: {
+    label: "Admin", inbox: "Inbox", home: "Home page", news: "News", contact: "Contact details", seo: "SEO", settings: "Settings",
+    unread: (n) => `${n} unread`, signOut: "Sign out", language: "Language", menu: "Menu", viewSite: "View website",
+  },
+  login: {
+    title: "Sign in", intro: "Administrators sign in with Internet Identity (passkey).",
+    button: "Sign in with Internet Identity", failed: (m) => `Sign-in failed: ${m}`,
+  },
+  access: {
+    title: "Request access",
+    lead: "You are signed in, but this identity is not an administrator yet.",
+    body: "Copy your ID below and send it to an existing administrator, or to whoever deploys the site, and ask for access. Reload the page once you have been added.",
+    idLabel: "Your ID (principal)", copy: "Copy ID", copied: "ID copied.",
+    copyFailed: "Could not copy. Select the ID and copy it manually.",
+  },
+  inbox: {
+    title: "Inbox", export: "Export CSV", exportFailed: (m) => `Export failed: ${m}`,
+    loadFailed: (m) => `Could not load messages: ${m}`,
+    filterLabel: "Filter by status", all: "All", newPl: "New", readPl: "Read", handledPl: "Handled",
+    search: "Search", searchPlaceholder: "Name, email, company, text", messages: "Messages", none: "No messages.",
+    prev: "Previous", next: "Next", range: (a, b, n) => `${a}–${b} of ${n}`,
+    choose: "Select a message.", csvName: "axelkod-messages",
+    status: { new: "New", read: "Read", handled: "Handled" },
+    markedAs: (s) => `Marked as ${s.toLowerCase()}`, markAs: (s) => `Mark as ${s.toLowerCase()}`,
+    received: "Received", email: "Email", phone: "Phone", company: "Company", area: "Area", language: "Language", statusLabel: "Status",
+    message: "Message", note: "Internal note", saveNote: "Save note", noteSaved: "Note saved",
+    confirmDelete: (name) => `Delete the message from ${name}? This cannot be undone.`, deleted: "Message deleted",
+  },
+  areas: { parts: "Vehicle parts", software: "Software", security: "Cyber security", other: "Other", company: "Company" },
+  news: {
+    title: "News", new: "New article", editTitle: "Edit article", all: "← All news",
+    publishHint: "Changes appear on the website after", publishLink: "Publish", publishWhere: "(SEO page).",
+    none: "No news yet.", draft: "Draft", published: "Published", scheduled: "Scheduled", svOnly: "sv only",
+    confirmDelete: (t) => `Delete "${t}"? This cannot be undone.`, deleted: "The article is deleted. Publish to update the website.",
+    notFound: "The article does not exist.", settings: "Settings", status: "Status", date: "Publication date", area: "Area (optional)",
+    slug: "Address (slug)", cover: "Cover image (optional)",
+    coverHint: "Upload an image, or paste an image address (https://…). An external image is loaded from the other website when visitors read the article.",
+    coverInvalid: "The cover image must be an uploaded image (/uploads/…) or an https:// address.",
+    text: "Text", english: "English version", heading: "Title", excerpt: "Lead (shown on the cards)", body: "Body",
+    bodyHint: "Blank line = new paragraph · ## Heading · - list · 1. list · > quote · **bold** · *italic* · [link](https://…)",
+    alt: "Cover image description (alt)", previewOf: (l) => `Preview (${l})`, removeCover: "Remove image",
+  },
+  home: {
+    title: "Home page", intro: "Texts, icons and cards in the home page sections. Changes appear on the website after",
+    tabs: { hero: "Hero", services: "What we do", security: "Security layers", industries: "Industries" },
+    hero: {
+      text: "Text", words: "Headline words (one line each, at most 4)", word: (n) => `Word ${n}`, addWord: "Add word",
+      highlight: "Highlighted", highlightHint: "The word with the colour gradient.", subtitle: "Subtitle",
+      cta: "Main button (to contact)", cta2: "Second button (to services)",
+      trust: "Trust points", trustHint: "The band under the hero. Columns adapt to the count.", addTrust: "Add point",
+      point: (n) => `Point ${n}`,
+    },
+    head: "Heading", eyebrow: "Eyebrow", heading: "Heading", introField: "Intro (optional)",
+    items: "Cards", layers: "Layers", item: (n) => `Card ${n}`, layer: (n) => `Layer ${n}`,
+    add: "Add card", addLayer: "Add layer", max: (n) => `At most ${n}.`,
+    up: "Move up", down: "Move down", removeItem: "Remove", icon: "Icon", chooseIcon: "Choose icon",
+    visual: "Card visual", visuals: { "": "None", gear: "Gear", code: "Code window", shield: "Shield" },
+    itemTitle: "Title", itemText: "Text", missing: "Missing text",
+    featured: "The first three cards are shown large (as today); more cards are added below them.",
+    layersHint: "Each layer becomes a ring in the hexagon. Hovering a ring or a layer highlights both.",
+    colsHint: "The number of columns adapts to the number of cards and the screen width.",
+    confirmRemove: "Remove the card?", saved: "Saved. Publish to update the website.",
+    invalidItem: (n, l, f) => `Card ${n} (${l}): ${f} is missing or too long.`,
+    invalidHead: (l, f) => `Heading (${l}): ${f} is missing or too long.`,
+    fieldNames: { title: "title", text: "text", eyebrow: "eyebrow", intro: "intro", icon: "icon", visual: "visual", words: "headline words", subtitle: "subtitle", cta: "main button", cta2: "second button", sv: "Swedish text", en: "English text" },
+  },
+  contact: {
+    title: "Contact details", intro: "Shown in the contact section and footer of the website (both languages).",
+    email: "Email", emailHint: "Leave empty to hide.", phone: "Phone", street: "Street address", postalCode: "Postcode",
+    city: "City", orgNumber: "Company reg. no.", visibility: "Visibility", showPhone: "Show phone number", showAddress: "Show street address and postcode",
+    map: "Map in the background", lat: "Latitude", lon: "Longitude",
+    mapHint: "For example 57.6554 and 12.0138. On save, a map image is made from OpenStreetMap and uploaded to the website; visitors load nothing from other servers. Leave empty to show no map.",
+    mapBoth: "Fill in both latitude and longitude (or neither).", mapMaking: "Making the map image…",
+    mapFailed: (m) => `Could not make the map image: ${m}`, removeMap: "Remove map",
+  },
+  seo: {
+    lastPublished: "Last published:", never: "never", publish: "Publish", publishing: "Publishing…",
+    changed: "Settings, contact details, news or the home page have changed since the last publish. Publish to update the website.",
+    saveFirst: "Save before publishing.",
+    published: "Published. The pages, sitemap.xml and robots.txt are updated.",
+    publishFailed: (m) => `Publishing failed: ${m}`,
+    uploadedOg: "The image is uploaded. Save and publish to use it.",
+    chars: (n, ideal) => `${n} / ~${ideal} characters`,
+    titleField: "Title", desc: "Meta description", keywords: "Keywords (optional)", ogTitle: "OG title (optional, else the title)",
+    ogDesc: "OG description (optional)", ogImage: "OG image (URL, 1200×630)", uploadImage: "Upload image",
+    imageHint: "PNG, JPEG or WebP, at most 1.9 MB.", canonical: "Canonical base URL",
+    indexable: (l) => `Let search engines index (${l} pages)`, googlePreview: "Google preview", ogAlt: "Selected OG image",
+    org: "Organisation (JSON-LD)", orgName: "Organisation name", logo: "Logo URL", sameAs: "Profiles, one URL per line (LinkedIn etc.)",
+    google: "Google verification (optional)", bing: "Bing verification (optional)",
+  },
+  settings: {
+    title: "Settings", site: "Website", months: "Message retention (months)",
+    monthsHint: "Older messages are deleted automatically once a day. Shown in the privacy notice.",
+    monthsInvalid: "Retention must be 1–60 months.", responseSv: "Response time (Swedish)", responseEn: "Response time (English)",
+    responseHint: "Shown after someone submits the contact form.",
+    admins: "Administrators",
+    adminsHint: "New administrators sign in at /admin, copy their ID from the \"Request access\" page and send it to you. They can also publish SEO files to the website.",
+    added: (d) => `Added ${d}`, you: " · you", removeAdmin: "Remove", removeAria: (p) => `Remove ${p}`,
+    lastAdmin: "The last administrator cannot be removed.", addLabel: "Add administrator (ID)", add: "Add",
+    invalidId: "Invalid ID (principal).", anonymous: "The anonymous ID cannot be an administrator.",
+    addedOk: "The administrator is added.", removedOk: "The administrator is removed.",
+    confirmSelf: "Remove yourself as administrator? You lose access immediately.",
+    confirmOther: (p) => `Remove ${p} as administrator?`,
+  },
+  errors: {
+    invalid: (f) => `Invalid value: ${f}`, notAuthorized: "You are not authorised.", notFound: "Not found.",
+    lastAdmin: "The last administrator cannot be removed.", slugTaken: "The address (slug) is already used by another article.",
+    conflict: (c) => `Conflict: ${c}`, frontend: (m) => `The frontend canister replied: ${m}`,
+    fields: {
+      email: "Email", phone: "Phone", street: "Street address", postalCode: "Postcode", city: "City", orgNumber: "Company reg. no.",
+      organisationName: "Organisation name", logoUrl: "Logo URL", sameAs: "Profiles (sameAs)",
+      googleVerification: "Google verification", bingVerification: "Bing verification",
+      slug: "Address (slug)", coverUrl: "Cover image", publishedAt: "Publication date", limit: "Max number of articles (500)",
+      map: "Coordinates", mapUrl: "Map image", retentionMonths: "Retention", "responseTime.sv": "Response time (Swedish)", "responseTime.en": "Response time (English)", principal: "ID",
+    },
+    langFields: {
+      title: "title", metaDescription: "meta description", keywords: "keywords", ogTitle: "OG title",
+      ogDescription: "OG description", ogImageUrl: "OG image", canonicalBaseUrl: "canonical base URL",
+      excerpt: "lead", body: "body", coverAlt: "image description (alt)",
+    },
+  },
+};
+
+export const ADMIN_DICTS: Record<AdminLang, AdminDict> = { sv, en };
+
+type Ctx = { lang: AdminLang; t: AdminDict; setLang: (l: AdminLang) => void };
+const AdminLangCtx = createContext<Ctx>({ lang: "sv", t: sv, setLang: () => {} });
+
+function stored(): AdminLang {
+  try {
+    return localStorage.getItem(KEY) === "en" ? "en" : "sv";
+  } catch {
+    return "sv";
+  }
+}
+
+export function AdminLangProvider({ children }: { children: ReactNode }) {
+  const [lang, setState] = useState<AdminLang>("sv");
+  useEffect(() => setState(stored()), []);
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  const setLang = useCallback((l: AdminLang) => {
+    setState(l);
+    try { localStorage.setItem(KEY, l); } catch { /* per-browser convenience only */ }
+  }, []);
+  const value = useMemo(() => ({ lang, t: ADMIN_DICTS[lang], setLang }), [lang, setLang]);
+  return <AdminLangCtx.Provider value={value}>{children}</AdminLangCtx.Provider>;
+}
+
+export const useAdminLang = () => useContext(AdminLangCtx);

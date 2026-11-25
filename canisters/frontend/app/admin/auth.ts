@@ -52,12 +52,17 @@ let client: AuthClient | null = null;
 
 export function authClient(): AuthClient {
   if (client) return client;
+  const local = useLocalII();
   client = new AuthClient({
-    ...(useLocalII()
+    ...(local
       ? { identityProvider: { authorizeUrl: `http://id.ai.localhost:${location.port || "8000"}/authorize`, canisterId: II_CANISTER } }
       : {}),
     derivationOrigin: derivationOrigin(),
-    agentOptions: { rootKey: env?.IC_ROOT_KEY },
+    // These options are only for the client's own calls to the II canister (it
+    // mints each session's delegations there). With id.ai the session lives on
+    // mainnet, also when the site runs on a local network; sending those calls to
+    // the local replica fails with "The session behind this identity no longer exists".
+    agentOptions: local ? { rootKey: env?.IC_ROOT_KEY } : { host: "https://icp-api.io" },
   });
   return client;
 }

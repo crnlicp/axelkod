@@ -87,7 +87,7 @@ function card(n: NewsJson & { l: NewsLangJson }, lang: Lang): string {
 
 export function cardsHtml(items: NewsJson[], lang: Lang, limit?: number): string {
   const list = forLang(items, lang).slice(0, limit);
-  if (list.length === 0) return `<p class="card text-muted">${T[lang].empty}</p>`;
+  if (list.length === 0) return `<p class="news-empty card text-muted">${T[lang].empty}</p>`;
   return `<ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">${list.map((n) => card(n, lang)).join("")}</ul>`;
 }
 

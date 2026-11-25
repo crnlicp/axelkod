@@ -1,5 +1,6 @@
 // Cleaning and validation of the admin-editable settings.
 import Array "mo:core/Array";
+import Char "mo:core/Char";
 import Result "mo:core/Result";
 import Text "mo:core/Text";
 import Types "../types";
@@ -19,6 +20,7 @@ module {
       postalCode = V.optLine(c.postalCode);
       city = V.singleLine(c.city);
       orgNumber = V.optLine(c.orgNumber);
+      mapUrl = V.optLine(c.mapUrl);
     };
     check(clean.email == "" or V.isEmail(clean.email), "email")
       .chain(func _ = check(V.optLengthIn(clean.phone, 40), "phone"))
@@ -26,7 +28,21 @@ module {
       .chain(func _ = check(V.optLengthIn(clean.postalCode, 20), "postalCode"))
       .chain(func _ = check(V.lengthIn(clean.city, 1, 60), "city"))
       .chain(func _ = check(V.optLengthIn(clean.orgNumber, 20), "orgNumber"))
+      .chain(func _ = check(coord(clean.mapLat, 90.0) and coord(clean.mapLon, 180.0), "map"))
+      .chain(func _ = check(isUpload(clean.mapUrl), "mapUrl"))
       .mapOk(func _ = clean);
+  };
+
+  func coord(v : ?Float, limit : Float) : Bool {
+    switch (v) { case (?x) { x >= -limit and x <= limit }; case null { true } };
+  };
+
+  /// Map snapshots are files uploaded to the site, never external addresses.
+  func isUpload(u : ?Text) : Bool {
+    switch (u) {
+      case (?v) { v.startsWith(#text "/uploads/") and V.lengthIn(v, 10, 200) and not v.contains(#predicate(func c = c.isWhitespace() or c == '\"' or c == '<' or c == '>')) };
+      case null { true };
+    };
   };
 
   func seoLang(s : Types.SeoLang, lang : Text) : R<Types.SeoLang> {
@@ -92,6 +108,9 @@ module {
       postalCode = if (c.showAddress) c.postalCode else null;
       city = c.city;
       orgNumber = c.orgNumber;
+      mapUrl = c.mapUrl;
+      mapLat = c.mapLat;
+      mapLon = c.mapLon;
     };
   };
 };

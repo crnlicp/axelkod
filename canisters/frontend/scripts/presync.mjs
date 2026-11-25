@@ -59,7 +59,8 @@ function cspFor(headers, key) {
 async function bake() {
   if (!backendId) throw new Error("presync: ICP_CLI_CID_BACKEND not set");
   const backend = Actor.createActor(idlFactory, { agent: await agent(), canisterId: backendId });
-  const [cfg, news] = await Promise.all([backend.getPublicConfig(), backend.publishedNews()]);
+  // Deploys bake the published home sections (drafts go live via Publish).
+  const [cfg, news, home] = await Promise.all([backend.getPublicConfig(), backend.publishedNews(), backend.getHome()]);
   const c = cfg.contact;
   const data = clean({
     sv: lang(cfg.seo.sv),
@@ -74,7 +75,7 @@ async function bake() {
   const read = (key) => readFileSync(join(out, key), "utf8");
   const pages = Object.fromEntries(SITE_PAGES.map((p) => [p.key, read(p.key)]));
   const templates = { sv: read(TEMPLATE.sv.key), en: read(TEMPLATE.en.key) };
-  const result = bakeSite({ data, news: news.map(newsJson), texts: texts(), today: new Date().toISOString().slice(0, 10), pages, templates });
+  const result = bakeSite({ data, news: news.map(newsJson), home, texts: texts(), today: new Date().toISOString().slice(0, 10), pages, templates });
 
   const headersFile = join(out, "_headers");
   const headers = readFileSync(headersFile, "utf8");

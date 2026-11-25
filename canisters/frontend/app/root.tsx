@@ -36,7 +36,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  // sv and en pages share route modules; remount on a language switch so scroll
+  // reveals run again for the new content instead of leaving it hidden.
+  return <Outlet key={langFromPath(useLocation().pathname)} />;
 }
 
 // Rendered into admin.html (the SPA fallback) until the client takes over.

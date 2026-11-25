@@ -58,7 +58,7 @@ export function SiteHeader({ lang, page }: { lang: Lang; page: Page | null }) {
         <nav aria-label={t.nav.label} className="flex items-center gap-2">
           <ul className="hidden items-center gap-1 rounded-full border border-border bg-surface px-1.5 py-1 backdrop-blur md:flex">
             {links.map((l) => (
-              <li key={l.key}>
+              <li key={l.key} data-nav={l.key}>
                 <a href={l.href} aria-current={l.current ? "location" : undefined}
                   className="nav-link relative block rounded-full px-4 py-1.5 text-sm font-medium text-fg no-underline transition-colors hover:text-accent">
                   {l.label}

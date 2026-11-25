@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import type { SubmitError } from "../bindings/backend";
 import { LIMITS, clean, validate, type FieldName, type Fields } from "../lib/contactValidation";
 import { dict, fmt, PATHS, type Lang } from "../lib/i18n";
+import { useSpotlight } from "../lib/spotlight";
 import { IconArrowRight } from "./Icons";
 
 const MIN_AGE_MS = 3_100; // the canister rejects tokens younger than 3 s
@@ -34,6 +35,7 @@ export function ContactForm({ lang, responseTime }: { lang: Lang; responseTime: 
   const honeypot = useRef<HTMLInputElement>(null);
   const token = useRef<Promise<Token | SubmitError> | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  useSpotlight(formRef);
   const doneRef = useRef<HTMLParagraphElement>(null);
 
   // Fetch the token once the page has loaded; the 3 s minimum runs from here.
@@ -120,7 +122,7 @@ export function ContactForm({ lang, responseTime }: { lang: Lang; responseTime: 
 
   if (status.kind === "done") {
     return (
-      <div className="glass mt-8 flex flex-col items-center gap-4 p-10 text-center" role="status">
+      <div className="glass flex flex-col items-center gap-4 p-10 text-center" role="status">
         <svg viewBox="0 0 64 64" className="success-check h-20 w-20 text-accent" aria-hidden="true">
           <circle cx="32" cy="32" r="29" fill="var(--brand-soft)" stroke="currentColor" strokeWidth="2.5" />
           <path d="M19 33 l9 9 l17 -19" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
@@ -128,7 +130,7 @@ export function ContactForm({ lang, responseTime }: { lang: Lang; responseTime: 
         <p ref={doneRef} tabIndex={-1} className="font-display text-4xl font-bold uppercase outline-none">
           {f.thanks}
         </p>
-        <p className="text-lg text-muted">{responseTime ?? t.trust[3].text}</p>
+        <p className="text-lg text-muted">{responseTime ?? t.contact.responseFallback}</p>
       </div>
     );
   }
@@ -150,7 +152,7 @@ export function ContactForm({ lang, responseTime }: { lang: Lang; responseTime: 
   const messageLength = clean(fields.message).length;
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} noValidate className="glass mt-8 space-y-5 p-6 sm:p-8" aria-describedby="cf-required">
+    <form ref={formRef} onSubmit={onSubmit} noValidate className="spotlight glass relative overflow-hidden space-y-5 p-6 sm:p-8" aria-describedby="cf-required">
       <p id="cf-required" className="text-sm text-muted">
         * = {f.required}
       </p>

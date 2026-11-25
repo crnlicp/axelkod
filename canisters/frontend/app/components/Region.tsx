@@ -11,9 +11,17 @@ function initial(name: string): string | null {
   return html && html !== emptyRegion(name) ? html : null;
 }
 
-function Inner({ name, html, className }: { name: string; html: string; className?: string }) {
+/** Wires behaviour onto the region's markup; may return a cleanup. */
+export type Enhance = (el: HTMLElement) => void | (() => void);
+
+function Inner({ name, html, className, enhance }: { name: string; html: string; className?: string; enhance?: Enhance }) {
   const ref = useRef<HTMLDivElement>(null);
   useReveal(ref, { stagger: 0.1 });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !enhance || html === emptyRegion(name)) return;
+    return enhance(el) ?? undefined;
+  }, [html]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const el = ref.current;
     if (!el || !matchMedia("(hover: hover)").matches) return;
@@ -30,7 +38,7 @@ function Inner({ name, html, className }: { name: string; html: string; classNam
   return <div ref={ref} data-region={name} className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-export function Region({ name, load, className }: { name: string; load: () => Promise<string>; className?: string }) {
+export function Region({ name, load, className, enhance }: { name: string; load: () => Promise<string>; className?: string; enhance?: Enhance }) {
   const [html, setHtml] = useState<string | null>(() => initial(name));
   useEffect(() => {
     if (html !== null) return;
@@ -41,5 +49,5 @@ export function Region({ name, load, className }: { name: string; load: () => Pr
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const content = html ?? emptyRegion(name);
-  return <Inner key={content.length} name={name} html={content} className={className} />;
+  return <Inner key={content.length} name={name} html={content} className={className} enhance={enhance} />;
 }

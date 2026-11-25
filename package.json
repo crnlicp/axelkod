@@ -8,6 +8,7 @@
     "dev": "npm --prefix canisters/frontend run dev",
     "build": "npm --prefix canisters/frontend run build",
     "deploy:local": "scripts/deploy.sh local",
-    "test:e2e": "npm --prefix canisters/frontend run test:e2e"
+    "test:e2e": "npm --prefix canisters/frontend run test:e2e",
+    "admin:add": "printf \"Principal to add as admin: \" && read p && [ -n \"$p\" ] && icp canister call backend addAdmin \"(principal \\\"$p\\\")\" --identity \"${ICP_IDENTITY:-anonymous}\""
   }
 }

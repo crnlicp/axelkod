@@ -49,7 +49,7 @@ export function SiteFooter({ lang, page }: { lang: Lang; page: Page | null }) {
           © {new Date().getFullYear()} {t.footer.company}. {t.footer.rights}
         </p>
       </div>
-      <p className="pointer-events-none select-none text-center font-display text-[18vw] font-bold uppercase leading-[0.8] text-transparent [-webkit-text-stroke:1px_var(--border-strong)]" aria-hidden="true">
+      <p className="footer-mark pointer-events-none select-none whitespace-nowrap text-center font-display text-[26vw] font-bold uppercase leading-[0.8]" aria-hidden="true">
         Axelkod
       </p>
     </footer>

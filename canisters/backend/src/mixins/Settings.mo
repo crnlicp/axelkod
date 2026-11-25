@@ -49,6 +49,8 @@ mixin (admins : Types.Admins, config : Types.Config) {
     if (not Auth.isAdmin(admins, caller)) return #err(#notAuthorized);
     let now = Time.now();
     config.seoPublishedAt := ?now;
+    // Publish baked the draft home sections into the site; they are now the live copy.
+    config.homePublished := config.homeDraft;
     #ok(now);
   };
 

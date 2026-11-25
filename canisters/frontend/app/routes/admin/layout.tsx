@@ -1,22 +1,83 @@
-import { useCallback, useMemo, useState } from "react";
-import { NavLink, Outlet } from "react-router";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { NavLink, Outlet, useLocation } from "react-router";
+import { AdminLangProvider, useAdminLang, type AdminLang } from "../../admin/i18n";
 import { AdminCtx, useSession, type AdminContext } from "../../admin/session";
+import { IconArrowRight, IconCheck, IconHome, IconCompany, IconCopy, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
 import { LogoSymbol } from "../../components/Logo";
 
 export function meta() {
   return [{ title: "Admin – Axelkod AB" }, { name: "robots", content: "noindex, nofollow" }];
 }
 
-function Shell({ children, actions }: { children: React.ReactNode; actions?: React.ReactNode }) {
+function LangSwitch() {
+  const { lang, setLang, t } = useAdminLang();
+  return (
+    <div role="group" aria-label={t.nav.language} className="inline-flex rounded-full border border-border bg-surface p-1 text-sm font-semibold">
+      {(["sv", "en"] as AdminLang[]).map((l) => (
+        <button key={l} type="button" lang={l} aria-pressed={lang === l} onClick={() => setLang(l)}
+          className="rounded-full px-3 py-1 uppercase text-muted transition-colors hover:text-fg aria-pressed:bg-[var(--brand-soft)] aria-pressed:text-accent">
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Brand() {
+  const { t } = useAdminLang();
+  return (
+    <div className="flex items-center gap-2.5">
+      <LogoSymbol className="h-9 w-auto text-fg" />
+      <span className="font-display text-xl font-bold uppercase">{t.brand}</span>
+    </div>
+  );
+}
+
+/** Signed in, but not an admin (yet): show the ID to send to an admin, with a copy button. */
+function RequestAccess({ principal }: { principal: string }) {
+  const { t } = useAdminLang();
+  const a = t.access;
+  const [copied, setCopied] = useState<"yes" | "failed" | null>(null);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(principal);
+      setCopied("yes");
+      setTimeout(() => setCopied(null), 2500);
+    } catch {
+      setCopied("failed");
+    }
+  }
+  return (
+    <div className="card mx-auto max-w-xl">
+      <div className="flex items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-full bg-[var(--brand-soft)] text-accent"><IconLock className="h-6 w-6" /></span>
+        <h1 className="text-3xl uppercase">{a.title}</h1>
+      </div>
+      <p className="mt-4">{a.lead}</p>
+      <p className="mt-2 text-muted">{a.body}</p>
+      <p id="principal-label" className="mt-5 text-sm font-medium text-muted">{a.idLabel}</p>
+      <div className="mt-1.5 flex items-stretch gap-2">
+        <code className="min-w-0 flex-1 select-all break-all rounded-lg border border-border bg-bg p-3 font-mono text-sm" data-testid="principal">{principal}</code>
+        <button type="button" onClick={() => void copy()} aria-label={a.copy} title={a.copy}
+          className="grid w-12 shrink-0 place-items-center rounded-lg border border-border bg-surface text-fg transition-colors hover:border-accent hover:text-accent">
+          {copied === "yes" ? <IconCheck className="h-5 w-5 text-accent" /> : <IconCopy className="h-5 w-5" />}
+        </button>
+      </div>
+      <p role="status" className="mt-2 min-h-5 text-sm text-muted">
+        {copied === "yes" ? a.copied : copied === "failed" ? a.copyFailed : ""}
+      </p>
+    </div>
+  );
+}
+
+/** Pre-admin screens (loading, sign-in, request access): top bar only. */
+function Shell({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
     <div className="min-h-screen bg-surface">
       <header className="border-b border-border bg-bg">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-3">
-          <div className="flex items-center gap-2.5">
-            <LogoSymbol className="h-9 w-auto text-fg" />
-            <span className="font-display text-xl font-bold uppercase">Axelkod admin</span>
-          </div>
-          {actions}
+          <Brand />
+          <div className="flex items-center gap-3"><LangSwitch />{actions}</div>
         </div>
       </header>
       <main id="main" className="mx-auto max-w-7xl px-5 py-8">{children}</main>
@@ -24,11 +85,79 @@ function Shell({ children, actions }: { children: React.ReactNode; actions?: Rea
   );
 }
 
+const link =
+  "flex items-center gap-3 rounded-xl px-3 py-2.5 font-medium text-fg no-underline transition-colors hover:bg-surface-strong aria-[current=page]:bg-[var(--brand-soft)] aria-[current=page]:text-accent";
+
+/** Signed-in admin: sidebar navigation (a drawer below lg). */
+function AdminShell({ unread, onSignOut, children }: { unread: number | null; onSignOut: () => void; children: ReactNode }) {
+  const { t } = useAdminLang();
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  useEffect(() => setOpen(false), [pathname]);
+  const items = [
+    { to: "/admin", end: true, label: t.nav.inbox, icon: IconMail, badge: unread },
+    { to: "/admin/home", label: t.nav.home, icon: IconHome },
+    { to: "/admin/news", label: t.nav.news, icon: IconNews },
+    { to: "/admin/contact", label: t.nav.contact, icon: IconCompany },
+    { to: "/admin/seo", label: t.nav.seo, icon: IconSearch },
+    { to: "/admin/settings", label: t.nav.settings, icon: IconSliders },
+  ];
+  return (
+    <div className="min-h-screen bg-surface lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <header className="flex items-center justify-between gap-4 border-b border-border bg-bg px-5 py-3 lg:hidden">
+        <Brand />
+        <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface"
+          aria-expanded={open} aria-controls="admin-sidebar" aria-label={t.nav.menu} onClick={() => setOpen(!open)}>
+          <IconMenu className="h-5 w-5" />
+        </button>
+      </header>
+      <aside id="admin-sidebar"
+        className={`${open ? "flex" : "hidden"} flex-col gap-6 border-b border-border bg-bg p-5 lg:sticky lg:top-0 lg:flex lg:h-screen lg:border-r lg:border-b-0`}>
+        <div className="hidden lg:block"><Brand /></div>
+        <nav aria-label={t.nav.label}>
+          <ul className="space-y-1">
+            {items.map(({ to, end, label, icon: Icon, badge }) => (
+              <li key={to}>
+                <NavLink to={to} end={end} className={link}>
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span className="flex-1">{label}</span>
+                  {badge ? (
+                    <span className="rounded-full bg-[var(--color-teal-500)] px-2 py-0.5 text-xs font-semibold text-[var(--color-navy-900)]" aria-label={t.nav.unread(badge)}>{badge}</span>
+                  ) : null}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="mt-auto space-y-4 border-t border-border pt-5">
+          <LangSwitch />
+          <a href="/" className="btn btn-secondary w-full justify-center">{t.nav.viewSite} <IconArrowRight className="h-5 w-5" /></a>
+          <button type="button" className="btn btn-secondary w-full justify-center" onClick={onSignOut}>
+            <IconLogout className="h-5 w-5" /> {t.nav.signOut}
+          </button>
+        </div>
+      </aside>
+      <main id="main" className="min-w-0 px-5 py-8 lg:px-10">
+        <div className="mx-auto max-w-6xl">{children}</div>
+      </main>
+    </div>
+  );
+}
+
 export default function AdminLayout() {
+  return (
+    <AdminLangProvider>
+      <AdminRoot />
+    </AdminLangProvider>
+  );
+}
+
+function AdminRoot() {
+  const { t } = useAdminLang();
   const { session, signIn, signOut } = useSession();
   const [unread, setUnread] = useState<number | null>(null);
   const [unreadTick, setUnreadTick] = useState(0);
-  const refreshUnread = useCallback(() => setUnreadTick((t) => t + 1), []);
+  const refreshUnread = useCallback(() => setUnreadTick((n) => n + 1), []);
 
   const ctx = useMemo<AdminContext | null>(
     () => (session.state === "admin" ? { actor: session.actor, identity: session.identity, principal: session.principal, refreshUnread, setUnread } : null),
@@ -37,19 +166,17 @@ export default function AdminLayout() {
   );
 
   if (session.state === "loading") {
-    return <Shell><p role="status">Laddar…</p></Shell>;
+    return <Shell><p role="status">{t.loading}</p></Shell>;
   }
 
   if (session.state === "signed-out") {
     return (
       <Shell>
         <div className="card mx-auto max-w-md text-center">
-          <h1 className="text-3xl uppercase">Logga in</h1>
-          <p className="mt-2 text-muted">Administratörer loggar in med Internet Identity (passkey).</p>
-          <button type="button" className="btn btn-primary mt-6" onClick={() => void signIn()}>
-            Logga in med Internet Identity
-          </button>
-          {session.error && <p role="alert" className="mt-4 text-sm text-[var(--error)]">Inloggningen misslyckades: {session.error}</p>}
+          <h1 className="text-3xl uppercase">{t.login.title}</h1>
+          <p className="mt-2 text-muted">{t.login.intro}</p>
+          <button type="button" className="btn btn-primary mt-6" onClick={() => void signIn()}>{t.login.button}</button>
+          {session.error && <p role="alert" className="mt-4 text-sm text-[var(--error)]">{t.login.failed(session.error)}</p>}
         </div>
       </Shell>
     );
@@ -57,37 +184,17 @@ export default function AdminLayout() {
 
   if (session.state === "denied") {
     return (
-      <Shell actions={<button type="button" className="btn btn-secondary" onClick={() => void signOut()}>Logga ut</button>}>
-        <div className="card mx-auto max-w-xl">
-          <h1 className="text-3xl uppercase">Åtkomst nekad</h1>
-          <p className="mt-2">Den här identiteten är inte administratör. Be en befintlig administratör (eller den som driftsätter sajten) att lägga till ditt ID:</p>
-          <p className="mt-3 break-all rounded bg-bg p-3 font-mono text-sm" data-testid="principal">{session.principal}</p>
-        </div>
+      <Shell actions={<button type="button" className="btn btn-secondary" onClick={() => void signOut()}>{t.nav.signOut}</button>}>
+        <RequestAccess principal={session.principal} />
       </Shell>
     );
   }
 
-  const tab = "rounded px-3 py-2 font-medium text-fg no-underline aria-[current=page]:bg-surface aria-[current=page]:text-accent";
   return (
     <AdminCtx.Provider value={ctx}>
-      <Shell
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <nav aria-label="Admin" className="flex flex-wrap gap-1">
-              <NavLink to="/admin" end className={tab}>
-                Inkorg{unread ? <span className="ml-1.5 rounded-full bg-[var(--color-teal-500)] px-2 py-0.5 text-xs font-semibold text-[var(--color-navy-900)]" aria-label={`${unread} olästa`}>{unread}</span> : null}
-              </NavLink>
-              <NavLink to="/admin/news" className={tab}>Nyheter</NavLink>
-              <NavLink to="/admin/contact" className={tab}>Kontaktuppgifter</NavLink>
-              <NavLink to="/admin/seo" className={tab}>SEO</NavLink>
-              <NavLink to="/admin/settings" className={tab}>Inställningar</NavLink>
-            </nav>
-            <button type="button" className="btn btn-secondary" onClick={() => void signOut()}>Logga ut</button>
-          </div>
-        }
-      >
+      <AdminShell unread={unread} onSignOut={() => void signOut()}>
         <Outlet />
-      </Shell>
+      </AdminShell>
     </AdminCtx.Provider>
   );
 }

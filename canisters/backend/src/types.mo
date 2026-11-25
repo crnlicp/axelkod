@@ -30,6 +30,11 @@ module {
     orgNumber : ?Text;
     showAddress : Bool;
     showPhone : Bool;
+    /// Map behind the contact card: coordinates plus a snapshot image the admin
+    /// uploads (/uploads/…). No map is shown without a snapshot.
+    mapLat : ?Float;
+    mapLon : ?Float;
+    mapUrl : ?Text;
   };
 
   public type SeoLang = {
@@ -65,6 +70,9 @@ module {
     var seoUpdatedAt : Int;
     var seoPublishedAt : ?Int;
     var site : SiteSettings;
+    /// Home-page sections: edited as a draft, copied to `homePublished` by Publish.
+    var homeDraft : HomeContent;
+    var homePublished : HomeContent;
   };
 
   public type Counters = { var nextMessageId : Nat; var nextNewsId : Nat };
@@ -173,6 +181,9 @@ module {
     postalCode : ?Text;
     city : Text;
     orgNumber : ?Text;
+    mapUrl : ?Text;
+    mapLat : ?Float;
+    mapLon : ?Float;
   };
 
   public type PublicConfig = {
@@ -187,4 +198,16 @@ module {
     updatedAt : Int;
     publishedAt : ?Int;
   };
+
+  /// Editable home-page sections. Icons and visuals are keys from fixed lists
+  /// (lib/Home.mo), never markup.
+  public type HomeKey = { #services; #security; #industries };
+  public type HomeText = { title : Text; text : Text };
+  public type HomeItem = { icon : Text; visual : Text; sv : HomeText; en : HomeText };
+  public type HomeHead = { eyebrow : Text; title : Text; intro : Text };
+  public type HomeSection = { sv : HomeHead; en : HomeHead; items : [HomeItem] };
+  /// Hero: headline words (one may be highlighted), buttons and the trust strip below it.
+  public type HeroLang = { eyebrow : Text; words : [Text]; subtitle : Text; cta : Text; cta2 : Text };
+  public type HomeHero = { sv : HeroLang; en : HeroLang; highlight : Nat; trust : [HomeItem] };
+  public type HomeContent = { hero : HomeHero; services : HomeSection; security : HomeSection; industries : HomeSection };
 };

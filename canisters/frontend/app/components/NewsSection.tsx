@@ -5,11 +5,12 @@ import { IconArrowRight } from "./Icons";
 import { Region } from "./Region";
 import { Reveal } from "./Reveal";
 
-/** The three latest articles on the landing page (baked at deploy/Publish). */
+/** The three latest articles on the landing page (baked at deploy/Publish). Hidden by
+ * CSS (with its nav link) when the baked region holds the empty-state message. */
 export function NewsSection({ lang }: { lang: Lang }) {
   const t = dict(lang);
   return (
-    <section id={t.anchors.news} className="px-5 py-28" aria-labelledby="news-title">
+    <section id={t.anchors.news} className="news-section px-5 py-28" aria-labelledby="news-title">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Reveal self>

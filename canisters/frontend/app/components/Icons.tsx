@@ -157,3 +157,68 @@ export const IconFactory = (p: IconProps) => (
     <path d="M6,17 H8 M10.5,17 H12.5" />
   </Icon>
 );
+
+/** Copy to clipboard: two overlapping sheets. */
+export const IconCopy = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="8" y="8" width="12" height="12" rx="2" />
+    <path d="M16,8 V6 A2,2 0 0 0 14,4 H6 A2,2 0 0 0 4,6 V14 A2,2 0 0 0 6,16 H8" />
+  </Icon>
+);
+
+/** Done: check mark. */
+export const IconCheck = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5,12.5 L10,17.5 L19,7" />
+  </Icon>
+);
+
+/** Admin: newspaper. */
+export const IconNews = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3.5" y="4.5" width="14" height="15" rx="1.5" />
+    <path d="M17.5,8.5 H20.5 V17.5 A2,2 0 0 1 18.5,19.5 H5.5" />
+    <path d="M7,8.5 H14 M7,12 H14 M7,15.5 H11" />
+  </Icon>
+);
+
+/** Admin: magnifier (SEO). */
+export const IconSearch = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="10.5" cy="10.5" r="6" />
+    <path d="M15,15 L20,20" />
+  </Icon>
+);
+
+/** Admin: sliders (settings). */
+export const IconSliders = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4,7 H20 M4,17 H20" />
+    <circle cx="9" cy="7" r="2.2" />
+    <circle cx="15" cy="17" r="2.2" />
+  </Icon>
+);
+
+/** Admin: sign out. */
+export const IconLogout = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14,4.5 H6.5 A1.5,1.5 0 0 0 5,6 V18 A1.5,1.5 0 0 0 6.5,19.5 H14" />
+    <path d="M10,12 H20 M16.5,8.5 L20,12 L16.5,15.5" />
+  </Icon>
+);
+
+/** Menu: three lines. */
+export const IconMenu = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4,7 H20 M4,12 H20 M4,17 H20" />
+  </Icon>
+);
+
+/** Admin: home page. */
+export const IconHome = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3.5,11 L12,3.5 L20.5,11" />
+    <path d="M5.5,9.5 V20.5 H18.5 V9.5" />
+    <path d="M10,20.5 V14.5 H14 V20.5" />
+  </Icon>
+);

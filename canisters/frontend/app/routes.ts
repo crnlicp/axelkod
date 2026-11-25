@@ -13,6 +13,7 @@ export default [
   // Admin: client-rendered from admin.html (the SPA fallback), never prerendered.
   route("admin", "routes/admin/layout.tsx", [
     index("routes/admin/inbox.tsx"),
+    route("home", "routes/admin/home.tsx"),
     route("contact", "routes/admin/contact.tsx"),
     route("seo", "routes/admin/seo.tsx"),
     route("settings", "routes/admin/settings.tsx"),

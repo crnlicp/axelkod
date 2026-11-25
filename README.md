@@ -35,8 +35,8 @@ scripts/deploy.sh local      # starts the local network, deploys, wires admin pe
 - Local deploys use `--identity anonymous` (override with `ICP_IDENTITY`); never `prod-identity`.
 - Sign-in uses the real Internet Identity (`https://id.ai`, your passkey) also locally; the local network trusts its signatures. Use a normal browser (Chrome, Edge, Firefox), not an embedded one such as VS Code's Simple Browser, which blocks passkeys and pop-up dialogs.
 - Offline alternative: the local network's own II (`ii: true`) runs in test mode and asks for a "seed index" (any number) instead of a passkey, via `window.prompt`. Enable it in the browser console with `localStorage.setItem("axelkod:ii", "local")` and reload; the e2e tests do this. Remove the key to go back to id.ai.
-- Become admin locally: sign in, copy the ID from "Åtkomst nekad", then
-  `icp canister call backend addAdmin '(principal "<id>")' --identity anonymous` and reload.
+- Become admin locally: sign in, copy the ID from "Begär åtkomst" (copy button), then
+  `npm run admin:add`, paste the ID when asked, and reload.
 
 ## Tests
 
@@ -65,7 +65,7 @@ After a mainnet deploy, **commit `.icp/data/`** (mainnet canister IDs) and `cani
 ### First admin
 
 1. Open `https://<frontend-id>.icp.net/admin` (later `https://axelkod.eu/admin`) and sign in with Internet Identity (a passkey).
-2. The page shows "Åtkomst nekad" and your ID (principal). Copy it.
+2. The page shows "Begär åtkomst" and your ID (principal). Copy it with the copy button.
 3. Run `FIRST_ADMIN=<principal> scripts/deploy.sh ic`, or just the add step:
    `icp canister call backend addAdmin '(principal "<principal>")' -e ic --identity prod-identity --identity-password-file ~/.identity-pw`
 4. Reload `/admin`. Further admins are added from **Inställningar** in the admin.
@@ -101,10 +101,14 @@ Follow these steps after the first mainnet deploy (`.well-known/ic-domains` alre
 ## Publishing SEO
 
 1. Admin → **SEO**: edit per language, then **Spara**.
-2. **Publicera** rewrites the four public pages' metadata, `sitemap.xml` and `robots.txt` on the live site in one atomic call. "Senast publicerat" shows when; a warning appears when SEO settings or contact details changed since.
+2. **Publicera** rewrites the public pages (metadata, news, and the home-page sections edited under Admin → **Startsida**), `sitemap.xml` and `robots.txt` on the live site in one atomic call. Home-page edits are drafts until then. "Senast publicerat" shows when; a warning appears when SEO settings or contact details changed since.
 3. Every deploy re-bakes the same output from the backend, so deploys and Publish never drift.
 
-Contact details, retention and response time are read by the site at runtime and are live on save (contact details also feed the published JSON-LD, so publish after changing them).
+Contact details (including the map snapshot made from the coordinates, see below), retention and response time are read by the site at runtime and are live on save (contact details also feed the published JSON-LD, so publish after changing them).
+
+### Contact map
+
+Admin → Kontaktuppgifter takes latitude/longitude. On save the admin's browser draws OpenStreetMap tiles into an image and uploads it to `/uploads/map-*.jpg`; the site shows that file behind the contact card (credited "© OpenStreetMap"), so visitors never contact OpenStreetMap. Empty coordinates remove the map.
 
 ## Cycles: cost and top-ups
 

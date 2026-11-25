@@ -1,5 +1,3 @@
-import type { NewsArea } from "../bindings/backend";
-
 /** Slug from a title: lowercase ASCII, Swedish letters folded, hyphen-separated. */
 export function slugify(title: string): string {
   return title
@@ -12,9 +10,15 @@ export function slugify(title: string): string {
     .replace(/-+$/, "");
 }
 
-export const AREA_LABEL: Record<NewsArea, string> = {
-  parts: "Fordonsdelar", software: "Mjukvara", security: "Cybersäkerhet", company: "Företaget",
-} as Record<NewsArea, string>;
+/** A cover is an uploaded file (/uploads/…) or an https:// image address (same rule as the canister). */
+export function isCoverUrl(u: string): boolean {
+  if (/^\/uploads\/[^\s"<>]{2,}$/.test(u)) return u.length <= 300;
+  try {
+    return new URL(u).protocol === "https:" && !/[\s"<>]/.test(u);
+  } catch {
+    return false;
+  }
+}
 
 /** ns timestamp ⇄ <input type="datetime-local"> value (local time). */
 export function toLocalInput(ns: bigint): string {

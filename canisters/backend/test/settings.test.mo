@@ -5,6 +5,7 @@ import Types "../src/types";
 let contact : Types.ContactInfo = {
   email = " info@axelkod.eu "; phone = ?"031-123 45"; street = ?"Gatan 1"; postalCode = ?"431 30";
   city = "Mölndal"; orgNumber = ?"559000-0000"; showAddress = false; showPhone = true;
+  mapLat = ?57.655; mapLon = ?12.014; mapUrl = ?"/uploads/map-1.png";
 };
 
 let seoLang : Types.SeoLang = {
@@ -59,5 +60,20 @@ suite("Settings", func() {
     assert isErr(Settings.site({ site with retentionMonths = 0 }), "retentionMonths");
     assert isErr(Settings.site({ site with retentionMonths = 61 }), "retentionMonths");
     assert isErr(Settings.site({ site with responseTime = { sv = ""; en = "x" } }), "responseTime.sv");
+  });
+});
+
+suite("contact map", func() {
+  test("coordinates in range and an uploaded snapshot are accepted", func() {
+    expect.bool(switch (Settings.contact(contact)) { case (#ok(_)) true; case (#err(_)) false }).isTrue();
+  });
+  test("out-of-range coordinates are rejected", func() {
+    expect.bool(isErr(Settings.contact({ contact with mapLat = ?91.0 }), "map")).isTrue();
+  });
+  test("external map addresses are rejected", func() {
+    expect.bool(isErr(Settings.contact({ contact with mapUrl = ?"https://evil.example/x.png" }), "mapUrl")).isTrue();
+  });
+  test("the public view carries the snapshot", func() {
+    expect.bool(Settings.publicContact(contact).mapUrl == ?"/uploads/map-1.png").isTrue();
   });
 });

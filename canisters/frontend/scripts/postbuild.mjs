@@ -65,7 +65,8 @@ for (const file of htmlFiles(out).sort()) {
     "default-src 'self'",
     `script-src 'self' ${[...hashes].join(" ")}`.trim(),
     "style-src 'self'",
-    "img-src 'self' data:",
+    // https: so news covers can point at an external image address (set by admins).
+    "img-src 'self' data: https:",
     "font-src 'self'",
     // The agent calls the page origin locally and icp-api.io on custom domains.
     "connect-src 'self' https://icp-api.io",

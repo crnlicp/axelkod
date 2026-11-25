@@ -7,6 +7,7 @@ import type { Backend } from "../bindings/backend";
 import { fromBackend, goneHtml, replaceRegion, TEMPLATE } from "../lib/news-render";
 import { replaceSeoRegion } from "../lib/seo-head";
 import { PAGE_TEXTS, toSeoData } from "../lib/seo";
+import type { HomeContent } from "../lib/home-render";
 import { bakeSite, SITE_PAGES } from "../lib/site-bake";
 import { assetsActor, listAssetKeys, MAX_UPLOAD_BYTES, type UploadAsset } from "./assets";
 
@@ -32,13 +33,16 @@ async function fetchPage(url: string, okStatus = true) {
 }
 
 export async function publishSeo(backend: Backend, identity: Identity): Promise<bigint> {
-  const [cfg, news] = await Promise.all([backend.getPublicConfig(), backend.publishedNews()]);
+  const [cfg, news, home] = await Promise.all([backend.getPublicConfig(), backend.publishedNews(), backend.adminGetHome()]);
+  // Publish bakes the draft home sections; markSeoPublished then makes them the live copy.
+  if (home.__kind__ === "err") throw new Error(home.err.__kind__);
   const live = await Promise.all(SITE_PAGES.map(async (p) => [p.key, await fetchPage(p.url)] as const));
   const tplSv = await fetchPage(TEMPLATE.sv.url);
   const tplEn = await fetchPage(TEMPLATE.en.url);
   const result = bakeSite({
     data: toSeoData(cfg.seo, cfg.contact),
     news: news.map(fromBackend),
+    home: home.ok as HomeContent,
     texts: PAGE_TEXTS,
     today: new Date().toISOString().slice(0, 10),
     pages: Object.fromEntries(live.map(([k, v]) => [k, v.html])),
@@ -99,10 +103,13 @@ export async function publishSeo(backend: Backend, identity: Identity): Promise<
 const OG_TYPES: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
 
 /** Uploads an image to /uploads/ (kept across deploys by _preserve); returns its path. */
-export async function uploadImage(identity: Identity, file: File, prefix: "og" | "news"): Promise<string> {
+export async function uploadImage(
+  identity: Identity, file: File, prefix: "og" | "news" | "map",
+  msgs: { imageTypes: string; imageTooBig: string },
+): Promise<string> {
   const ext = OG_TYPES[file.type];
-  if (!ext) throw new Error("Endast PNG, JPEG eller WebP.");
-  if (file.size > MAX_UPLOAD_BYTES) throw new Error("Bilden är större än 1,9 MB.");
+  if (!ext) throw new Error(msgs.imageTypes);
+  if (file.size > MAX_UPLOAD_BYTES) throw new Error(msgs.imageTooBig);
   const key = `/uploads/${prefix}-${Date.now()}.${ext}`;
   const assets = await assetsActor(identity);
   await assets.upload_asset({
