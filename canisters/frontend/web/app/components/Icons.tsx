@@ -264,3 +264,11 @@ export const IconPaperclip = (p: IconProps) => (
     <path d="M15.5,7 L8.5,14 A2,2 0 0 0 11.3,16.8 L18.3,9.8 A4,4 0 0 0 12.7,4.2 L5.7,11.2 A6,6 0 0 0 14.2,19.7 L19.5,14.4" />
   </Icon>
 );
+
+/** Ekonomi: sales (invoice with a total line). */
+export const IconInvoice = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6,3.5 H15 L18.5,7 V20.5 H6 Z" />
+    <path d="M9,10 H15.5 M9,13.5 H15.5 M12,17 H15.5" />
+  </Icon>
+);

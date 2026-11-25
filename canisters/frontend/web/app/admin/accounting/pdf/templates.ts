@@ -2,6 +2,7 @@
 // layout is a new version, so re-rendering an old document gives the same output.
 import { formatOre } from "../money";
 import { type Assets, type Col, Doc, MUTED } from "./layout";
+import { reminderDoc, salesDoc } from "./sales";
 import type { Job, PdfVoucher } from "./types";
 
 const debit = (a: bigint) => (a > 0n ? formatOre(a) : "");
@@ -83,6 +84,14 @@ async function render(job: Job, assets: Assets): Promise<Uint8Array> {
       });
       break;
     }
+    case "invoice@1":
+    case "credit-note@1":
+    case "quote@1":
+      salesDoc(d, job.snapshot);
+      break;
+    case "reminder@1":
+      reminderDoc(d, job.reminder);
+      break;
   }
   return d.save();
 }

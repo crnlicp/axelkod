@@ -13,7 +13,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A1 | Repo restructure to grouped layout | Done (2026-11-25, branch `accounting`) | Local deploy, all existing tests pass unchanged |
 | A2 | Ledger core (backend): roles, settings, fiscal years, BAS, numbering, vouchers, audit, vault | Done (2026-11-25) | `mops test` both canisters |
 | A3 | Ekonomi shell + UI kit + PDF pipeline + setup wizard + Bokföring UI | Done (2026-11-25) | Playwright, axe, PDF snapshot test |
-| A4 | Sales | Not started | `mops test` + Playwright (hash-stable re-render) |
+| A4 | Sales | Done (2026-11-25) | `mops test` + Playwright (hash-stable re-render) |
 | A5 | Purchases, bank, tax account | Not started | `mops test` + Playwright upload/match |
 | A6 | VAT and EU sales list | Not started | Box fixtures, file checked in Skatteverket's test service |
 | A7 | Payroll, AGI, växa | Not started | Fee-category tests, AGI XML vs XSD, test service |
@@ -71,8 +71,8 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 
 | # | Item | Official source | Phase | Status |
 |---|---|---|---|---|
-| V1 | Mandatory invoice content | Mervärdesskattelag (2023:200) 17 kap. (riksdagen.se), Skatteverket "Fakturering" pages | A4 | Not started |
-| V2 | Simplified invoice limit, foreign-currency VAT in SEK wording | ML 17 kap., Skatteverket | A4 | Not started |
+| V1 | Mandatory invoice content | Mervärdesskattelag (2023:200) 17 kap. (riksdagen.se), Skatteverket "Fakturering" pages | A4 | Done (A4) |
+| V2 | Simplified invoice limit, foreign-currency VAT in SEK wording | ML 17 kap., Skatteverket | A4 | Done (A4) |
 | V3 | VAT return box list, file format, whether file upload still exists | Skatteverket "Fylla i momsdeklarationen" + technical description for file submission | A6 | Not started |
 | V4 | EU sales list file format and deadlines | Skatteverket "Periodisk sammanställning" + Filöverföring format description | A6 | Not started |
 | V5 | VIES REST API, and whether IC HTTPS outcalls can reach it (IPv4/IPv6) | ec.europa.eu VIES technical info, `https-outcalls` skill | A6 | Not started |
@@ -83,12 +83,12 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V10 | Tax tables open-data format | Skatteverket open data (Skattetabeller) | A7 | Not started |
 | V11 | Mileage, per diem, PBB/IBB 2026, car benefit formula | Skatteverket "Belopp och procent 2026" | A7 | Not started |
 | V12 | ROT/RUT 2026 rates and caps, XML schema, decision JSON, 2027 fields | Skatteverket "Rot och rut – företag" technical description | A8 | Not started |
-| V13 | Riksbank reference rate history | riksbank.se (referensränta) | A4 | Not started |
-| V14 | Late-payment compensation and reminder-fee rules | Räntelagen (1975:635), Lag (1981:739) om ersättning för inkassokostnader | A4 | Not started |
+| V13 | Riksbank reference rate history | riksbank.se (referensränta) | A4 | Done (A4) |
+| V14 | Late-payment compensation and reminder-fee rules | Räntelagen (1975:635), Lag (1981:739) om ersättning för inkassokostnader | A4 | Done (A4) |
 | V15 | BAS 2026 accounts and BAS → SRU (INK2R/INK2S) mapping | bas.se, Skatteverket SRU technical description (INK2) | A2 / A9 | Accounts done (A2); SRU open |
 | V16 | SRU file format (`INFO.SRU`, `BLANKETTER.SRU`) | Skatteverket "SKV 269" technical description | A9 | Not started |
 | V17 | SIE 4C (type 4) spec | sie.se file format description | A9 | Not started |
-| V18 | Peppol BIS Billing 3.0 rules and UBL schema | docs.peppol.eu/poacc/billing/3.0/ | A4 | Not started |
+| V18 | Peppol BIS Billing 3.0 rules and UBL schema | docs.peppol.eu/poacc/billing/3.0/ | A4 | Done (A4) |
 | V19 | K2 layout (BFNAR 2016:10) for income statement and balance sheet | bfn.se | A9 | Not started |
 | V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | BFL done; BFNAR 2013:2 open |
 | V21 | European subnet ID, node count and node countries | ICP dashboard | A10 | Not started |
@@ -363,6 +363,33 @@ You can stop and resume the wizard. The dashboard shows it until it is done.
   - **Deadlines:** turnover ≤ 40 MSEK is assumed until A6 adds turnover and EU trade settings. Yearly VAT uses the earliest (EU trade) date until then. Preliminary tax shows the 12th (the only day Skatteverket's page states).
   - **Opening a stored document** shows it in a preview dialog (with download) instead of a new tab, which browsers block after an async decrypt. `admin.html` also gets `img-src blob:` for image documents.
   - **Brand script:** fixed the logo path broken by A1, and added `pdf/logo@1.png` (C7).
+
+### A4. Sales — Done (2026-11-25)
+Sources checked first (V1, V2, V13, V14, V18; see sources.md).
+- [x] Seed `seed-2026.2`: add BAS 3305, 3308, 3990, 8313 (names verbatim from BAS 2026 v1.1); sales accounts on the export/EU VAT codes
+- [x] Parameters (owner-edited, audited, with source URL): reference rates per half-year, reminder fee 60 kr, förseningsersättning 450 kr, simplified-invoice limit 4 000 kr
+- [x] Customers and items (`#company`/`#private`, VAT nr, terms, language, `reminderFeeAgreed`)
+- [x] Quotes (own numbering; draft → sent → accepted/declined/expired; convert to invoice)
+- [x] Invoices: draft → issue in one synchronous update: validate ML 17:24–29 and ABL 28:5, allocate the invoice number (gapless, one series for invoices and credit notes), freeze the snapshot, hash it (acj-1), post the voucher (invoice method) in series F
+- [x] Legal notes from the VAT treatment: "Omvänd betalningsskyldighet", EU goods exemption (10 kap. 42 § ML), export exemption, "Godkänd för F-skatt"; VAT in SEK for other currencies (ML 17:29)
+- [x] OCR reference: invoice number + optional length digit + Luhn check digit
+- [x] Credit notes: reference the original's number (ML 17:28 5), full or partial, post the reversal
+- [x] Payments: register against an invoice (1930 / 1510; cash method books revenue and VAT at payment), balance and overdue computed (C9)
+- [x] Reminders: documents with the fee only if agreed, or 450 kr B2B instead (never both, 1981:739 5 §), and interest = reference rate + 8 pp from the due date (Räntelagen 3, 6 §§)
+- [x] PDF `invoice@1` (sv/en), `credit-note@1`, `quote@1`, `reminder@1` from the stored snapshot; hash verified on every render
+- [x] Peppol BIS Billing 3.0 UBL export (Invoice/CreditNote), checked against the UBL 2.1 XSD (xmllint-wasm, D5) and the Swedish SE-R rules in unit tests
+- [x] Försäljning UI: Fakturor · Offerter · Betalningar · Påminnelser · Kunder · Artiklar; invoice editor customer-first with totals panel
+- [x] Tests: `mops test` (totals and VAT rounding, mandatory fields per treatment, gapless invoice numbers, OCR Luhn, interest and fee rules); Playwright: issue invoice → PDF header from settings → change settings → old invoice PDF still shows the old snapshot with the identical hash
+- Result: `mops test` accounting 43 (16 new for sales); `tests/api/sales-api.spec.ts` 5/5 against the live canister (gapless invoice numbers, snapshot hash in the browser equals the canister's and the audit entry's, F/B vouchers, partial credit, payment, quote → invoice, EU reverse charge needs the buyer's VAT nr); unit tests for the four new templates (content + pinned fingerprints) and Peppol (valid against the UBL 2.1 XSDs, SE-R checks, a broken document is rejected); `tests/e2e/sales.spec.ts`: the acceptance flow (issue → PDF header from settings → settings changed → same PDF content and hash), e-invoice, payment, axe on every sales page.
+- Changes against this plan:
+  - **Parameters** are seeded from the verified sources and can be changed by an owner through `setParameters` (audited, with a source). The Inställningar › Parametrar form comes with A7, which adds the payroll parameters to the same tab.
+  - **Simplified invoices** are not issued; every invoice has full ML 17:24 content. The 4 000 kr limit is stored for later use.
+  - **Interest and fees** on reminders are claimed on the reminder and booked only when received (Bokför betalning › "Varav ränta/avgifter", to 8313 and 3990).
+  - **Cash method:** revenue and VAT are booked pro rata at payment; credit notes are not booked under the cash method (refunds come with bank in A5). Unpaid invoices at year-end are booked in A9.
+  - **Peppol:** checked against the UBL 2.1 XSDs and the Swedish rules we can test; the Peppol Schematron needs an XSLT 2 engine and was not run. Sending through an access point is out of scope (download only).
+  - **Tax category mapping** (EN 16931): domestic S, EU goods K, EU services and domestic reverse charge AE, export goods G, services outside the EU O, exempt E.
+  - **New BAS accounts** in seed `seed-2026.2`: 3990, 7960, 8313 (names verbatim from BAS 2026 v1.1).
+  - **Migrations:** a second pending migration adds the sales state; `check-limit` is 2 until mainnet.
 
 ### A4–A9
 Scope as in spec §13 phases 2–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.

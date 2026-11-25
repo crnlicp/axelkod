@@ -1,4 +1,5 @@
 // Plain data sent to the PDF worker (structured clone: bigint is fine).
+import type { Reminder, Snapshot } from "../../../bindings/accounting";
 import type { DocMeta } from "./layout";
 
 export type Meta = Omit<DocMeta, "template">;
@@ -27,4 +28,7 @@ export type Job =
   | { template: "voucher@1"; meta: Meta; voucher: PdfVoucher }
   | { template: "journal@1"; meta: Meta; vouchers: PdfVoucher[] }
   | { template: "ledger@1"; meta: Meta; accounts: LedgerAccount[] }
-  | { template: "trial-balance@1"; meta: Meta; rows: TrialRow[] };
+  | { template: "trial-balance@1"; meta: Meta; rows: TrialRow[] }
+  /** Issued sales documents render only from their stored snapshot (C11). */
+  | { template: "invoice@1" | "credit-note@1" | "quote@1"; meta: Meta; snapshot: Snapshot }
+  | { template: "reminder@1"; meta: Meta; reminder: Reminder };

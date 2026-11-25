@@ -11,7 +11,7 @@ candid = "src/accounting.did"
 
 [canisters.accounting.migrations]
 chain = "src/migrations"
-check-limit = 1
+check-limit = 2
 
 [canisters.accounting.check-stable]
 path = "deployed/accounting.most"

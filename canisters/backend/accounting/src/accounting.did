@@ -65,6 +65,14 @@ type Voucher =
    series: text;
    source: SourceRef;
  };
+type VatRow = 
+ record {
+   base: Money;
+   category: text;
+   rateBp: nat;
+   vat: Money;
+   vatCode: text;
+ };
 type VatKind = 
  variant {
    buyerLiableSE;
@@ -111,10 +119,79 @@ type SourceRef =
    vatReturn: nat;
    yearEnd: nat;
  };
+type Snapshot = 
+ record {
+   buyer: PartySnapshot;
+   creditOf: opt record {
+                   issueDate: Date;
+                   number: nat;
+                 };
+   currency: text;
+   deliveryDate: opt Date;
+   dueDate: opt Date;
+   fxRate: opt FxRate;
+   issueDate: Date;
+   kind: DocKind;
+   language: Lang;
+   lateInterestText: opt text;
+   legalNotes: vec text;
+   lines: vec SnapLine;
+   notes: opt text;
+   number: nat;
+   ocr: opt text;
+   ourRef: opt text;
+   seller: CompanyProfile;
+   templateVersion: text;
+   termsDays: nat;
+   total: Money;
+   totalNet: Money;
+   totalVat: Money;
+   totalVatSek: opt Money;
+   validUntil: opt Date;
+   vat: vec VatRow;
+   yourRef: opt text;
+ };
+type SnapLine = 
+ record {
+   account: nat;
+   description: text;
+   discountBp: nat;
+   net: Money;
+   quantity: int;
+   rateBp: nat;
+   unit: text;
+   unitPrice: Money;
+   vatCode: text;
+ };
 type Series = 
  record {
    code: text;
    name: text;
+ };
+type SalesDraft = 
+ record {
+   creditOf: opt nat;
+   id: nat;
+   input: DocInput;
+   kind: DocKind;
+   quoteOf: opt nat;
+   updatedAt: Time;
+   updatedBy: principal;
+ };
+type SalesDoc = 
+ record {
+   contentHash: blob;
+   creditOf: opt nat;
+   customerId: nat;
+   id: nat;
+   issuedAt: Time;
+   issuedBy: principal;
+   kind: DocKind;
+   number: nat;
+   quoteOf: opt nat;
+   retainUntil: Date;
+   snapshot: Snapshot;
+   voucherId: opt nat;
  };
 type RoleView = 
  record {
@@ -133,12 +210,17 @@ type Role =
 type Result_9 = 
  variant {
    err: Error;
-   ok: Voucher;
+   ok: VoucherDraft;
+ };
+type Result_8 = 
+ variant {
+   err: Error;
+   ok: Item;
  };
 type Result_7 = 
  variant {
    err: Error;
-   ok: VoucherDraft;
+   ok: SalesDraft;
  };
 type Result_6 = 
  variant {
@@ -155,40 +237,113 @@ type Result_4 =
    err: Error;
    ok: record {mirrored: bool;};
  };
+type Result_39 = 
+ variant {
+   err: Error;
+   ok: vec AuditEntry;
+ };
+type Result_38 = 
+ variant {
+   err: Error;
+   ok: Page_5;
+ };
+type Result_37 = 
+ variant {
+   err: Error;
+   ok: vec BalanceRow;
+ };
+type Result_36 = 
+ variant {
+   err: Error;
+   ok: nat;
+ };
+type Result_35 = 
+ variant {
+   err: Error;
+   ok: Reminder;
+ };
+type Result_34 = 
+ variant {
+   err: Error;
+   ok: Attachment;
+ };
+type Result_33 = 
+ variant {
+   err: Error;
+   ok: opt CompanyProfile;
+ };
+type Result_32 = 
+ variant {
+   err: Error;
+   ok: Parameters;
+ };
+type Result_31 = 
+ variant {
+   err: Error;
+   ok: record {
+         lockDate: opt Date;
+         settings: AccountingSettings;
+       };
+ };
+type Result_30 = 
+ variant {
+   err: Error;
+   ok: VoucherView;
+ };
 type Result_3 = 
  variant {
    err: Error;
    ok;
  };
+type Result_29 = 
+ variant {
+   err: Error;
+   ok: DocView;
+ };
+type Result_28 = 
+ variant {
+   err: Error;
+   ok: Page_4;
+ };
+type Result_27 = 
+ variant {
+   err: Error;
+   ok: vec Account;
+ };
+type Result_26 = 
+ variant {
+   err: Error;
+   ok: Page_3;
+ };
 type Result_25 = 
  variant {
    err: Error;
-   ok: vec AuditEntry;
+   ok: vec Customer;
  };
 type Result_24 = 
  variant {
    err: Error;
-   ok: Page_2;
+   ok: vec VoucherDraft;
  };
 type Result_23 = 
  variant {
    err: Error;
-   ok: vec BalanceRow;
+   ok: vec FiscalYear;
  };
 type Result_22 = 
  variant {
    err: Error;
-   ok: nat;
+   ok: vec Item;
  };
 type Result_21 = 
  variant {
    err: Error;
-   ok: Attachment;
+   ok: Page_2;
  };
 type Result_20 = 
  variant {
    err: Error;
-   ok: opt CompanyProfile;
+   ok: Page_1;
  };
 type Result_2 = 
  variant {
@@ -198,55 +353,47 @@ type Result_2 =
 type Result_19 = 
  variant {
    err: Error;
-   ok: record {
-         lockDate: opt Date;
-         settings: AccountingSettings;
-       };
+   ok: vec RoleView;
  };
 type Result_18 = 
  variant {
    err: Error;
-   ok: VoucherView;
+   ok: Page;
  };
 type Result_17 = 
  variant {
    err: Error;
-   ok: Page_1;
+   ok: vec SalesDraft;
  };
 type Result_16 = 
  variant {
    err: Error;
-   ok: vec Account;
+   ok: vec Series;
  };
 type Result_15 = 
  variant {
    err: Error;
-   ok: Page;
+   ok: vec VatCode;
  };
 type Result_14 = 
  variant {
    err: Error;
-   ok: vec VoucherDraft;
+   ok: Voucher;
  };
 type Result_13 = 
  variant {
    err: Error;
-   ok: vec FiscalYear;
+   ok: Snapshot;
  };
 type Result_12 = 
  variant {
    err: Error;
-   ok: vec RoleView;
- };
-type Result_11 = 
- variant {
-   err: Error;
-   ok: vec Series;
+   ok: Payment;
  };
 type Result_10 = 
  variant {
    err: Error;
-   ok: vec VatCode;
+   ok: Customer;
  };
 type Result_1 = 
  variant {
@@ -258,19 +405,123 @@ type Result =
    err: Error;
    ok: blob;
  };
-type Page_2 = 
+type Reminder = 
+ record {
+   at: Time;
+   balance: Money;
+   buyer: PartySnapshot;
+   by: principal;
+   contentHash: blob;
+   date: Date;
+   dueDate: Date;
+   fee: Money;
+   feeKind: text;
+   id: nat;
+   interest: Money;
+   interestRateBp: int;
+   invoiceNumber: nat;
+   language: Lang;
+   number: nat;
+   salesDocId: nat;
+   seller: CompanyProfile;
+ };
+type RefRate = 
+ record {
+   from: Date;
+   rateBp: int;
+ };
+type QuoteStatus = 
+ variant {
+   accepted;
+   declined;
+   expired;
+   sent;
+ };
+type PaymentMethod = 
+ variant {
+   bankgiro;
+   card;
+   cash;
+   swish;
+   transfer;
+ };
+type PaymentInput = 
+ record {
+   amount: Money;
+   amountSek: opt Money;
+   date: Date;
+   fees: Money;
+   interest: Money;
+   method: PaymentMethod;
+   reference: opt text;
+   salesDocId: nat;
+ };
+type Payment = 
+ record {
+   amount: Money;
+   amountSek: opt Money;
+   at: Time;
+   by: principal;
+   date: Date;
+   fees: Money;
+   id: nat;
+   interest: Money;
+   method: PaymentMethod;
+   reference: opt text;
+   salesDocId: nat;
+   voucherId: nat;
+ };
+type PartySnapshot = 
+ record {
+   address: Address;
+   email: opt text;
+   kind: variant {
+           company;
+           person;
+         };
+   name: text;
+   orgNr: opt text;
+   peppolId: opt text;
+   vatNr: opt text;
+ };
+type Parameters = 
+ record {
+   forseningsersattning: Money;
+   lateInterestMarginBp: nat;
+   ocrLengthDigit: bool;
+   referenceRates: vec RefRate;
+   reminderFee: Money;
+   simplifiedInvoiceLimit: Money;
+   source: text;
+ };
+type Page_5 = 
  record {
    items: vec AuditEntry;
    total: nat;
  };
-type Page_1 = 
+type Page_4 = 
  record {
    items: vec VoucherView;
    total: nat;
  };
-type Page = 
+type Page_3 = 
  record {
    items: vec Attachment;
+   total: nat;
+ };
+type Page_2 = 
+ record {
+   items: vec Payment;
+   total: nat;
+ };
+type Page_1 = 
+ record {
+   items: vec Reminder;
+   total: nat;
+ };
+type Page = 
+ record {
+   items: vec DocSummary;
    total: nat;
  };
 type Money = int;
@@ -284,6 +535,45 @@ type Me =
  record {
    "principal": principal;
    role: opt Role;
+ };
+type Lang = 
+ variant {
+   en;
+   sv;
+ };
+type ItemInput = 
+ record {
+   account: nat;
+   active: bool;
+   kind: variant {
+           goods;
+           "service";
+         };
+   name: text;
+   priceExVat: Money;
+   sku: text;
+   unit: text;
+   vatCode: text;
+ };
+type Item = 
+ record {
+   account: nat;
+   active: bool;
+   id: nat;
+   kind: variant {
+           goods;
+           "service";
+         };
+   name: text;
+   priceExVat: Money;
+   sku: text;
+   unit: text;
+   vatCode: text;
+ };
+type FxRate = 
+ record {
+   date: Date;
+   rate: nat;
  };
 type FiscalYearStatus = 
  variant {
@@ -310,7 +600,108 @@ type Error =
    notFound;
    vault: text;
  };
+type DocView = 
+ record {
+   balance: Money;
+   credited: Money;
+   credits: vec nat;
+   doc: SalesDoc;
+   invoices: vec nat;
+   overdue: bool;
+   paid: Money;
+   payments: vec Payment;
+   reminders: vec nat;
+   status: DocStatus;
+ };
+type DocSummary = 
+ record {
+   balance: Money;
+   currency: text;
+   customerName: text;
+   dueDate: opt Date;
+   id: nat;
+   issueDate: Date;
+   kind: DocKind;
+   number: nat;
+   status: DocStatus;
+   total: Money;
+ };
+type DocStatus = 
+ variant {
+   credited;
+   issued;
+   overdue;
+   paid;
+   partiallyPaid;
+   quote: QuoteStatus;
+ };
+type DocLine = 
+ record {
+   account: nat;
+   description: text;
+   discountBp: nat;
+   itemId: opt nat;
+   quantity: int;
+   unit: text;
+   unitPrice: Money;
+   vatCode: text;
+ };
+type DocKind = 
+ variant {
+   creditNote;
+   invoice;
+   quote;
+ };
+type DocInput = 
+ record {
+   currency: text;
+   customerId: nat;
+   deliveryDate: opt Date;
+   fxRate: opt FxRate;
+   language: Lang;
+   lines: vec DocLine;
+   notes: opt text;
+   ourRef: opt text;
+   termsDays: nat;
+   validUntil: opt Date;
+   yourRef: opt text;
+ };
 type Date = text;
+type CustomerInput = 
+ record {
+   active: bool;
+   address: Address;
+   email: opt text;
+   kind: variant {
+           company;
+           person;
+         };
+   language: Lang;
+   name: text;
+   orgNr: opt text;
+   peppolId: opt text;
+   reminderFeeAgreed: bool;
+   termsDays: nat;
+   vatNr: opt text;
+ };
+type Customer = 
+ record {
+   active: bool;
+   address: Address;
+   email: opt text;
+   id: nat;
+   kind: variant {
+           company;
+           person;
+         };
+   language: Lang;
+   name: text;
+   orgNr: opt text;
+   peppolId: opt text;
+   reminderFeeAgreed: bool;
+   termsDays: nat;
+   vatNr: opt text;
+ };
 type CompanyProfile = 
  record {
    bankgiro: opt text;
@@ -381,6 +772,13 @@ type Attachment =
    vaultFileId: nat;
    wrappedKey: blob;
  };
+type Address = 
+ record {
+   city: text;
+   country: text;
+   postalCode: text;
+   street: text;
+ };
 type AccountingSettings = 
  record {
    accountingMethod: variant {
@@ -404,52 +802,84 @@ type Accounting =
  service {
    /// Huvudbok input: the vouchers that touch one account, in registration order.
    accountVouchers: (fiscalYearId: nat, account: nat, offset: nat, limit:
-    nat) -> (Result_17) query;
+    nat) -> (Result_28) query;
    addAccount: (number: nat, name: text, vatCode: opt text, sruCode:
     opt text) -> (Result_2);
    /// The audit trail of one record (e.g. "voucher", id), oldest first.
-   auditFor: (entity: text, id: nat) -> (Result_25) query;
-   auditLog: (offset: nat, limit: nat) -> (Result_24) query;
+   auditFor: (entity: text, id: nat) -> (Result_39) query;
+   auditLog: (offset: nat, limit: nat) -> (Result_38) query;
    /// Net amount per account and month: the trial balance and reports read this.
-   balances: (fiscalYearId: nat) -> (Result_23) query;
-   beginAttachment: (meta: AttachmentMeta) -> (Result_22);
-   confirmAttachment: (ticket: nat, vaultFileId: nat) -> (Result_21);
+   balances: (fiscalYearId: nat) -> (Result_37) query;
+   beginAttachment: (meta: AttachmentMeta) -> (Result_36);
+   confirmAttachment: (ticket: nat, vaultFileId: nat) -> (Result_34);
    /// A correction voucher in series C that references the original (5 kap. 5 §).
    /// `lines = null` reverses the original in full.
    correctVoucher: (id: nat, eventDate: Date, description: text, lines:
-    opt vec VoucherLine) -> (Result_9);
+    opt vec VoucherLine) -> (Result_14);
    createFiscalYear: (start: Date, end: Date, changeover: bool) -> (Result_5);
+   /// A payment reminder for an overdue invoice. B2B: förseningsersättning once (1981:739 4 a §),
+   /// and then no reminder fee (5 §). Otherwise the agreed reminder fee (2 §). Interest from the
+   /// due date at the reference rate + 8 pp (Räntelagen 3, 6 §§); it is claimed, not booked.
+   createReminder: (invoiceId: nat, date: Date) -> (Result_35);
+   /// A credit note draft with the invoice's lines; edit it for a partial credit.
+   creditDraftFrom: (invoiceId: nat) -> (Result_7);
    deleteDraft: (id: nat) -> (Result_3);
+   deleteSalesDraft: (id: nat) -> (Result_3);
    /// The vetKey for `purpose`, encrypted to the caller's transport key.
    deriveKey: (purpose: text, transportPublicKey: blob) -> (Result);
-   getAttachment: (id: nat) -> (Result_21) query;
-   getCompany: () -> (Result_20) query;
-   getSettings: () -> (Result_19) query;
-   getVoucher: (id: nat) -> (Result_18) query;
+   getAttachment: (id: nat) -> (Result_34) query;
+   getCompany: () -> (Result_33) query;
+   getParameters: () -> (Result_32) query;
+   getSalesDoc: (id: nat) -> (Result_29) query;
+   getSettings: () -> (Result_31) query;
+   getVoucher: (id: nat) -> (Result_30) query;
+   invoiceDraftFromQuote: (quoteId: nat) -> (Result_7);
+   issueSalesDraft: (id: nat) -> (Result_29);
    /// Grundbok: registration order, optionally one series.
    journal: (fiscalYearId: nat, series: opt text, offset: nat, limit: 
-    nat) -> (Result_17) query;
+    nat) -> (Result_28) query;
    /// Links a document to a voucher after posting (the voucher itself stays unchanged).
    linkAttachment: (attachmentId: nat, voucherId: nat) -> (Result_3);
-   listAccounts: () -> (Result_16) query;
+   listAccounts: () -> (Result_27) query;
    /// Newest first.
-   listAttachments: (offset: nat, limit: nat) -> (Result_15) query;
-   listDrafts: () -> (Result_14) query;
-   listFiscalYears: () -> (Result_13) query;
-   listRoles: () -> (Result_12) query;
-   listSeries: () -> (Result_11) query;
-   listVatCodes: () -> (Result_10) query;
+   listAttachments: (offset: nat, limit: nat) -> (Result_26) query;
+   listCustomers: () -> (Result_25) query;
+   listDrafts: () -> (Result_24) query;
+   listFiscalYears: () -> (Result_23) query;
+   listItems: () -> (Result_22) query;
+   listPayments: (offset: nat, limit: nat) -> (Result_21) query;
+   listReminders: (offset: nat, limit: nat) -> (Result_20) query;
+   listRoles: () -> (Result_19) query;
+   listSalesDocs: (kind: opt DocKind, offset: nat, limit: nat) ->
+    (Result_18) query;
+   listSalesDrafts: () -> (Result_17) query;
+   listSeries: () -> (Result_16) query;
+   listVatCodes: () -> (Result_15) query;
    me: () -> (Me) query;
-   postDraft: (id: nat) -> (Result_9);
-   postVoucher: (v: VoucherInput) -> (Result_9);
+   postDraft: (id: nat) -> (Result_14);
+   postVoucher: (v: VoucherInput) -> (Result_14);
+   /// The document as it would be issued today (totals, notes, OCR), without taking a number.
+   previewSalesDraft: (id: nat) -> (Result_13) query;
+   registerPayment: (p: PaymentInput) -> (Result_12);
    removeRole: (p: principal) -> (Result_4);
+   /// Creates (id = null) or updates a customer. Issued documents keep their own snapshot.
+   saveCustomer: (id: opt nat, c: CustomerInput) -> (Result_10);
    /// Creates (id = null) or replaces a draft. Only sizes are checked here; the
    /// full rules run when it is posted.
-   saveDraft: (id: opt nat, v: VoucherInput) -> (Result_7);
+   saveDraft: (id: opt nat, v: VoucherInput) -> (Result_9);
+   saveItem: (id: opt nat, i: ItemInput) -> (Result_8);
+   saveSalesDraft: (id: opt nat, kind: DocKind, input: DocInput, creditOf:
+    opt nat, quoteOf: opt nat) -> (Result_7);
    setCompany: (c: CompanyProfile) -> (Result_6);
    setFiscalYearStatus: (id: nat, status: FiscalYearStatus) -> (Result_5);
    /// Moves the lock date forward (never back), up to today.
    setLockDate: (date: Date) -> (Result_3);
+   /// Owner only; every change is audited with its source.
+   setParameters: (p: Parameters) -> (Result_3);
+   setQuoteStatus: (id: nat, status: variant {
+                                       accepted;
+                                       declined;
+                                     }) -> (Result_3);
    setRole: (p: principal, role: Role) -> (Result_4);
    setSettings: (s: AccountingSettings) -> (Result_3);
    /// Called by the admin UI after sign-in so logins appear in the audit log.

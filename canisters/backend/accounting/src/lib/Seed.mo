@@ -5,7 +5,7 @@
 import Types "../types";
 
 module {
-  public let VERSION = "seed-2026.1";
+  public let VERSION = "seed-2026.2";
 
   public let accounts : [Types.Account] = [
     { number = 1220; name = "Inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
@@ -47,6 +47,7 @@ module {
     { number = 3308; name = "Försäljning tjänster till annat EU-land"; kind = #revenue; vatCode = ?"EUTJ"; sruCode = null; active = true; bas = true },
     { number = 3740; name = "Öres- och kronutjämning"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 3960; name = "Valutakursvinster på fordringar och skulder av rörelsekaraktär"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 3990; name = "Övriga ersättningar, bidrag och intäkter"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4010; name = "Inköp av handelsvaror i Sverige"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4515; name = "Inköp av råvaror och material från annat EU-land, 25 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4531; name = "Inköp av tjänster från ett land utanför EU, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
@@ -66,7 +67,9 @@ module {
     { number = 7533; name = "Särskild löneskatt för pensionskostnader"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7690; name = "Övriga personalkostnader"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7832; name = "Avskrivningar på inventarier, verktyg och installationer"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7960; name = "Valutakursförluster på fordringar och skulder av rörelsekaraktär"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8310; name = "Ränteintäkter från omsättningstillgångar"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 8313; name = "Ränteintäkter från kortfristiga fordringar"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8410; name = "Räntekostnader för långfristiga skulder"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8811; name = "Avsättning till periodiseringsfond"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8910; name = "Skatt som belastar årets resultat"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },

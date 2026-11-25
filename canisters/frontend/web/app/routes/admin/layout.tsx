@@ -7,7 +7,7 @@ import { AccSessionCtx, AdminCtx, useSession, type AdminContext } from "../../ad
 import type { AccSession } from "../../admin/accounting/context";
 import accSv from "../../admin/accounting/i18n/sv";
 import accEn from "../../admin/accounting/i18n/en";
-import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconLedger, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
+import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
 import { LogoSymbol } from "../../components/Logo";
 
 export function meta() {
@@ -129,7 +129,10 @@ function accountingNav(lang: AdminLang, role: Role): NavGroup[] {
   const books = role !== Role.payroll;
   return [
     { items: [{ to: "/admin/accounting", end: true, label: n.overview, icon: IconChart }] },
-    ...(books ? [{ title: n.groupDaily, items: [{ to: "/admin/accounting/ledger", label: n.ledger, icon: IconLedger }] }] : []),
+    ...(books ? [{ title: n.groupDaily, items: [
+      { to: "/admin/accounting/sales", label: n.sales, icon: IconInvoice },
+      { to: "/admin/accounting/ledger", label: n.ledger, icon: IconLedger },
+    ] }] : []),
     { items: [{ to: "/admin/accounting/settings", label: n.settings, icon: IconSliders }] },
   ];
 }

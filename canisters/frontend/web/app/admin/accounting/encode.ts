@@ -1,6 +1,6 @@
 // acj-1 values of stored records, field for field as accounting/src/lib/Encode.mo,
 // so a hash computed here equals the audit entry's detailHash for the same record.
-import type { SourceRef, Voucher, VoucherLine } from "../../bindings/accounting";
+import type { CompanyProfile, PartySnapshot, Reminder, Snapshot, SourceRef, Voucher, VoucherLine } from "../../bindings/accounting";
 import { sha256, hex, type Value } from "./canonical";
 
 const opt = <T>(x: T | undefined, f: (y: T) => Value = (y) => y as Value): Value => (x === undefined ? null : f(x));
@@ -23,4 +23,42 @@ export const voucher = (v: Voucher): Value => ({
 
 export async function voucherHash(v: Voucher): Promise<string> {
   return hex(await sha256(voucher(v)));
+}
+
+// ── Sales (mirrors Encode.mo: company, party, snapshot, reminder) ──
+
+export const company = (c: CompanyProfile): Value => ({
+  legalName: c.legalName, orgNr: c.orgNr, vatNr: c.vatNr, registeredOffice: c.registeredOffice, street: c.street,
+  postalCode: c.postalCode, city: c.city, country: c.country, email: c.email, phone: opt(c.phone), web: opt(c.web),
+  bankgiro: opt(c.bankgiro), plusgiro: opt(c.plusgiro), iban: opt(c.iban), bic: opt(c.bic), fSkatt: c.fSkatt, peppolId: opt(c.peppolId),
+});
+
+const tag = (t: string): Value => ({ [t]: null });
+
+export const party = (p: PartySnapshot): Value => ({
+  name: p.name, orgNr: opt(p.orgNr), vatNr: opt(p.vatNr),
+  address: { street: p.address.street, postalCode: p.address.postalCode, city: p.address.city, country: p.address.country },
+  email: opt(p.email), peppolId: opt(p.peppolId), kind: tag(p.kind),
+});
+
+export const snapshot = (x: Snapshot): Value => ({
+  kind: tag(x.kind), number: x.number, seller: company(x.seller), buyer: party(x.buyer), language: tag(x.language),
+  issueDate: x.issueDate, deliveryDate: opt(x.deliveryDate), dueDate: opt(x.dueDate), validUntil: opt(x.validUntil), currency: x.currency,
+  fxRate: opt(x.fxRate, (f) => ({ rate: f.rate, date: f.date })),
+  lines: x.lines.map((l) => ({ description: l.description, quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice, discountBp: l.discountBp, vatCode: l.vatCode, rateBp: l.rateBp, account: l.account, net: l.net })),
+  vat: x.vat.map((r) => ({ vatCode: r.vatCode, rateBp: r.rateBp, category: r.category, base: r.base, vat: r.vat })),
+  totalNet: x.totalNet, totalVat: x.totalVat, total: x.total, totalVatSek: opt(x.totalVatSek), legalNotes: [...x.legalNotes],
+  ocr: opt(x.ocr), ourRef: opt(x.ourRef), yourRef: opt(x.yourRef), notes: opt(x.notes), termsDays: x.termsDays,
+  lateInterestText: opt(x.lateInterestText), creditOf: opt(x.creditOf, (c) => ({ number: c.number, issueDate: c.issueDate })),
+  templateVersion: x.templateVersion,
+});
+
+export const reminder = (r: Reminder): Value => ({
+  number: r.number, date: r.date, invoiceNumber: r.invoiceNumber, dueDate: r.dueDate, balance: r.balance, interest: r.interest,
+  interestRateBp: r.interestRateBp, fee: r.fee, feeKind: r.feeKind, language: tag(r.language), seller: company(r.seller), buyer: party(r.buyer),
+});
+
+/** Recomputes a stored hash; a mismatch means the data is not the issued original (C11). */
+export async function matches(value: Value, stored: Uint8Array): Promise<boolean> {
+  return hex(await sha256(value)) === hex(Uint8Array.from(stored));
 }

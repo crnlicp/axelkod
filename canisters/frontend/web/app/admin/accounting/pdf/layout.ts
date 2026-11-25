@@ -33,6 +33,13 @@ export type DocMeta = {
   /** Short content hash shown in the footer, when the document has one. */
   hash?: string;
   template: string;
+  /** Language of the fixed header and footer words (default Swedish). */
+  lang?: "sv" | "en";
+};
+
+const WORDS = {
+  sv: { orgNr: "Org.nr", vatNr: "Momsreg.nr", office: "Säte", fSkatt: "Godkänd för F-skatt", generated: "Genererad", page: "Sida", orgNrShort: "org.nr" },
+  en: { orgNr: "Reg. no", vatNr: "VAT reg. no", office: "Registered office", fSkatt: "Approved for F-tax (Godkänd för F-skatt)", generated: "Generated", page: "Page", orgNrShort: "reg. no" },
 };
 
 export const INK = rgb(0.06, 0.12, 0.2);
@@ -201,9 +208,10 @@ export class Doc {
     const x = M + 50;
     this.text(c.legalName, x, top - 8, { size: 12, bold: true });
     const addr = `${c.street}, ${c.postalCode} ${c.city}${c.country !== "SE" ? `, ${c.country}` : ""}`;
-    const ids = [`Org.nr ${c.orgNr}`, `Momsreg.nr ${c.vatNr}`, `Säte ${c.registeredOffice}`].join(" · ");
+    const w = WORDS[this.meta.lang ?? "sv"];
+    const ids = [`${w.orgNr} ${c.orgNr}`, `${w.vatNr} ${c.vatNr}`, `${w.office} ${c.registeredOffice}`].join(" · ");
     const contact = [c.phone, c.email, c.web].filter(Boolean).join(" · ");
-    const pay = [c.bankgiro && `Bankgiro ${c.bankgiro}`, c.plusgiro && `Plusgiro ${c.plusgiro}`, c.iban && `IBAN ${c.iban}`, c.bic && `BIC ${c.bic}`, c.fSkatt ? "Godkänd för F-skatt" : ""]
+    const pay = [c.bankgiro && `Bankgiro ${c.bankgiro}`, c.plusgiro && `Plusgiro ${c.plusgiro}`, c.iban && `IBAN ${c.iban}`, c.bic && `BIC ${c.bic}`, c.fSkatt ? w.fSkatt : ""]
       .filter(Boolean).join(" · ");
     [addr, ids, contact, pay].filter(Boolean).forEach((l, i) => this.text(l, x, top - 21 - 10 * i, { size: 7.5, color: MUTED, width: 300 }));
     const rx = PAGE[0] - M - 180;
@@ -218,12 +226,13 @@ export class Doc {
   async save(): Promise<Uint8Array> {
     const n = this.pages.length;
     const c = this.meta.company;
+    const w = WORDS[this.meta.lang ?? "sv"];
     this.pages.forEach((p, i) => {
       this.page = p;
       this.rule(M + 14);
-      const left = [`${this.meta.title} ${this.meta.ref}`.trim(), `Genererad ${this.meta.generatedAt}`, this.meta.hash ? `Hash ${this.meta.hash}` : ""].filter(Boolean).join(" · ");
+      const left = [`${this.meta.title} ${this.meta.ref}`.trim(), `${w.generated} ${this.meta.generatedAt}`, this.meta.hash ? `Hash ${this.meta.hash}` : ""].filter(Boolean).join(" · ");
       this.text(left, M, M + 2, { size: 7, color: MUTED, width: 330 });
-      this.text(`${c.legalName}, org.nr ${c.orgNr} · Sida ${i + 1}/${n}`, PAGE[0] - M - 200, M + 2, { size: 7, color: MUTED, align: "right", width: 200 });
+      this.text(`${c.legalName}, ${w.orgNrShort} ${c.orgNr} · ${w.page} ${i + 1}/${n}`, PAGE[0] - M - 200, M + 2, { size: 7, color: MUTED, align: "right", width: 200 });
     });
     return this.pdf.save({ useObjectStreams: false });
   }

@@ -83,9 +83,9 @@ export function DocRef({ id, label: text, search }: { id: bigint; label: string;
 }
 
 /** Short content hash with its verification state. */
-export function HashBadge({ hash, state }: { hash: string; state: "ok" | "missing" | "bad" | "checking" }) {
+export function HashBadge({ hash, state, okText }: { hash: string; state: "ok" | "missing" | "bad" | "checking"; okText?: string }) {
   const t = useAccT().voucher;
-  const text = state === "ok" ? t.hashOk : state === "bad" ? t.hashBad : state === "missing" ? t.hashMissing : "…";
+  const text = state === "ok" ? okText ?? t.hashOk : state === "bad" ? t.hashBad : state === "missing" ? t.hashMissing : "…";
   return (
     <span className="inline-flex items-center gap-2" title={hash}>
       <code className="rounded border border-border px-1.5 py-0.5 text-sm">{hash.slice(0, 8)}</code>

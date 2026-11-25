@@ -11,8 +11,11 @@ import AuditMixin "mixins/Audit";
 import ChartMixin "mixins/Chart";
 import KeysMixin "mixins/Keys";
 import LedgerMixin "mixins/Ledger";
+import PartiesMixin "mixins/Parties";
 import RolesMixin "mixins/Roles";
+import SalesMixin "mixins/Sales";
 import SettingsMixin "mixins/Settings";
+import S "types/Sales";
 import Types "types";
 
 // `firstOwner` is the optional install argument `(opt principal "...")`. It only
@@ -26,6 +29,7 @@ actor class Accounting(firstOwner : ?Principal) {
   let counters : Types.Counters;
   let audit : Types.Audit;
   let keyUse : Types.KeyUse;
+  let sales : S.Sales;
 
   switch (firstOwner) {
     case (?p) {
@@ -54,6 +58,8 @@ actor class Accounting(firstOwner : ?Principal) {
   include AttachmentsMixin(roles, ledger, files, counters, audit);
   include AuditMixin(roles, audit);
   include KeysMixin(roles, config, keyUse, audit);
+  include PartiesMixin(roles, chart, sales, audit);
+  include SalesMixin(roles, config, chart, ledger, files, counters, audit, sales);
 
   // Rejects oversized calls before they run (saves cycles; every method still
   // validates its own input). A 500-line voucher fits well within this.

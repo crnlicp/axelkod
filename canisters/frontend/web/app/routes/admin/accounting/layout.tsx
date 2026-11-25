@@ -138,6 +138,8 @@ function NewMenu() {
         <IconPlus className="h-4 w-4" /> {t.shell.new}
       </summary>
       <ul className="absolute right-0 z-30 mt-2 w-56 rounded-xl border border-border bg-[var(--bg-elev)] p-1 shadow-xl">
+        <li><Link onClick={close} to={`/admin/accounting/sales/new${search}${search ? "&" : "?"}kind=invoice`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.sales.kind.invoice}</Link></li>
+        <li><Link onClick={close} to={`/admin/accounting/sales/new${search}${search ? "&" : "?"}kind=quote`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.sales.kind.quote}</Link></li>
         <li><Link onClick={close} to={`/admin/accounting/ledger/new${search}`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newVoucher}</Link></li>
         <li><Link onClick={close} to={`/admin/accounting/ledger/new${search}${search ? "&" : "?"}upload=1`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newUpload}</Link></li>
       </ul>
@@ -169,6 +171,10 @@ export function DeadlineList({ items, max }: { items: ReturnType<typeof upcoming
 
 const PAGES = (t: ReturnType<typeof useAccT>) => [
   { label: t.nav.overview, to: "/admin/accounting" },
+  { label: t.sales.tabs.invoices, to: "/admin/accounting/sales/invoices" },
+  { label: t.sales.tabs.quotes, to: "/admin/accounting/sales/quotes" },
+  { label: t.sales.tabs.customers, to: "/admin/accounting/sales/customers" },
+  { label: t.sales.tabs.reminders, to: "/admin/accounting/sales/reminders" },
   { label: t.ledger.tabs.vouchers, to: "/admin/accounting/ledger" },
   { label: t.ledger.tabs.journal, to: "/admin/accounting/ledger/journal" },
   { label: t.ledger.tabs.general, to: "/admin/accounting/ledger/general" },

@@ -254,6 +254,9 @@ importers:
       vite:
         specifier: ^8.3.8
         version: 8.3.8(@types/node@26.6.6)(jiti@2.7.0)
+      xmllint-wasm:
+        specifier: ^5.3.0
+        version: 5.3.0(@types/node@26.6.6)
 
 packages:
 
@@ -1253,6 +1256,12 @@ packages:
       yaml:
         optional: true
 
+  xmllint-wasm@5.3.0:
+    resolution: {integrity: sha512-sEgRXdf2t13eYCFCURmCE6h2hwleEOIS9VL/jOh9JJJnez2YXIooi2Ghm05/JZEPXyPawN8sMASPVZlmh8Sd6A==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@types/node': '>=16'
+
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
@@ -2059,5 +2068,9 @@ snapshots:
       '@types/node': 26.6.6
       fsevents: 2.3.3
       jiti: 2.7.0
+
+  xmllint-wasm@5.3.0(@types/node@26.6.6):
+    dependencies:
+      '@types/node': 26.6.6
 
   yallist@3.1.1: {}
