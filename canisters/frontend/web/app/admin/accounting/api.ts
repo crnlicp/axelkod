@@ -45,7 +45,7 @@ export function errText(e: unknown, t: ErrTexts): string {
     case "notFound": return t.notFound;
     case "lastOwner": return t.lastOwner;
     case "invalid": return t.invalid(t.fields[x.invalid] ?? t.fields[x.invalid.replace(/\[\d+\]/, "[]")] ?? x.invalid);
-    case "conflict": return t.conflict(x.conflict);
+    case "conflict": return t.conflict(t.fields[x.conflict] ?? x.conflict);
     case "locked": return t.locked(t.fields[x.locked] ?? x.locked);
     case "vault": return t.vault(x.vault);
     case "keys": return t.keys(x.keys);

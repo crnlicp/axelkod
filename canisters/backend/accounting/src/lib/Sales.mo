@@ -5,8 +5,13 @@ import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
+import Result "mo:core/Result";
 import Text "mo:core/Text";
+import Audit "Audit";
+import Dates "Dates";
+import Encode "Encode";
 import Invoice "Invoice";
+import Posting "Posting";
 import S "../types/Sales";
 import Types "../types";
 
@@ -152,4 +157,36 @@ module {
   };
 
   public func nextNumber(sales : S.Sales, key : Text) : Nat = (sales.numbering.get(key) ?? 0) + 1;
+
+  /// Registers a payment on an invoice and posts it in series B (shared by the payment
+  /// dialog and bank matching). `bankAccount` is the ledger account the money came in on.
+  public func pay(c : Posting.Ctx, sales : S.Sales, p : S.PaymentInput, bankAccount : Nat, caller : Principal, now : Int, today : Types.Date, cashMethod : Bool) : Result.Result<S.Payment, Types.Error> {
+    let d = switch (sales.docs.get(p.salesDocId)) { case (?d) d; case null { return #err(#notFound) } };
+    if (d.kind != #invoice) return #err(#invalid("salesDocId"));
+    if (not Dates.isValid(p.date) or p.date > today) return #err(#invalid("date"));
+    let v = view(sales, d, today);
+    if (p.amount <= 0 or p.amount > v.balance) return #err(#invalid("amount"));
+    if (p.interest < 0 or p.fees < 0) return #err(#invalid("amount"));
+    switch (d.snapshot.currency == "SEK", p.amountSek) {
+      case (false, null) { return #err(#invalid("amountSek")) };
+      case (_, ?s) { if (s <= 0) return #err(#invalid("amountSek")) };
+      case (true, null) {};
+    };
+    switch (p.reference) { case (?r) { if (r.size() > 100) return #err(#invalid("reference")) }; case null {} };
+    let lines = paymentLines(p, d.snapshot, c.chart, cashMethod).map(func(l : Types.VoucherLine) : Types.VoucherLine = if (l.account == BANK) { { l with account = bankAccount } } else l);
+    let vin : Types.VoucherInput = {
+      series = SERIES_BANK; eventDate = p.date;
+      description = "Inbetalning faktura " # d.number.toText() # ", " # d.snapshot.buyer.name;
+      lines; attachmentIds = []; counterparty = ?d.snapshot.buyer.name;
+    };
+    let fy = switch (Posting.check(c, vin)) { case (#ok(fy)) fy; case (#err(e)) return #err(e) };
+    let pid = sales.next;
+    sales.next += 1;
+    let voucher = Posting.post(c, fy, vin, #payment(pid), caller, now);
+    let payment : S.Payment = { p with id = pid; voucherId = voucher.id; at = now; by = caller };
+    sales.payments.add(pid, payment);
+    sales.paymentsOf.add(d.id, (sales.paymentsOf.get(d.id) ?? []).concat([pid]));
+    ignore Audit.append(c.audit, now, caller, "sales.payment", "payment", ?pid, Encode.payment(p));
+    #ok(payment);
+  };
 };

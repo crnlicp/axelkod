@@ -14,7 +14,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A2 | Ledger core (backend): roles, settings, fiscal years, BAS, numbering, vouchers, audit, vault | Done (2026-11-25) | `mops test` both canisters |
 | A3 | Ekonomi shell + UI kit + PDF pipeline + setup wizard + Bokföring UI | Done (2026-11-25) | Playwright, axe, PDF snapshot test |
 | A4 | Sales | Done (2026-11-25) | `mops test` + Playwright (hash-stable re-render) |
-| A5 | Purchases, bank, tax account | Not started | `mops test` + Playwright upload/match |
+| A5 | Purchases, bank, tax account | Done (2026-11-25) | `mops test` + Playwright upload/match |
 | A6 | VAT and EU sales list | Not started | Box fixtures, file checked in Skatteverket's test service |
 | A7 | Payroll, AGI, växa | Not started | Fee-category tests, AGI XML vs XSD, test service |
 | A8 | ROT/RUT | Not started | Cap tests, XML vs schema |
@@ -92,6 +92,9 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V19 | K2 layout (BFNAR 2016:10) for income statement and balance sheet | bfn.se | A9 | Not started |
 | V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | BFL done; BFNAR 2013:2 open |
 | V21 | European subnet ID, node count and node countries | ICP dashboard | A10 | Not started |
+| V22 | Input VAT: evidence for deduction, reverse charge on purchases (EU goods, EU and non-EU services, domestic), reporting period | ML (2023:200) 13 kap. 31–36 §§, 16 kap. 5–17 §§; Skatteverket "Köpa varor/tjänster från andra EU-länder", "Fylla i momsdeklarationen", "Omvänd betalningsskyldighet inom byggsektorn" | A5 | Done (A5) |
+| V23 | BAS 2026 accounts for purchases, reverse charge, expense claims and the tax account | bas.se BAS 2026 (as V15) | A5 | Done (A5) |
+| V24 | Tax account (skattekonto): interest treatment, what export the e-service offers | Skatteverket "Skattekonto – betala och få tillbaka", "Ränta på skattekontot" | A5 | Done (A5) |
 
 ## Architecture (after resolutions)
 
@@ -391,8 +394,34 @@ Sources checked first (V1, V2, V13, V14, V18; see sources.md).
   - **New BAS accounts** in seed `seed-2026.2`: 3990, 7960, 8313 (names verbatim from BAS 2026 v1.1).
   - **Migrations:** a second pending migration adds the sales state; `check-limit` is 2 until mainnet.
 
-### A4–A9
-Scope as in spec §13 phases 2–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.
+### A5. Purchases, bank, tax account — Done (2026-11-25)
+Sources checked first (V22–V24; see sources.md).
+- [x] Seed `seed-2026.3`: BAS 2624, 2634, 2820, 4415–4417, 4425–4427, 4516, 4517, 4532, 4533, 4536, 4537, 8314, 8423 (names verbatim from BAS 2026 v1.1)
+- [x] Suppliers (name, org nr, VAT nr, country, bankgiro/plusgiro/IBAN/BIC, default account, default VAT treatment) under Parties
+- [x] Inbox: uploaded attachments not yet used by a voucher or purchase are "Att bokföra"; a file can be dismissed only by linking it, never deleted (BFL 7 kap.)
+- [x] Purchase documents: supplier invoice, supplier credit note, receipt (paid by company card/bank or cash), expense claim (paid privately, owed to the person on 2820). Each references its original file (ML 13:32 evidence)
+- [x] VAT treatment per document: domestic (input VAT as stated, 2641), EU goods (4515–4517, ML 16:17), EU services and non-EU services (4535–4537 / 4531–4533, ML 16:9), domestic reverse charge goods/services (4415–4417 / 4425–4427, ML 16:6, 13–16), no VAT. Reverse charge: output VAT on 2614/2624/2634 and the same amount as input VAT on 2645 (foreign) or 2647 (domestic). Foreign VAT is never deducted (part of the cost)
+- [x] Booking in series L (2440 for invoices, 1930/1910 for receipts, 2820 for expense claims); currency at the document's rate. Cash method: supplier invoices are booked at payment
+- [x] Supplier payments in series B (2440 / 1930, exchange differences on 3960/7960) and expense-claim payouts (2820 / 1930)
+- [x] Bank accounts (name, ledger account, bank); CSV import stepper: upload → map columns (remembered per bank account) → preview → import; duplicates (same date, amount, text, reference) are skipped
+- [x] Matching: suggestions by OCR against open invoices, then amount ± date window against open invoices and supplier invoices, then rules ("text contains X → account Y"); accept posts a B voucher and links the transaction; "already booked" links it to an existing voucher on the bank account
+- [x] Tax account: the same CSV stepper and manual entry (the e-service only offers a printout, V24). Kind per entry; booking against 1630: VAT 2650, employer return 2710/2731, preliminary tax 2518, interest income 8314 (tax-free), interest cost 8423 (not deductible), payments matched to the bank voucher; running balance compared with 1630
+- [x] Inköp UI: Att bokföra (inbox + workbench with the file beside the form) · Leverantörsfakturor · Kvitton & utlägg · Leverantörer. Bank & skattekonto UI: Transaktioner (workbench) · Import · Regler · Skattekonto
+- [x] Tests: `mops test` (reverse charge postings per treatment, foreign VAT not deducted, gapless L series, duplicate import, OCR/amount/rule suggestions, tax-account postings); Playwright: upload → book → bank CSV import → match → balances
+- Result: `mops test` accounting 59 (16 new: postings per VAT treatment incl. Skatteverket's 55 000 kr EU example, foreign VAT not deductible, evidence required, FX and cash-method payments with the reverse-charge pair kept equal, OCR/amount/rule suggestions, duplicate keys, tax-account accounts); `tests/api/purchases-api.spec.ts` 4/4 against the live canister (inbox → L voucher with the file, file cannot be reused, EU services 2645/2614 and a supplier credit note, bank import with duplicates skipped, OCR/amount/rule matches as B vouchers, tax-account VAT and interest against 1630 and the deposit linked to the bank voucher); `tests/unit/purchases.spec.ts` (booking preview equals the canister's lines, CSV parsing); `tests/e2e/purchases.spec.ts`: upload → book beside the decrypted file → bank CSV twice (second time all duplicates) → accept the amount match → invoice paid, axe on every Inköp and Bank page.
+- Changes against this plan:
+  - **Tax account import:** Skatteverket's e-service has no file export (V24), so the user copies the transactions to a CSV (same column stepper as the bank) or adds them one by one. The kind is guessed from the text and shown for review in the preview; it can be changed until the entry is booked. Tax-account vouchers use series B.
+  - **Import VAT** (boxes 50, 60–62, 13:35 import document) is not handled; imports are booked as "Ingen avdragsgill moms" until A6 adds it.
+  - **Bank accounts:** the migration creates "Företagskonto" on 1930. More accounts can be added through the API (`saveBankAccount`, BAS class 19 only); the form comes with setup step 6 (bank mapping).
+  - **Matching window:** an amount match must be within ±10 days of the due date (a working choice, not a legal rule). Bank rules split included VAT to 2641 only.
+  - **Expense claims** name the person in free text and are owed on 2820; they link to employees when payroll arrives (A7).
+  - **Cash method:** supplier invoices are registered at booking and booked pro rata at payment, with the file attached to the payment voucher; supplier credit notes are registered but not booked (as for sales).
+  - **Inbox:** a file leaves "Att bokföra" only when it is used as evidence (on a purchase, a voucher or linked to one); it can never be deleted.
+  - **VAT codes:** no new codes; the reverse-charge rates 12 % and 6 % post to 2624/2634 and get their box mapping in A6.
+  - **Migrations:** a third pending migration adds purchases and bank; `check-limit` is 3 until mainnet.
+
+### A6–A9
+Scope as in spec §13 phases 4–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.
 
 ### A10. Mainnet — Not started (approval at every step)
 - [ ] V21 + C22 legal review done

@@ -1,6 +1,8 @@
 // acj-1 values for records that are hashed (audit details now, snapshots later).
 import Array "mo:core/Array";
 import Canonical "Canonical";
+import B "../types/Bank";
+import P "../types/Purchases";
 import S "../types/Sales";
 import Types "../types";
 
@@ -163,4 +165,43 @@ module {
     ]);
   };
 
+  public func treatment(t : P.Treatment) : C.Value = tag(switch (t) {
+    case (#domestic) "domestic"; case (#euGoods) "euGoods"; case (#euServices) "euServices"; case (#nonEuServices) "nonEuServices";
+    case (#seGoodsRC) "seGoodsRC"; case (#seServicesRC) "seServicesRC"; case (#noVat) "noVat";
+  });
+
+  public func supplier(s : P.SupplierInput) : C.Value {
+    #obj([
+      ("name", #text(s.name)), ("orgNr", optText(s.orgNr)), ("vatNr", optText(s.vatNr)), ("country", #text(s.country)),
+      ("bankgiro", optText(s.bankgiro)), ("plusgiro", optText(s.plusgiro)), ("iban", optText(s.iban)), ("bic", optText(s.bic)),
+      ("defaultAccount", C.opt(s.defaultAccount, C.int)), ("treatment", treatment(s.treatment)), ("active", #bool(s.active)),
+    ]);
+  };
+
+  public func purchase(x : P.PurchaseInput) : C.Value {
+    #obj([
+      ("kind", tag(switch (x.kind) { case (#supplierInvoice) "supplierInvoice"; case (#creditNote) "creditNote"; case (#receipt) "receipt"; case (#expenseClaim) "expenseClaim" })),
+      ("supplierId", C.opt(x.supplierId, C.int)), ("payee", optText(x.payee)), ("docDate", #text(x.docDate)), ("dueDate", optText(x.dueDate)),
+      ("docNumber", optText(x.docNumber)), ("currency", #text(x.currency)),
+      ("fxRate", switch (x.fxRate) { case (?f) #obj([("rate", #int(f.rate)), ("date", #text(f.date))]); case null #null_ }),
+      ("treatment", treatment(x.treatment)),
+      ("lines", #arr(x.lines.map(func(l : P.PurchaseLine) : C.Value = #obj([("account", #int(l.account)), ("net", #int(l.net)), ("rateBp", #int(l.rateBp)), ("vat", #int(l.vat)), ("text", optText(l.text))])))),
+      ("total", #int(x.total)), ("paymentRef", optText(x.paymentRef)),
+      ("paidFrom", switch (x.paidFrom) { case (?#bank) tag("bank"); case (?#cash) tag("cash"); case null #null_ }),
+      ("creditOf", C.opt(x.creditOf, C.int)), ("description", #text(x.description)),
+      ("attachmentIds", #arr(x.attachmentIds.map(func(a : Nat) : C.Value = #int(a)))),
+    ]);
+  };
+
+  public func supplierPayment(p : P.PayInput) : C.Value {
+    #obj([("purchaseId", #int(p.purchaseId)), ("date", #text(p.date)), ("amount", #int(p.amount)), ("amountSek", C.opt(p.amountSek, C.int)), ("reference", optText(p.reference))]);
+  };
+
+  public func bankRule(r : B.RuleInput) : C.Value {
+    #obj([("contains", #text(r.contains)), ("account", #int(r.account)), ("vatRateBp", #int(r.vatRateBp)), ("description", #text(r.description))]);
+  };
+
+  public func bankMatch(txId : Nat, kind : Text, voucherId : Nat) : C.Value {
+    #obj([("transaction", #int(txId)), ("kind", tag(kind)), ("voucherId", #int(voucherId))]);
+  };
 };

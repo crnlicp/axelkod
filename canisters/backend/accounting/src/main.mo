@@ -8,13 +8,17 @@ import Audit "lib/Audit";
 import Seed "lib/Seed";
 import AttachmentsMixin "mixins/Attachments";
 import AuditMixin "mixins/Audit";
+import BankMixin "mixins/Bank";
 import ChartMixin "mixins/Chart";
 import KeysMixin "mixins/Keys";
 import LedgerMixin "mixins/Ledger";
 import PartiesMixin "mixins/Parties";
+import PurchasesMixin "mixins/Purchases";
 import RolesMixin "mixins/Roles";
 import SalesMixin "mixins/Sales";
 import SettingsMixin "mixins/Settings";
+import B "types/Bank";
+import P "types/Purchases";
 import S "types/Sales";
 import Types "types";
 
@@ -30,6 +34,8 @@ actor class Accounting(firstOwner : ?Principal) {
   let audit : Types.Audit;
   let keyUse : Types.KeyUse;
   let sales : S.Sales;
+  let purchases : P.Purchases;
+  let bank : B.Bank;
 
   switch (firstOwner) {
     case (?p) {
@@ -60,6 +66,8 @@ actor class Accounting(firstOwner : ?Principal) {
   include KeysMixin(roles, config, keyUse, audit);
   include PartiesMixin(roles, chart, sales, audit);
   include SalesMixin(roles, config, chart, ledger, files, counters, audit, sales);
+  include PurchasesMixin(roles, config, chart, ledger, files, counters, audit, purchases);
+  include BankMixin(roles, config, chart, ledger, files, counters, audit, sales, purchases, bank);
 
   // Rejects oversized calls before they run (saves cycles; every method still
   // validates its own input). A 500-line voucher fits well within this.

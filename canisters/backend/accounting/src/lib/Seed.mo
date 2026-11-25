@@ -5,7 +5,7 @@
 import Types "../types";
 
 module {
-  public let VERSION = "seed-2026.2";
+  public let VERSION = "seed-2026.3";
 
   public let accounts : [Types.Account] = [
     { number = 1220; name = "Inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
@@ -26,7 +26,9 @@ module {
     { number = 2614; name = "Utgående moms omvänd betalskyldighet, 25 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2615; name = "Utgående moms import av varor, 25 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2621; name = "Utgående moms på försäljning inom Sverige, 12 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 2624; name = "Utgående moms omvänd betalningsskyldighet 12 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2631; name = "Utgående moms på försäljning inom Sverige, 6 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 2634; name = "Utgående moms omvänd betalningsskyldighet, 6 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2640; name = "Ingående moms"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2641; name = "Debiterad ingående moms"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2645; name = "Beräknad ingående moms på förvärv från utlandet"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
@@ -34,6 +36,7 @@ module {
     { number = 2650; name = "Redovisningskonto för moms"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2710; name = "Personalskatt"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2731; name = "Avräkning lagstadgade sociala avgifter"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 2820; name = "Kortfristiga skulder till anställda"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2890; name = "Övriga kortfristiga skulder"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2920; name = "Upplupna semesterlöner"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2941; name = "Beräknade upplupna lagstadgade sociala avgifter"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
@@ -49,9 +52,21 @@ module {
     { number = 3960; name = "Valutakursvinster på fordringar och skulder av rörelsekaraktär"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 3990; name = "Övriga ersättningar, bidrag och intäkter"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4010; name = "Inköp av handelsvaror i Sverige"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4415; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4416; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4417; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4425; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4426; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4427; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4515; name = "Inköp av råvaror och material från annat EU-land, 25 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4516; name = "Inköp av råvaror och material från annat EU-land, 12 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4517; name = "Inköp av råvaror och material från annat EU-land, 6 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4531; name = "Inköp av tjänster från ett land utanför EU, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4532; name = "Inköp av tjänster från ett land utanför EU, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4533; name = "Inköp av tjänster från ett land utanför EU, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4535; name = "Inköp av tjänster från annat EU-land, 25 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4536; name = "Inköp av tjänster från annat EU-land, 12 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4537; name = "Inköp av tjänster från annat EU-land, 6 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4545; name = "Import av råvaror och material, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 5410; name = "Förbrukningsinventarier"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 6110; name = "Kontorsmateriel"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
@@ -70,7 +85,9 @@ module {
     { number = 7960; name = "Valutakursförluster på fordringar och skulder av rörelsekaraktär"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8310; name = "Ränteintäkter från omsättningstillgångar"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8313; name = "Ränteintäkter från kortfristiga fordringar"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 8314; name = "Skattefria ränteintäkter"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8410; name = "Räntekostnader för långfristiga skulder"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 8423; name = "Räntekostnader för skatter och avgifter"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8811; name = "Avsättning till periodiseringsfond"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8910; name = "Skatt som belastar årets resultat"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8999; name = "Årets resultat"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },

@@ -220,33 +220,7 @@ mixin (
 
   public shared ({ caller }) func registerPayment(p : S.PaymentInput) : async Result.Result<S.Payment, Types.Error> {
     if (not Roles.canBook(roles, caller)) return #err(#notAuthorized);
-    let d = switch (sales.docs.get(p.salesDocId)) { case (?d) d; case null { return #err(#notFound) } };
-    if (d.kind != #invoice) return #err(#invalid("salesDocId"));
-    if (not Dates.isValid(p.date) or p.date > today()) return #err(#invalid("date"));
-    let v = SalesLib.view(sales, d, today());
-    if (p.amount <= 0 or p.amount > v.balance) return #err(#invalid("amount"));
-    if (p.interest < 0 or p.fees < 0) return #err(#invalid("amount"));
-    switch (d.snapshot.currency == "SEK", p.amountSek) {
-      case (false, null) { return #err(#invalid("amountSek")) };
-      case (_, ?s) { if (s <= 0) return #err(#invalid("amountSek")) };
-      case (true, null) {};
-    };
-    switch (p.reference) { case (?r) { if (r.size() > 100) return #err(#invalid("reference")) }; case null {} };
-    let vin : Types.VoucherInput = {
-      series = SalesLib.SERIES_BANK; eventDate = p.date;
-      description = "Inbetalning faktura " # d.number.toText() # ", " # d.snapshot.buyer.name;
-      lines = SalesLib.paymentLines(p, d.snapshot, chart, cashMethod()); attachmentIds = []; counterparty = ?d.snapshot.buyer.name;
-    };
-    let fy = switch (Posting.check(ctx(), vin)) { case (#ok(fy)) fy; case (#err(e)) return #err(e) };
-    let now = Time.now();
-    let pid = sales.next;
-    sales.next += 1;
-    let voucher = Posting.post(ctx(), fy, vin, #payment(pid), caller, now);
-    let payment : S.Payment = { p with id = pid; voucherId = voucher.id; at = now; by = caller };
-    sales.payments.add(pid, payment);
-    sales.paymentsOf.add(d.id, (sales.paymentsOf.get(d.id) ?? []).concat([pid]));
-    ignore Audit.append(audit, now, caller, "sales.payment", "payment", ?pid, Encode.payment(p));
-    #ok(payment);
+    SalesLib.pay(ctx(), sales, p, SalesLib.BANK, caller, Time.now(), today(), cashMethod());
   };
 
   public shared query ({ caller }) func listPayments(offset : Nat, limit : Nat) : async Result.Result<Types.Page<S.Payment>, Types.Error> {
