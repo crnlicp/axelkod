@@ -2,9 +2,9 @@
   "name": "axelkod",
   "private": true,
   "scripts": {
-    "install:all": "pnpm --dir canisters/frontend install --frozen-lockfile && cd canisters/backend/site && mops install",
-    "check": "cd canisters/backend/site && mops check",
-    "test:backend": "cd canisters/backend/site && mops test",
+    "install:all": "pnpm --dir canisters/frontend install --frozen-lockfile && for c in site accounting vault; do (cd canisters/backend/$c && mops install) || exit 1; done",
+    "check": "for c in site accounting vault; do (cd canisters/backend/$c && mops check) || exit 1; done",
+    "test:backend": "for c in site accounting vault; do (cd canisters/backend/$c && mops test) || exit 1; done",
     "dev": "pnpm --dir canisters/frontend dev",
     "build": "pnpm --dir canisters/frontend build",
     "typecheck": "pnpm --dir canisters/frontend typecheck",

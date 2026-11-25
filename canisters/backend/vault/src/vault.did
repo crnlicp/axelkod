@@ -1,0 +1,76 @@
+type UploadInput = 
+ record {
+   chunkCount: nat;
+   cipherSha256: blob;
+   mime: text;
+   size: nat;
+ };
+type Stats = 
+ record {
+   bytes: nat;
+   files: nat;
+   pendingUploads: nat;
+ };
+type Role = 
+ variant {
+   auditor;
+   bookkeeper;
+   owner;
+   payroll;
+ };
+type Result_4 = 
+ variant {
+   err: Error;
+   ok: nat;
+ };
+type Result_3 = 
+ variant {
+   err: Error;
+   ok: FileInfo;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: blob;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: Stats;
+ };
+type FileInfo = 
+ record {
+   cipherSha256: blob;
+   id: nat;
+   mime: text;
+   size: nat;
+   uploadedAt: int;
+   uploadedBy: principal;
+ };
+type Error = 
+ variant {
+   conflict: text;
+   invalid: text;
+   notAuthorized;
+   notFound;
+ };
+service : {
+  beginUpload: (u: UploadInput) -> (Result_4);
+  /// For accounting's confirm step and for readers. Null when missing or not allowed.
+  fileInfo: (id: nat) -> (opt FileInfo) query;
+  finalize: (uploadId: nat) -> (Result_3);
+  getChunk: (fileId: nat, index: nat) -> (Result_2) query;
+  myRole: () -> (opt Role) query;
+  putChunk: (uploadId: nat, index: nat, bytes: blob) -> (Result_1);
+  /// Replaces the role copy. Accounting calls this after every role change.
+  setRoles: (list: vec record {
+                         principal;
+                         Role;
+                       }) -> ();
+  stats: () -> (Result) query;
+}

@@ -9,6 +9,8 @@ Company website for Axelkod AB on the Internet Computer: a prerendered bilingual
 icp.yaml                  networks/environments, canisters: [canisters/*/*]
 scripts/deploy.sh         local and mainnet deploy
 canisters/backend/site/   Motoko (mo:core): messages, settings, admins, contact-form token
+canisters/backend/accounting/  Motoko: bookkeeping (roles, fiscal years, BAS, vouchers, audit log, vetKeys)
+canisters/backend/vault/  Motoko: encrypted originals of received documents (append-only)
 canisters/frontend/       pnpm workspace root
   web/                    React Router (prerendered) + Tailwind, @dfinity/static-site recipe
     public/               _headers, _redirects, _preserve, .well-known/, icons, OG image
@@ -57,6 +59,7 @@ Every mainnet step needs explicit approval; the script asks before each one.
 ```bash
 scripts/deploy.sh ic                       # as prod-identity, password from ~/.identity-pw
 FIRST_ADMIN=<principal> scripts/deploy.sh ic   # also adds an admin
+FIRST_OWNER=<principal> scripts/deploy.sh ic   # first accounting owner (only while it has no roles)
 ```
 
 The script: shows the cycles balance, runs `mops check` (stable-memory compatibility with the last deploy), deploys both canisters, adds `site` as a controller of `web` (needed to authorize admins for Publish; asks first), optionally adds `FIRST_ADMIN`, syncs admin permissions, and promotes the deployed stable signature (`mops deployed`).

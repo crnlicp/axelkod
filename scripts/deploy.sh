@@ -5,6 +5,8 @@
 #
 # FIRST_ADMIN=<principal> makes that Internet Identity principal an admin (the
 # controller adds it). Get it from the "Åtkomst nekad" page at /admin.
+# FIRST_OWNER=<principal> makes it the first accounting owner. Only works while
+# accounting has no roles; after that, owners manage roles in the admin.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -37,10 +39,10 @@ confirm() {
 if [[ "$target" == "ic" ]]; then
   echo "Mainnet deploy as prod-identity."
   icp cycles balance -n ic "${id_flags[@]}" || true
-  [[ -f "$ids" ]] || echo "First deploy: creating 2 canisters needs about 4.2T cycles (2 × (2T + fee))."
+  [[ -f "$ids" ]] || echo "First deploy: creating 4 canisters needs about 8.4T cycles (4 × (2T + fee))."
   # Stable-memory compatibility against the last mainnet deploy, before anything ships.
-  (cd canisters/backend/site && mops check)
-  confirm "Deploy site + web to MAINNET (upgrade keeps state)?"
+  for c in site accounting vault; do (cd "canisters/backend/$c" && mops check); done
+  confirm "Deploy site, web, accounting and vault to MAINNET (upgrade keeps state)?"
 fi
 
 icp deploy "${env_flags[@]}" "${id_flags[@]}"
@@ -58,12 +60,17 @@ if [[ -n "${FIRST_ADMIN:-}" ]]; then
   icp canister call site addAdmin "(principal \"$FIRST_ADMIN\")" "${env_flags[@]}" "${id_flags[@]}"
 fi
 
+if [[ -n "${FIRST_OWNER:-}" ]]; then
+  confirm "Make $FIRST_OWNER the first accounting owner?"
+  icp canister install accounting --mode upgrade --args "(opt principal \"$FIRST_OWNER\")" "${env_flags[@]}" "${id_flags[@]}"
+fi
+
 # Re-applies the admin set to the frontend (a frontend reinstall clears it).
 icp canister call site syncAdminsToFrontend '()' "${env_flags[@]}" "${id_flags[@]}"
 
 if [[ "$target" == "ic" ]]; then
   # Promote the deployed stable signature: the baseline for the next upgrade check.
-  (cd canisters/backend/site && mops deployed site)
-  echo "Commit .icp/data/ and canisters/backend/site/deployed/ now."
+  for c in site accounting vault; do (cd "canisters/backend/$c" && mops deployed "$c"); done
+  echo "Commit .icp/data/ and canisters/backend/*/deployed/ now."
   echo "Frontend: https://$(jq -r .web "$ids").icp.net"
 fi

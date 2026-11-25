@@ -1,0 +1,24 @@
+[toolchain]
+moc = "2.2.4"
+lintoko = "0.12.0"
+
+[moc]
+args = [ "-W=M0223,M0237" ]
+
+[canisters.vault]
+main = "src/main.mo"
+candid = "src/vault.did"
+
+[canisters.vault.migrations]
+chain = "src/migrations"
+check-limit = 1
+
+[canisters.vault.check-stable]
+path = "deployed/vault.most"
+
+[dependencies]
+core = "2.7.1"
+sha2 = "0.3.2"
+
+[dev-dependencies]
+test = "2.1.2"

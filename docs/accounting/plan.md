@@ -11,7 +11,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 |---|---|---|---|
 | A0 | Plan, spec reconciliation, decisions | Done (2026-11-25) | Your sign-off |
 | A1 | Repo restructure to grouped layout | Done (2026-11-25, branch `accounting`) | Local deploy, all existing tests pass unchanged |
-| A2 | Ledger core (backend): roles, settings, fiscal years, BAS, numbering, vouchers, audit, vault | Not started | `mops test` both canisters |
+| A2 | Ledger core (backend): roles, settings, fiscal years, BAS, numbering, vouchers, audit, vault | Done (2026-11-25), awaiting sign-off | `mops test` both canisters |
 | A3 | Ekonomi shell + UI kit + PDF pipeline + setup wizard + Bokföring UI | Not started | Playwright, axe, PDF snapshot test |
 | A4 | Sales | Not started | `mops test` + Playwright (hash-stable re-render) |
 | A5 | Purchases, bank, tax account | Not started | `mops test` + Playwright upload/match |
@@ -85,12 +85,12 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V12 | ROT/RUT 2026 rates and caps, XML schema, decision JSON, 2027 fields | Skatteverket "Rot och rut – företag" technical description | A8 | Not started |
 | V13 | Riksbank reference rate history | riksbank.se (referensränta) | A4 | Not started |
 | V14 | Late-payment compensation and reminder-fee rules | Räntelagen (1975:635), Lag (1981:739) om ersättning för inkassokostnader | A4 | Not started |
-| V15 | BAS 2026 accounts and BAS → SRU (INK2R/INK2S) mapping | bas.se, Skatteverket SRU technical description (INK2) | A2 / A9 | Not started |
+| V15 | BAS 2026 accounts and BAS → SRU (INK2R/INK2S) mapping | bas.se, Skatteverket SRU technical description (INK2) | A2 / A9 | Accounts done (A2); SRU open |
 | V16 | SRU file format (`INFO.SRU`, `BLANKETTER.SRU`) | Skatteverket "SKV 269" technical description | A9 | Not started |
 | V17 | SIE 4C (type 4) spec | sie.se file format description | A9 | Not started |
 | V18 | Peppol BIS Billing 3.0 rules and UBL schema | docs.peppol.eu/poacc/billing/3.0/ | A4 | Not started |
 | V19 | K2 layout (BFNAR 2016:10) for income statement and balance sheet | bfn.se | A9 | Not started |
-| V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | Not started |
+| V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | BFL done; BFNAR 2013:2 open |
 | V21 | European subnet ID, node count and node countries | ICP dashboard | A10 | Not started |
 
 ## Architecture (after resolutions)
@@ -325,15 +325,24 @@ You can stop and resume the wizard. The dashboard shows it until it is done.
 - [x] Local redeploy (the canister names change, so the local state is recreated). Re-seed with the deploy script. All existing `mops test` and Playwright tests pass.
 - Result: `mops check` + 50 `mops test` pass; local deploy as `site`/`web`; 50/50 Playwright pass. pnpm 12.23.0 via corepack, lockfile imported from npm's (same versions). Local URL is now `http://web.local.localhost:8000`.
 
-### A2. Ledger core (backend) — Not started
-- [ ] `accounting` + `vault` scaffolds (`@dfinity/motoko` recipe, migrations chain, `deployed/*.most` baseline, `.did`)
-- [ ] Roles mixin (first owner install arg, ≥ 1 owner, anonymous rejected, mirror to vault)
-- [ ] Company profile, accounting settings, fiscal years (`#open/#closing/#locked`, lock date)
-- [ ] Seed: BAS accounts, VAT codes (box mapping pending V3), series. Documented in `docs/accounting/`
-- [ ] Numbering, drafts → post → correct, balances, audit hash chain (sha2), retention guard
-- [ ] Vault: chunked upload, MIME allow-list, size cap, hash check, append-only, role check
-- [ ] vetKeys endpoints (`docs-v1`, `pii-v1`) with role rules (D4)
-- [ ] `mops test`: balancing, gapless numbering, immutability, lock date, roles, retention, audit chain, canonical vectors
+### A2. Ledger core (backend) — Done (2026-11-25), awaiting your sign-off
+- [x] `accounting` + `vault` scaffolds (`@dfinity/motoko` recipe, migrations chain, `deployed/*.most` baseline, `.did`)
+- [x] Roles mixin (first owner install arg, ≥ 1 owner, anonymous rejected, mirror to vault)
+- [x] Company profile, accounting settings, fiscal years (`#open/#closing/#locked`, lock date)
+- [x] Seed: BAS accounts, VAT codes (box mapping pending V3), series. Documented in [seed.md](seed.md)
+- [x] Numbering, drafts → post → correct, balances, audit hash chain (sha2), retention guard
+- [x] Vault: chunked upload, MIME allow-list, size cap, hash check, append-only, role check
+- [x] vetKeys endpoints (`docs-v1`, `pii-v1`) with role rules (D4)
+- [x] `mops test`: balancing, gapless numbering, immutability, lock date, roles, retention, audit chain, canonical vectors
+- Result: `mops check` passes for all three backends. `mops test`: accounting 26, vault 5, site 50. A local deploy of all four canisters works. `tests/api/accounting-api.spec.ts` passes 7/7 against the live canisters: roles, seed, gapless posting, correction links, drafts, vault mirror and upload, audit chain, and a vetKey derived and verified with `@icp-sdk/vetkeys`.
+- Changes against this plan:
+  - **D4:** `ic-vetkeys` was not added. The two management-canister calls (`vetkd_public_key`, `vetkd_derive_key`) are made directly in `lib/Keys.mo`, so there is one dependency fewer.
+  - **vetKD key name:** pinned in state at first use (`config.vetkdKey`), per the vetkeys skill. A changed `VETKD_KEY_NAME` can never silently switch keys. Mainnet uses `key_1` (set in `icp.yaml`) and local uses `test_key_1`.
+  - **Key derivations:** limited to 50 per principal per day and logged in the audit log.
+  - **Attachments:** no `retainUntil` on the record. Retention follows the voucher, and nothing in accounting or the vault can be deleted at all.
+  - **Not done yet:** `wasm_memory_limit` for the vault is moved to A10, where it is set from the subnet's limits.
+  - **`acj-1` vectors:** live in `accounting/test/canonical.test.mo`. The TS test (A3) reads the canonical strings and hashes from that file.
+  - **Frontend:** `@icp-sdk/vetkeys` added (D3), and bindings are generated for `accounting.did` and `vault.did`.
 
 ### A3. Ekonomi shell, UI kit, PDF pipeline, Bokföring UI — Not started
 - [ ] Workspace switch, Ekonomi nav with role filtering and module toggles, top bar (year, search, + Ny, deadlines)

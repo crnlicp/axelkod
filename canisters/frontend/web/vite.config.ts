@@ -7,6 +7,8 @@ export default defineConfig({
   plugins: [
     // Generated from the committed .did; output in app/bindings/ is not committed.
     icpBindgen({ didFile: "../../backend/site/src/site.did", outDir: "./app/bindings" }),
+    icpBindgen({ didFile: "../../backend/accounting/src/accounting.did", outDir: "./app/bindings" }),
+    icpBindgen({ didFile: "../../backend/vault/src/vault.did", outDir: "./app/bindings" }),
     tailwindcss(),
     reactRouter(),
   ],

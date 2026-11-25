@@ -1,0 +1,477 @@
+type VoucherView = 
+ record {
+   attachmentIds: vec nat;
+   correctedBy: vec nat;
+   corrects: opt nat;
+   counterparty: opt text;
+   createdBy: principal;
+   description: text;
+   eventDate: Date;
+   fiscalYearId: nat;
+   id: nat;
+   lines: vec VoucherLine;
+   linkedAttachments: vec nat;
+   number: nat;
+   registeredAt: Time;
+   retainUntil: Date;
+   series: text;
+   source: SourceRef;
+ };
+type VoucherLine = 
+ record {
+   account: nat;
+   amount: Money;
+   costCenter: opt text;
+   project: opt text;
+   quantity: opt int;
+   "text": opt text;
+   vatCode: opt text;
+ };
+type VoucherInput = 
+ record {
+   attachmentIds: vec nat;
+   counterparty: opt text;
+   description: text;
+   eventDate: Date;
+   lines: vec VoucherLine;
+   series: text;
+ };
+type VoucherDraft = 
+ record {
+   attachmentIds: vec nat;
+   counterparty: opt text;
+   description: text;
+   eventDate: Date;
+   id: nat;
+   lines: vec VoucherLine;
+   series: text;
+   updatedAt: Time;
+   updatedBy: principal;
+ };
+type Voucher = 
+ record {
+   attachmentIds: vec nat;
+   corrects: opt nat;
+   counterparty: opt text;
+   createdBy: principal;
+   description: text;
+   eventDate: Date;
+   fiscalYearId: nat;
+   id: nat;
+   lines: vec VoucherLine;
+   number: nat;
+   registeredAt: Time;
+   retainUntil: Date;
+   series: text;
+   source: SourceRef;
+ };
+type VatKind = 
+ variant {
+   buyerLiableSE;
+   euGoodsSale;
+   euServiceSale;
+   exempt;
+   exportGoods;
+   exportServices;
+   importVat;
+   inputDomestic;
+   outputDomestic;
+   reverseChargePurchase;
+ };
+type VatCode = 
+ record {
+   account: opt nat;
+   active: bool;
+   boxBase: opt nat;
+   boxVat: opt nat;
+   code: text;
+   kind: VatKind;
+   name: text;
+   rateBp: nat;
+ };
+type Time = int;
+type StorageNotice = 
+ record {
+   date: Date;
+   location: text;
+ };
+type SourceRef = 
+ variant {
+   asset: nat;
+   bankTx: nat;
+   creditNote: nat;
+   inventory: nat;
+   manual;
+   payRun: nat;
+   payment: nat;
+   purchase: nat;
+   rotRut: nat;
+   salesInvoice: nat;
+   taxAccount: nat;
+   vatReturn: nat;
+   yearEnd: nat;
+ };
+type Series = 
+ record {
+   code: text;
+   name: text;
+ };
+type RoleView = 
+ record {
+   addedAt: Time;
+   addedBy: principal;
+   "principal": principal;
+   role: Role;
+ };
+type Role = 
+ variant {
+   auditor;
+   bookkeeper;
+   owner;
+   payroll;
+ };
+type Result_9 = 
+ variant {
+   err: Error;
+   ok: Voucher;
+ };
+type Result_7 = 
+ variant {
+   err: Error;
+   ok: VoucherDraft;
+ };
+type Result_6 = 
+ variant {
+   err: Error;
+   ok: CompanyProfile;
+ };
+type Result_5 = 
+ variant {
+   err: Error;
+   ok: FiscalYear;
+ };
+type Result_4 = 
+ variant {
+   err: Error;
+   ok: record {mirrored: bool;};
+ };
+type Result_3 = 
+ variant {
+   err: Error;
+   ok;
+ };
+type Result_24 = 
+ variant {
+   err: Error;
+   ok: Page_2;
+ };
+type Result_23 = 
+ variant {
+   err: Error;
+   ok: vec BalanceRow;
+ };
+type Result_22 = 
+ variant {
+   err: Error;
+   ok: nat;
+ };
+type Result_21 = 
+ variant {
+   err: Error;
+   ok: Attachment;
+ };
+type Result_20 = 
+ variant {
+   err: Error;
+   ok: opt CompanyProfile;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: Account;
+ };
+type Result_19 = 
+ variant {
+   err: Error;
+   ok: record {
+         lockDate: opt Date;
+         settings: AccountingSettings;
+       };
+ };
+type Result_18 = 
+ variant {
+   err: Error;
+   ok: VoucherView;
+ };
+type Result_17 = 
+ variant {
+   err: Error;
+   ok: Page_1;
+ };
+type Result_16 = 
+ variant {
+   err: Error;
+   ok: vec Account;
+ };
+type Result_15 = 
+ variant {
+   err: Error;
+   ok: Page;
+ };
+type Result_14 = 
+ variant {
+   err: Error;
+   ok: vec VoucherDraft;
+ };
+type Result_13 = 
+ variant {
+   err: Error;
+   ok: vec FiscalYear;
+ };
+type Result_12 = 
+ variant {
+   err: Error;
+   ok: vec RoleView;
+ };
+type Result_11 = 
+ variant {
+   err: Error;
+   ok: vec Series;
+ };
+type Result_10 = 
+ variant {
+   err: Error;
+   ok: vec VatCode;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: opt nat;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: blob;
+ };
+type Page_2 = 
+ record {
+   items: vec AuditEntry;
+   total: nat;
+ };
+type Page_1 = 
+ record {
+   items: vec VoucherView;
+   total: nat;
+ };
+type Page = 
+ record {
+   items: vec Attachment;
+   total: nat;
+ };
+type Money = int;
+type Modules = 
+ record {
+   inventory: bool;
+   payroll: bool;
+   rotRut: bool;
+ };
+type Me = 
+ record {
+   "principal": principal;
+   role: opt Role;
+ };
+type FiscalYearStatus = 
+ variant {
+   closing;
+   locked;
+   open;
+ };
+type FiscalYear = 
+ record {
+   end: Date;
+   id: nat;
+   lockedAt: opt Time;
+   start: Date;
+   status: FiscalYearStatus;
+ };
+type Error = 
+ variant {
+   conflict: text;
+   invalid: text;
+   keys: text;
+   lastOwner;
+   locked: text;
+   notAuthorized;
+   notFound;
+   vault: text;
+ };
+type Date = text;
+type CompanyProfile = 
+ record {
+   bankgiro: opt text;
+   bic: opt text;
+   city: text;
+   country: text;
+   email: text;
+   fSkatt: bool;
+   iban: opt text;
+   legalName: text;
+   orgNr: text;
+   peppolId: opt text;
+   phone: opt text;
+   plusgiro: opt text;
+   postalCode: text;
+   registeredOffice: text;
+   street: text;
+   vatNr: text;
+   web: opt text;
+ };
+type BalanceRow = 
+ record {
+   account: nat;
+   months: vec int;
+ };
+type AuditEntry = 
+ record {
+   action: text;
+   at: Time;
+   detailHash: blob;
+   entity: text;
+   entityId: opt nat;
+   hash: blob;
+   prevHash: blob;
+   "principal": principal;
+   seq: nat;
+ };
+type AttachmentMeta = 
+ record {
+   filename: text;
+   keyId: text;
+   mime: text;
+   plainSha256: blob;
+   receivedVia: variant {
+                  email;
+                  scan;
+                  upload;
+                };
+   size: nat;
+   wrappedKey: blob;
+ };
+type Attachment = 
+ record {
+   cipherSha256: blob;
+   filename: text;
+   id: nat;
+   keyId: text;
+   mime: text;
+   plainSha256: blob;
+   receivedVia: variant {
+                  email;
+                  scan;
+                  upload;
+                };
+   size: nat;
+   uploadedAt: Time;
+   uploadedBy: principal;
+   vaultFileId: nat;
+   wrappedKey: blob;
+ };
+type AccountingSettings = 
+ record {
+   accountingMethod: variant {
+                       cash;
+                       invoice;
+                     };
+   defaultLanguage: variant {
+                      en;
+                      sv;
+                    };
+   invoiceTermsDays: nat;
+   modules: Modules;
+   storageNotice: opt StorageNotice;
+   vatPeriod: variant {
+                month;
+                quarter;
+                year;
+              };
+ };
+type Accounting = 
+ service {
+   /// Huvudbok input: the vouchers that touch one account, in registration order.
+   accountVouchers: (fiscalYearId: nat, account: nat, offset: nat, limit:
+    nat) -> (Result_17) query;
+   addAccount: (number: nat, name: text, vatCode: opt text, sruCode:
+    opt text) -> (Result_2);
+   auditLog: (offset: nat, limit: nat) -> (Result_24) query;
+   /// Net amount per account and month: the trial balance and reports read this.
+   balances: (fiscalYearId: nat) -> (Result_23) query;
+   beginAttachment: (meta: AttachmentMeta) -> (Result_22);
+   confirmAttachment: (ticket: nat, vaultFileId: nat) -> (Result_21);
+   /// A correction voucher in series C that references the original (5 kap. 5 §).
+   /// `lines = null` reverses the original in full.
+   correctVoucher: (id: nat, eventDate: Date, description: text, lines:
+    opt vec VoucherLine) -> (Result_9);
+   createFiscalYear: (start: Date, end: Date, changeover: bool) -> (Result_5);
+   deleteDraft: (id: nat) -> (Result_3);
+   /// The vetKey for `purpose`, encrypted to the caller's transport key.
+   deriveKey: (purpose: text, transportPublicKey: blob) -> (Result);
+   getAttachment: (id: nat) -> (Result_21) query;
+   getCompany: () -> (Result_20) query;
+   getSettings: () -> (Result_19) query;
+   getVoucher: (id: nat) -> (Result_18) query;
+   /// Grundbok: registration order, optionally one series.
+   journal: (fiscalYearId: nat, series: opt text, offset: nat, limit: 
+    nat) -> (Result_17) query;
+   /// Links a document to a voucher after posting (the voucher itself stays unchanged).
+   linkAttachment: (attachmentId: nat, voucherId: nat) -> (Result_3);
+   listAccounts: () -> (Result_16) query;
+   /// Newest first.
+   listAttachments: (offset: nat, limit: nat) -> (Result_15) query;
+   listDrafts: () -> (Result_14) query;
+   listFiscalYears: () -> (Result_13) query;
+   listRoles: () -> (Result_12) query;
+   listSeries: () -> (Result_11) query;
+   listVatCodes: () -> (Result_10) query;
+   me: () -> (Me) query;
+   postDraft: (id: nat) -> (Result_9);
+   postVoucher: (v: VoucherInput) -> (Result_9);
+   removeRole: (p: principal) -> (Result_4);
+   /// Creates (id = null) or replaces a draft. Only sizes are checked here; the
+   /// full rules run when it is posted.
+   saveDraft: (id: opt nat, v: VoucherInput) -> (Result_7);
+   setCompany: (c: CompanyProfile) -> (Result_6);
+   setFiscalYearStatus: (id: nat, status: FiscalYearStatus) -> (Result_5);
+   /// Moves the lock date forward (never back), up to today.
+   setLockDate: (date: Date) -> (Result_3);
+   setRole: (p: principal, role: Role) -> (Result_4);
+   setSettings: (s: AccountingSettings) -> (Result_3);
+   /// Called by the admin UI after sign-in so logins appear in the audit log.
+   signIn: () -> (Me);
+   /// Repairs the vault's copy, e.g. after a vault reinstall.
+   syncRolesToVault: () -> (Result_3);
+   /// The number and kind never change; vouchers refer to the number.
+   updateAccount: (number: nat, name: text, vatCode: opt text, sruCode:
+    opt text, active: bool) -> (Result_2);
+   /// First broken entry in [from, from + 5000), or null if intact.
+   verifyAudit: (from: nat) -> (Result_1) query;
+   vetkdPublicKey: () -> (Result);
+ };
+type AccountKind = 
+ variant {
+   asset;
+   equity;
+   expense;
+   liability;
+   revenue;
+ };
+type Account = 
+ record {
+   active: bool;
+   bas: bool;
+   kind: AccountKind;
+   name: text;
+   number: nat;
+   sruCode: opt text;
+   vatCode: opt text;
+ };
+service : (firstOwner: opt principal) -> Accounting

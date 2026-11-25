@@ -9,7 +9,12 @@ networks:
 environments:
   - name: local
     network: local
-    canisters: [site, web]
+    canisters: [site, web, accounting, vault]
   - name: ic
     network: ic
-    canisters: [site, web]
+    canisters: [site, web, accounting, vault]
+    settings:
+      accounting:
+        # Captured by the canister on first use; never change it afterwards (C16).
+        environment_variables:
+          VETKD_KEY_NAME: "key_1"
