@@ -1,11 +1,12 @@
-// Inställningar: Företag · Bokföring · Kontoplan · Användare.
+// Inställningar: Företag · Bokföring · Kontoplan · Användare · Säkerhetskopia.
 import { Link, useParams } from "react-router";
 import { useAcc, useAccT } from "../../../admin/accounting/context";
 import { useCrumbs } from "../../../admin/accounting/crumbs";
 import { ChartTable, CompanyForm, LockDatePanel, SettingsForm, UsersPanel, YearsPanel } from "../../../admin/accounting/forms";
+import { BackupPanel } from "../../../admin/accounting/ui/BackupPanel";
 import { PageHead } from "../../../admin/accounting/ui/kit";
 
-const TABS = ["company", "accounting", "chart", "users"] as const;
+const TABS = ["company", "accounting", "chart", "users", "backup"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function Settings() {
@@ -13,7 +14,7 @@ export default function Settings() {
   const { href, isOwner } = useAcc();
   const { tab: param } = useParams();
   const tab: Tab = (TABS as readonly string[]).includes(param ?? "") ? (param as Tab) : "company";
-  const tabs = TABS.filter((k) => k !== "users" || isOwner);
+  const tabs = TABS.filter((k) => (k !== "users" && k !== "backup") || isOwner);
   useCrumbs([{ label: t.settings.title, to: "/admin/accounting/settings" }, { label: t.settings.tabs[tab] }]);
 
   return (
@@ -32,6 +33,7 @@ export default function Settings() {
       {tab === "accounting" && <div className="space-y-6"><SettingsForm /><YearsPanel /><LockDatePanel /></div>}
       {tab === "chart" && <ChartTable />}
       {tab === "users" && <UsersPanel />}
+      {tab === "backup" && <BackupPanel />}
     </>
   );
 }

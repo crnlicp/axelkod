@@ -78,7 +78,7 @@ export default function Setup() {
           {current === "chart" && <div className="card space-y-3"><p>{s.chartLead(data?.accounts.length ?? 0)}</p>
             <Link to={href("/admin/accounting/settings/chart")}>{t.settings.tabs.chart}</Link></div>}
           {current === "opening" && <div className="card space-y-3"><p>{s.openingLead}</p><p className="text-muted">{s.later}</p>
-            <Link to={href("/admin/accounting/ledger/new")}>{t.ledger.newVoucher}</Link></div>}
+            <Link to={href("/admin/accounting/year-end/opening")}>{s.openingLink}</Link></div>}
           {current === "bank" && <div className="card space-y-3"><p>{s.bankLead}</p><p className="text-muted">{s.later}</p></div>}
           {current === "roles" && <><p className="card">{s.rolesLead}</p><UsersPanel /></>}
           {current === "checklist" && <Checklist onError={(e) => err(e)} />}

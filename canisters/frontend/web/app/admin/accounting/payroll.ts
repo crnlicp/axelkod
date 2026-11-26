@@ -2,7 +2,7 @@
 // personal data encrypted with the pii-v1 vetKey (C16), and the AGI XML (V7, schema 1.1),
 // which needs the decrypted personnummer and so is built here, never in the canister.
 import { Role, type AgiReturn, type CompanyProfile, type TaxTableRow } from "../../bindings/accounting";
-import type { Accounting } from "./api";
+import { ok, type Accounting } from "./api";
 import { purposeKey } from "./crypto";
 
 /** Payroll writes: owner and payroll (the canister checks too). */
@@ -68,9 +68,32 @@ export async function encryptPii(acc: Accounting, text: string): Promise<Uint8Ar
   return key.encryptMessage(new TextEncoder().encode(text), DOMAIN, "");
 }
 
+// After a restore, records keep the old canister's ciphertext; piiRekeys maps it to the
+// same plaintext under this canister's key (A9c). Loaded once per actor.
+const rekeys = new WeakMap<Accounting, Promise<Map<string, Uint8Array>>>();
+const hexOf = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+
+function rekeyMap(acc: Accounting): Promise<Map<string, Uint8Array>> {
+  let p = rekeys.get(acc);
+  if (!p) {
+    p = (async () => {
+      const m = new Map<string, Uint8Array>();
+      for (let off = 0n; ; off += 500n) {
+        const page = ok(await acc.piiRekeys(off, 500n));
+        for (const [old, now] of page.items) m.set(hexOf(Uint8Array.from(old)), Uint8Array.from(now));
+        if (BigInt(m.size) >= page.total || page.items.length === 0) return m;
+      }
+    })();
+    p.catch(() => rekeys.delete(acc));
+    rekeys.set(acc, p);
+  }
+  return p;
+}
+
 export async function decryptPii(acc: Accounting, cipher: Uint8Array | number[]): Promise<string> {
-  const key = await purposeKey(acc, "pii-v1");
-  return new TextDecoder().decode(await key.decryptMessage(Uint8Array.from(cipher), DOMAIN, ""));
+  const c = Uint8Array.from(cipher);
+  const [key, m] = await Promise.all([purposeKey(acc, "pii-v1"), rekeyMap(acc)]);
+  return new TextDecoder().decode(await key.decryptMessage(m.get(hexOf(c)) ?? c, DOMAIN, ""));
 }
 
 // ── AGI XML (V7: arbetsgivardeklaration 1.1, document 1.1.18.2) ──

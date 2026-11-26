@@ -7,7 +7,7 @@ import { AccSessionCtx, AdminCtx, useSession, type AdminContext } from "../../ad
 import type { AccSession } from "../../admin/accounting/context";
 import accSv from "../../admin/accounting/i18n/sv";
 import accEn from "../../admin/accounting/i18n/en";
-import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconParts, IconBank, IconPercent, IconPeople, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
+import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconParts, IconBank, IconPercent, IconPeople, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders, IconDownload } from "../../components/Icons";
 import { LogoSymbol } from "../../components/Logo";
 
 export function meta() {
@@ -146,7 +146,10 @@ function accountingNav(lang: AdminLang, role: Role, modules: { payroll: boolean;
       ...(hus ? [{ to: "/admin/accounting/rot-rut", label: n.rotRut, icon: IconHome }] : []),
       ...(books ? [{ to: "/admin/accounting/year-end", label: n.yearEnd, icon: IconLock }] : []),
     ] }] : []),
-    ...(books ? [{ title: n.groupRegisters, items: [{ to: "/admin/accounting/assets", label: n.assets, icon: IconParts }] }] : []),
+    ...(books ? [{ title: n.groupRegisters, items: [
+      { to: "/admin/accounting/assets", label: n.assets, icon: IconParts },
+      { to: "/admin/accounting/reports", label: n.reports, icon: IconDownload },
+    ] }] : []),
     { items: [
       { to: "/admin/accounting/guide", label: n.guide, icon: IconNews },
       { to: "/admin/accounting/settings", label: n.settings, icon: IconSliders },

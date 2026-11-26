@@ -10,6 +10,14 @@ environments:
   - name: local
     network: local
     canisters: [site, web, accounting, vault]
+  # Two more accounting + vault pairs on the local network for the backup/restore test (A9c):
+  # `backup` is filled and backed up, `restore` is reinstalled empty and restored into.
+  - name: backup
+    network: local
+    canisters: [accounting, vault]
+  - name: restore
+    network: local
+    canisters: [accounting, vault]
   - name: ic
     network: ic
     canisters: [site, web, accounting, vault]

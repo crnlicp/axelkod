@@ -18,7 +18,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A6 | VAT and EU sales list | Done (2026-11-25) | Box fixtures, file checked in Skatteverket's test service |
 | A7 | Payroll, AGI, växa | Done (2026-11-26) | Fee-category tests, AGI XML vs XSD, test service |
 | A8 | ROT/RUT | Done (2026-11-26), awaiting sign-off | Cap tests, XML vs schema |
-| A9 | Assets, inventory, year-end, SRU, SIE4, backup | In progress (A9a and A9b done, A9b awaiting sign-off) | SIE4 round trip, restore test |
+| A9 | Assets, inventory, year-end, SRU, SIE4, backup | Done (2026-11-26), A9c awaiting sign-off | SIE4 round trip, restore test |
 | A10 | Mainnet (European subnet) | Not started | Approval at each step |
 
 ## Conflicts and resolutions
@@ -87,10 +87,10 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V14 | Late-payment compensation and reminder-fee rules | Räntelagen (1975:635), Lag (1981:739) om ersättning för inkassokostnader | A4 | Done (A4) |
 | V15 | BAS 2026 accounts and BAS → SRU (INK2R/INK2S) mapping | bas.se, Skatteverket SRU technical description (INK2) | A2 / A9 | Done (A2, A9b) |
 | V16 | SRU file format (`INFO.SRU`, `BLANKETTER.SRU`) | Skatteverket "SKV 269" technical description | A9 | Done (A9b) |
-| V17 | SIE 4C (type 4) spec | sie.se file format description | A9 | Not started |
+| V17 | SIE 4C (type 4) spec | sie.se file format description | A9 | Done (2026-11-26) |
 | V18 | Peppol BIS Billing 3.0 rules and UBL schema | docs.peppol.eu/poacc/billing/3.0/ | A4 | Done (A4) |
 | V19 | K2 layout (BFNAR 2016:10) for income statement and balance sheet | bfn.se | A9 | Done (A9b) |
-| V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | BFL done; BFNAR 2013:2 open |
+| V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | Done (2026-11-26; BFNAR 2015:1, 2017:6 not read) |
 | V21 | European subnet ID, node count and node countries | ICP dashboard | A10 | Not started |
 | V22 | Input VAT: evidence for deduction, reverse charge on purchases (EU goods, EU and non-EU services, domestic), reporting period | ML (2023:200) 13 kap. 31–36 §§, 16 kap. 5–17 §§; Skatteverket "Köpa varor/tjänster från andra EU-länder", "Fylla i momsdeklarationen", "Omvänd betalningsskyldighet inom byggsektorn" | A5 | Done (A5) |
 | V23 | BAS 2026 accounts for purchases, reverse charge, expense claims and the tax account | bas.se BAS 2026 (as V15) | A5 | Done (A5) |
@@ -508,7 +508,7 @@ Sources checked first (V22–V24; see sources.md).
   - Grön teknik (also in the schema) is not included.
   - Your manual check: import one generated XML file in "Rot och rut – företag" (before submitting) to confirm it is accepted.
 
-### A9. Assets, inventory, year-end, SRU, SIE4, backup — In progress (started 2026-11-26)
+### A9. Assets, inventory, year-end, SRU, SIE4, backup — Done (2026-11-26)
 Scope as in spec §13 phase 7, with the UI from "Sections" above. A9 is large, so it is done in three parts, with a local deploy, tests and your sign-off after each part. Each part starts with its V-items.
 
 **A9a. Tillgångar & lager**
@@ -545,12 +545,24 @@ Scope as in spec §13 phase 7, with the UI from "Sections" above. A9 is large, s
   - The SRU files were checked against the format description, not in Skatteverket's test service (it opens 2026-12-15 for 2026P4).
 
 **A9c. SIE4, backup, system documentation, dashboard**
-- [ ] V17 (SIE 4C) and V20 (BFNAR 2013:2 open part: systemdokumentation, behandlingshistorik) verified and recorded
-- [ ] SIE4 export at any time; SIE4 import of opening balances in the setup wizard; round-trip test
-- [ ] Full backup: ZIP (JSON + SIE4 + decrypted vault files + manifest with hashes), passphrase-encrypted, strength meter; restore into a fresh local network (tested)
-- [ ] Rapporter & export catalogue, Behandlingshistorik and Systemdokumentation PDFs
-- [ ] Översikt dashboard: KPI tiles, "Att göra" queue, next 5 deadlines, monthly revenue/cost chart
-- [ ] Tests: SIE4 round trip, restore test, Playwright + axe
+- [x] V17 (SIE 4C) and V20 (BFNAR 2013:2 open part: systemdokumentation, behandlingshistorik) verified and recorded
+- Design (A9c):
+  - SIE 4E is built in the browser (`sie4.ts`): CP437, LF, `#FLAGGA`…`#SIETYP 4`, `#FNAMN`, `#ORGNR`, `#ADRESS`, `#RAR 0/-1`, `#KPTYP EUBAS97`, `#VALUTA SEK`, `#KONTO`/`#KTYP`/`#SRU` for the whole chart, `#IB`/`#UB`/`#RES` for this and last year, `#PSALDO` per month, `#VER`/`#TRANS` per series in number order. No `#KSUMMA` (optional, 10.3). The parser ignores unknown labels and handles `#RTRANS`/`#BTRANS`.
+  - SIE4 import fills the opening-balance editor: `#IB` of a year that starts the same day, else `#UB` of the year that ended the day before; balance-sheet accounts only; 2099 → 2098; missing accounts are added with the file's `#KONTO` names. The user reviews and saves.
+  - Backup: owner-only paged export of every store verbatim (`Backup` mixin: `backupSections`, `backupSingletons`, `backupPage`), logged as `backup.export`. The browser adds the decrypted documents (`files/`), decrypted personal data (`pii.json`), SIE4 per year (`sie/`) and `manifest.json` (SHA-256 per entry), zips it (stored, `zip.ts`) and encrypts the whole file with the passphrase (PBKDF2-SHA256 600 000 iterations, AES-256-GCM, header as AAD; `.axbak`). Passphrase at least 12 characters and "fair" on the strength meter.
+  - Restore only into an empty canister (no fiscal year, voucher, document, customer, employee …): `restoreBegin` clears the stores, `restorePut` writes the records back unchanged (audit entries in sequence order), `restoreAttachment` links each file re-encrypted under the new canister's docs-v1 key and checked against the vault, `restoreRekey` maps old pii-v1 ciphertext to the same plaintext under the new key (records and invoice hashes stay byte-identical; `decryptPii` uses the map), `restoreCommit` verifies the whole audit chain, keeps the restoring owner and logs `backup.restore`.
+  - Two extra local environments in `icp.yaml` (`backup`, `restore`: accounting + vault pairs) for the round-trip test.
+- [x] SIE4 export at any time (Rapporter & export); SIE4 import of opening balances (Bokslut › Ingående balanser, linked from setup step 5); round-trip tests
+- [x] Full backup: ZIP (JSON + SIE4 + decrypted vault files + manifest with hashes), passphrase-encrypted, strength meter; restore into a fresh canister pair on the local network (tested)
+- [x] Rapporter & export catalogue, Behandlingshistorik (chain check, PDF + CSV) and Systemdokumentation PDF (BFNAR 2013:2 9.2–9.16, 8.2–8.3)
+- [x] Översikt dashboard: KPI tiles (bank, receivables, payables with opening balances; VAT; result; drafts), "Att göra" queue (adds backup older than 30 days and unfinished year-ends), next 5 deadlines, monthly revenue/cost chart
+- [x] Tests: `sie4.spec.ts` (unit: CP437, fields, 4E items and order, parse round trip, opening balances, CRC-32, ZIP), `backup-api.spec.ts` (backup → restore into an empty pair: records verbatim, audit chain, document and personnummer decrypt under the new keys, identical SIE4, second restore refused), `reports.spec.ts` (Playwright + axe)
+- Deviations and open points:
+  - Documents or personal data that cannot be decrypted are listed in the manifest and left out (with a warning) instead of stopping the backup; a restore skips those documents. Local test data has such entries (fake ciphertext from older API tests).
+  - Restore is tested between canister pairs on the local network, not on a separately started network; mainnet restore is part of A10 (first backup).
+  - BFNAR 2015:1 and 2017:6 (amendments to BFNAR 2013:2) were not read; BFNAR 2024:1 lists no other chapter 9 changes than 9.12.
+  - No `#KSUMMA` checksum in SIE files (optional); SIE files were not checked in SIE-gruppen's test service.
+  - The 30-day backup reminder is an app default; BFNAR 2013:2 8.2 leaves the frequency to the company.
 
 ### A10. Mainnet — Not started (approval at every step)
 - [ ] V21 + C22 legal review done

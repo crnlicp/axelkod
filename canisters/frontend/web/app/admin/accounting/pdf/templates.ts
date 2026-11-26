@@ -135,6 +135,20 @@ async function render(job: Job, assets: Assets): Promise<Uint8Array> {
       });
       break;
     }
+    case "document@1": {
+      for (const s of job.sections) {
+        d.heading(s.title);
+        for (const p of s.text ?? []) { d.facts([["", p]], 0); d.y -= 3; }
+        if (s.facts) d.facts(s.facts, 150);
+        if (s.table) {
+          const fr = s.table.widths ?? s.table.cols.map(() => 1);
+          const total = fr.reduce((a, b) => a + b, 0);
+          d.table(s.table.cols.map((title, i) => ({ title, width: Math.floor((d.width * fr[i]) / total) })), s.table.rows);
+        }
+        d.y -= 8;
+      }
+      break;
+    }
     case "ec-sales@1": {
       d.facts(job.facts);
       const cols: Col[] = [{ title: "Köparens VAT-nummer", width: 110 }, { title: "Köpare", width: d.width - 110 - 210 },

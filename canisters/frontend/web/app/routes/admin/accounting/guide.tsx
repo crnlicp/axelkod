@@ -78,10 +78,14 @@ const sv: Guide = {
     ] },
     { id: "year-end", title: "Bokslut", to: "/admin/accounting/year-end", body: [
       "Checklistan visar vad som återstår: inventering, avskrivningar, periodiseringar, obetalda fakturor (kontantmetoden), bank, skattekonto, moms och löneskulder. Skatten beräknas (20,6 %, periodiseringsfond högst 25 %) och bokslutsverifikationen bokförs i serie X. Ägaren låser året efter årets slut och för över balanserna till nästa år.",
-      "Rapporter: resultat- och balansräkning i K2-uppställning, och INFO.SRU och BLANKETTER.SRU för Skatteverkets filöverföring. Ingående balanser för det första året fylls i under Bokslut › Ingående balanser.",
+      "Rapporter: resultat- och balansräkning i K2-uppställning, och INFO.SRU och BLANKETTER.SRU för Skatteverkets filöverföring. Ingående balanser för det första året fylls i under Bokslut › Ingående balanser, för hand eller från en SIE4-fil.",
+    ] },
+    { id: "reports", title: "Rapporter & export", to: "/admin/accounting/reports", body: [
+      "SIE4 för ett helt räkenskapsår (till revisor, bokslutsprogram eller annat bokföringsprogram), behandlingshistoriken med kontroll av kedjan (PDF, CSV) och systemdokumentationen (PDF). Här finns också en förteckning över var övriga rapporter finns.",
+      "Säkerhetskopia (ägare, Inställningar › Säkerhetskopia): en fil med allt, krypterad med en lösenfras. Ta en minst varje månad och förvara den i Sverige, skild från originalet. Återställning görs i en ny, tom installation.",
     ] },
     { id: "settings", title: "Inställningar", to: "/admin/accounting/settings", body: [
-      "Företag (uppgifterna på alla dokument), bokföring (metod, räkenskapsår, låsdatum, moduler), kontoplan, momskoder, fakturering, lön, användare och roller, säkerhet.",
+      "Företag (uppgifterna på alla dokument), bokföring (metod, räkenskapsår, låsdatum, moduler), kontoplan, momskoder, fakturering, lön, användare och roller, säkerhetskopia.",
     ] },
   ],
   rulesTitle: "Roller",
@@ -162,10 +166,14 @@ const en: Guide = {
     ] },
     { id: "year-end", title: "Year-end", to: "/admin/accounting/year-end", body: [
       "The checklist shows what is left: stocktaking, depreciation, accruals, unpaid invoices (cash method), bank, tax account, VAT and payroll liabilities. Tax is calculated (20.6 %, tax allocation reserve at most 25 %) and the year-end voucher is posted in series X. After the year has ended the owner locks it and carries the balances over to next year.",
-      "Reports: income statement and balance sheet in the K2 layout, and INFO.SRU and BLANKETTER.SRU for Skatteverket's file transfer. Opening balances for the first year are entered under Year-end › Opening balances.",
+      "Reports: income statement and balance sheet in the K2 layout, and INFO.SRU and BLANKETTER.SRU for Skatteverket's file transfer. Opening balances for the first year are entered under Year-end › Opening balances, by hand or from a SIE4 file.",
+    ] },
+    { id: "reports", title: "Reports & export", to: "/admin/accounting/reports", body: [
+      "SIE4 for a whole financial year (for an auditor, a year-end program or another bookkeeping program), the processing history with a check of the chain (PDF, CSV) and the system documentation (PDF). It also lists where the other reports are.",
+      "Backup (owners, Settings › Backup): one file with everything, encrypted with a passphrase. Take one at least every month and keep it in Sweden, apart from the original. A restore is done into a new, empty installation.",
     ] },
     { id: "settings", title: "Settings", to: "/admin/accounting/settings", body: [
-      "Company (the details on every document), bookkeeping (method, financial years, lock date, modules), chart of accounts, VAT codes, invoicing, payroll, users and roles, security.",
+      "Company (the details on every document), bookkeeping (method, financial years, lock date, modules), chart of accounts, VAT codes, invoicing, payroll, users and roles, backup.",
     ] },
   ],
   rulesTitle: "Roles",

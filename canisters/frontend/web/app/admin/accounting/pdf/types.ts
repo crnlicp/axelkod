@@ -39,7 +39,11 @@ export type Job =
   | { template: "payslip@1"; meta: Meta; facts: [string, string][]; lines: PayslipLine[]; totals: [string, bigint][]; agi: [string, string][] }
   | { template: "summary@1"; meta: Meta; facts: [string, string][]; table: { cols: string[]; rows: string[][] } }
   /** K2 statements (V19) and INK2 field lists: whole kronor, this year and last year. */
-  | { template: "statement@1"; meta: Meta; facts: [string, string][]; sections: StatementSection[] };
+  | { template: "statement@1"; meta: Meta; facts: [string, string][]; sections: StatementSection[] }
+  /** Systemdokumentation (BFNAR 2013:2 kap. 9): headed sections of text, facts and tables. */
+  | { template: "document@1"; meta: Meta; sections: DocSection[] };
+
+export type DocSection = { title: string; text?: string[]; facts?: [string, string][]; table?: { cols: string[]; widths?: number[]; rows: string[][] } };
 
 export type StatementSection = { title: string; cols: [string, string, string]; rows: { label: string; kind: "heading" | "item" | "sum" | "total"; cur: bigint; prev: bigint | null }[] };
 

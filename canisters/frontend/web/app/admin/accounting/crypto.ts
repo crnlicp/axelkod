@@ -71,6 +71,19 @@ export async function uploadDocument(
   return ok(await acc.confirmAttachment(ticket, info.id));
 }
 
+/** Restore (A9c): a backed-up file encrypted and uploaded again under this canister's docs-v1 key. */
+export async function reupload(acc: Accounting, vault: Vault, plain: Uint8Array, mime: string, plainSha256: Uint8Array): Promise<{ vaultFileId: bigint; wrappedKey: Uint8Array }> {
+  const got = await sha256(plain);
+  if (got.some((b, i) => b !== plainSha256[i])) throw new Error("hash");
+  const key = await purposeKey(acc, "docs-v1");
+  const { dek, cipher } = await encryptFile(plain);
+  const wrappedKey = await key.encryptMessage(dek, DOMAIN, plainSha256);
+  const chunks = Math.ceil(cipher.length / CHUNK);
+  const upload = ok(await vault.beginUpload({ mime, size: BigInt(cipher.length), chunkCount: BigInt(chunks), cipherSha256: await sha256(cipher) }));
+  for (let i = 0; i < chunks; i++) ok(await vault.putChunk(upload, BigInt(i), cipher.subarray(i * CHUNK, (i + 1) * CHUNK)));
+  return { vaultFileId: ok(await vault.finalize(upload)).id, wrappedKey };
+}
+
 /** Fetches, decrypts and checks a stored document against its plaintext hash. */
 export async function openDocument(acc: Accounting, vault: Vault, a: Attachment): Promise<Blob> {
   const key = await purposeKey(acc, a.keyId);

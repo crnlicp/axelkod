@@ -3,15 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { AccountKind, Role, type BalanceRow, type RoleView, type VoucherDraft } from "../../../bindings/accounting";
 import { ok } from "../../../admin/accounting/api";
-import { today, useAcc, useAccT, useErr } from "../../../admin/accounting/context";
+import { today, useAcc, useAccT, useErr, yearKey } from "../../../admin/accounting/context";
 import { useCrumbs } from "../../../admin/accounting/crumbs";
-import { fyMonths } from "../../../admin/accounting/ledger";
+import { fyMonths, openingMap } from "../../../admin/accounting/ledger";
 import { upcoming } from "../../../admin/accounting/obligations";
 import { Money, PageHead } from "../../../admin/accounting/ui/kit";
 import { formatOre } from "../../../admin/accounting/money";
 import { DeadlineList } from "./layout";
 
-type Facts = { balances: BalanceRow[]; drafts: VoucherDraft[]; roles: RoleView[] | null };
+// `lastBackup`: newest backup.export in the audit log (ns), owners only.
+type Facts = { balances: BalanceRow[]; opening: Map<number, bigint>; drafts: VoucherDraft[]; roles: RoleView[] | null; lastBackup: bigint | null };
+
+async function lastBackup(acc: ReturnType<typeof useAcc>["acc"]): Promise<bigint | null> {
+  const page = ok(await acc.auditLog(0n, 500n));
+  return page.items.find((e) => e.action === "backup.export")?.at ?? null;
+}
 
 export default function Overview() {
   const t = useAccT();
@@ -24,10 +30,10 @@ export default function Overview() {
 
   const books = role !== Role.payroll;
   useEffect(() => {
-    if (!year || !books) { setFacts({ balances: [], drafts: [], roles: null }); return; }
+    if (!year || !books) { setFacts({ balances: [], opening: new Map(), drafts: [], roles: null, lastBackup: null }); return; }
     let live = true;
-    Promise.all([acc.balances(year.id), acc.listDrafts(), ctx.isOwner ? acc.listRoles() : Promise.resolve(null)])
-      .then(([b, d, r]) => live && setFacts({ balances: ok(b), drafts: ok(d), roles: r ? ok(r) : null }))
+    Promise.all([acc.balances(year.id), openingMap(acc, year.id), acc.listDrafts(), ctx.isOwner ? acc.listRoles() : Promise.resolve(null), ctx.isOwner ? lastBackup(acc) : Promise.resolve(null)])
+      .then(([b, ib, d, r, lb]) => live && setFacts({ balances: ok(b), opening: ib, drafts: ok(d), roles: r ? ok(r) : null, lastBackup: lb }))
       .catch((e) => live && setError(err(e)));
     return () => { live = false; };
   }, [acc, year, books, ctx.isOwner, err]);
@@ -37,18 +43,29 @@ export default function Overview() {
 
   const sumWhere = (pred: (n: number) => boolean) =>
     (facts?.balances ?? []).filter((b) => pred(Number(b.account))).reduce((a, b) => a + b.months.reduce((x, y) => x + y, 0n), 0n);
-  const bank = sumWhere((n) => n === 1930);
+  const withIb = (n: number) => (facts?.opening.get(n) ?? 0n) + sumWhere((x) => x === n);
+  const bank = withIb(1930);
+  const receivables = withIb(1510);
+  const payables = -withIb(2440);
   // Revenue is booked as credit (negative); the result is shown with profit positive.
   const result = -sumWhere((n) => { const k = kinds.get(n); return k === AccountKind.revenue || k === AccountKind.expense; });
   const vat = -sumWhere((n) => n >= 2600 && n < 2700);
   const oldDrafts = (facts?.drafts ?? []).filter((d) => Date.now() - Number(d.updatedAt / 1_000_000n) > 7 * 86_400_000).length;
   const owners = facts?.roles?.filter((r) => r.role === Role.owner).length ?? 2;
 
-  const todo: { text: string; to: string }[] = [];
+  // `exact`: the link already names its year (?ar=).
+  const todo: { text: string; to: string; exact?: boolean }[] = [];
   if (!setupDone) todo.push({ text: t.overview.todoSetup, to: "/admin/accounting/setup" });
   if (facts?.drafts.length) todo.push({ text: t.overview.todoDrafts(facts.drafts.length), to: "/admin/accounting/ledger/drafts" });
   if (oldDrafts) todo.push({ text: t.overview.todoOldDrafts(oldDrafts), to: "/admin/accounting/ledger/drafts" });
   if (ctx.isOwner && owners < 2) todo.push({ text: t.overview.todoBackupOwner, to: "/admin/accounting/settings/users" });
+  // BFNAR 2013:2 8.2: backed up regularly; the reminder after 30 days is the app's own default.
+  if (ctx.isOwner && facts && setupDone && (facts.lastBackup === null || Date.now() - Number(facts.lastBackup / 1_000_000n) > 30 * 86_400_000)) {
+    todo.push({ text: t.overview.todoBackup, to: "/admin/accounting/settings/backup" });
+  }
+  for (const y of data?.years ?? []) {
+    if (books && y.end < today() && y.status !== "locked") todo.push({ text: t.overview.todoYearEnd(`${y.start} – ${y.end}`), to: `/admin/accounting/year-end?ar=${encodeURIComponent(yearKey(y))}`, exact: true });
+  }
 
   const deadlines = data ? upcoming(data.settings, data.years, today()) : [];
 
@@ -63,9 +80,10 @@ export default function Overview() {
         </div>
       )}
       {books && (
-        <section aria-label={t.overview.title} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section aria-label={t.overview.title} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {[
-            [t.overview.bank, bank], [t.overview.result, result], [t.overview.vat, vat], [t.overview.drafts, null],
+            [t.overview.bank, bank], [t.overview.receivables, receivables], [t.overview.payables, payables],
+            [t.overview.vat, vat], [t.overview.result, result], [t.overview.drafts, null],
           ].map(([label, v]) => (
             <div key={label as string} className="card">
               <p className="text-sm text-muted">{label as string}</p>
@@ -79,7 +97,7 @@ export default function Overview() {
           <h2 id="todo-h" className="text-2xl">{t.overview.todo}</h2>
           {todo.length ? (
             <ul className="mt-3 space-y-2">
-              {todo.map((x) => <li key={x.text}><Link to={href(x.to)}>{x.text}</Link></li>)}
+              {todo.map((x) => <li key={x.text}><Link to={x.exact ? x.to : href(x.to)}>{x.text}</Link></li>)}
             </ul>
           ) : <p className="mt-3 text-muted">{t.overview.todoNone}</p>}
         </section>

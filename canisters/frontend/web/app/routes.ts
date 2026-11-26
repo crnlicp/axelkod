@@ -62,6 +62,7 @@ export default [
       route("year-end", "routes/admin/accounting/year-end/checklist.tsx"),
       route("year-end/reports", "routes/admin/accounting/year-end/reports.tsx"),
       route("year-end/opening", "routes/admin/accounting/year-end/opening.tsx"),
+      route("reports", "routes/admin/accounting/reports.tsx"),
       route("ledger", "routes/admin/accounting/ledger/list.tsx"),
       route("ledger/drafts", "routes/admin/accounting/ledger/drafts.tsx"),
       route("ledger/new", "routes/admin/accounting/ledger/edit.tsx"),
