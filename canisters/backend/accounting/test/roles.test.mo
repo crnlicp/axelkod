@@ -31,7 +31,8 @@ suite("Roles", func() {
     assert Roles.canRead(r, aud) and not Roles.canRead(r, pay);
     assert Roles.canSeeSetup(r, pay);
     assert Roles.canDerive(r, owner, "pii-v1") and Roles.canDerive(r, pay, "pii-v1");
-    assert not Roles.canDerive(r, bk, "pii-v1") and Roles.canDerive(r, bk, "docs-v1");
+    // C16: bookkeepers read ROT/RUT buyers' personnummer (A8); auditors never read pii-v1.
+    assert Roles.canDerive(r, bk, "pii-v1") and Roles.canDerive(r, bk, "docs-v1") and not Roles.canDerive(r, aud, "pii-v1");
     assert not Roles.canDerive(r, pay, "docs-v1") and not Roles.canDerive(r, owner, "other");
   });
   test("owner count is a plain count of stored owners", func() {

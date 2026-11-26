@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xmls.skatteverket.se/se/skatteverket/skattered/beslut/V1/Beslut.json",
+  "title": "Beslut – beslutsfil",
+  "type": "object",
+  "required": ["version", "utforare", "beslut"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Filens versionsnummer"
+    },
+    "utforare": {
+      "type": "string",
+      "description": "Utförarens person- eller organisationsnummer (12 siffror)"
+    },
+    "beslut": {
+      "type": "array",
+      "description": "Beslut",
+      "items": {
+        "$ref": "#/$defs/Beslut"
+      }
+    }
+  },
+  "examples": [
+    {
+      "version": "1",
+      "utforare": "165519991234",
+      "beslut": [
+        {
+          "namn": "Mitt beslut",
+          "referensnummer": "20180000001",
+          "arenden": []
+        },
+        {
+          "namn": "Mitt andra beslut",
+          "referensnummer": "20180000002-01",
+          "arenden": [
+            {
+              "personnummer": "191212121212",
+              "fakturanummer": "99",
+              "godkantBelopp": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "$defs": {
+    "Beslut": {
+      "type": "object",
+      "required": ["namn", "referensnummer", "arenden"],
+      "properties": {
+        "namn": {
+          "type": "string",
+          "description": "Namnet på begäran"
+        },
+        "referensnummer": {
+          "type": "string",
+          "description": "Referensnummer på begäran eller utbetalningsreferens",
+          "pattern": "^\\d{11}(-\\d+)?$"
+        },
+        "arenden": {
+          "type": "array",
+          "description": "Ärenden",
+          "items": {
+            "$ref": "#/$defs/Arende"
+          }
+        }
+      }
+    },
+    "Arende": {
+      "type": "object",
+      "required": ["personnummer", "fakturanummer", "godkantBelopp"],
+      "properties": {
+        "personnummer": {
+          "type": "string",
+          "description": "Köparens personnummer",
+          "pattern": "^\\d{12}$"
+        },
+        "fakturanummer": {
+          "type": "string",
+          "description": "Fakturanummer"
+        },
+        "godkantBelopp": {
+          "type": "integer",
+          "description": "Godkänt belopp",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

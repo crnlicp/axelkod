@@ -221,6 +221,7 @@ module {
       lateInterestText = interestText;
       creditOf;
       templateVersion = switch (kind) { case (#invoice) TEMPLATE.invoice; case (#creditNote) TEMPLATE.creditNote; case (#quote) TEMPLATE.quote };
+      hus = null; // set by the caller (RotRut.part)
     });
   };
 

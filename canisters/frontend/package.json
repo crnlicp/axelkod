@@ -6,6 +6,7 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
     "typecheck": "pnpm --filter web typecheck",
-    "test:e2e": "pnpm --filter web test:e2e"
+    "test:e2e": "pnpm --filter web test:e2e",
+    "grant:local": "pnpm --filter web grant:local"
   }
 }

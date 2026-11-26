@@ -42,7 +42,7 @@ func line(qty : Int, price : Int, vat : Text, account : Nat) : S.DocLine = {
 
 func input(lines : [S.DocLine]) : S.DocInput = {
   customerId = 1; language = #sv; deliveryDate = null; validUntil = null; termsDays = 30; currency = "SEK"; fxRate = null;
-  lines; ourRef = null; yourRef = null; notes = null;
+  lines; ourRef = null; yourRef = null; notes = null; hus = null;
 };
 
 func ok(r : { #ok : S.Snapshot; #err : Types.Error }) : S.Snapshot = switch (r) {

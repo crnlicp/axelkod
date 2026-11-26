@@ -7,13 +7,14 @@ import Pr "../types/Payroll";
 import Types "../types";
 
 module {
-  public let VERSION = "seed-2026.5";
+  public let VERSION = "seed-2026.6";
 
   public let accounts : [Types.Account] = [
     { number = 1220; name = "Inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1229; name = "Ackumulerade avskrivningar på inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1460; name = "Lager av handelsvaror"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1510; name = "Kundfordringar"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 1513; name = "Kundfordringar – delad faktura"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1630; name = "Avräkning för skatter och avgifter"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1910; name = "Kassa"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1930; name = "Företagskonto"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },

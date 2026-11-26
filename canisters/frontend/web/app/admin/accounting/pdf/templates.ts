@@ -88,7 +88,7 @@ async function render(job: Job, assets: Assets): Promise<Uint8Array> {
     case "invoice@1":
     case "credit-note@1":
     case "quote@1":
-      salesDoc(d, job.snapshot);
+      salesDoc(d, job.snapshot, job.hus);
       break;
     case "reminder@1":
       reminderDoc(d, job.reminder);

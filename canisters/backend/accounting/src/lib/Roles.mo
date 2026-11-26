@@ -45,7 +45,8 @@ module {
     switch (roleOf(roles, p), purpose) {
       case (?#owner, "docs-v1" or "pii-v1") { true };
       case (?#bookkeeper or ?#auditor, "docs-v1") { true };
-      case (?#payroll, "pii-v1") { true };
+      // Bookkeepers handle ROT/RUT buyers' personnummer (C16).
+      case (?#payroll or ?#bookkeeper, "pii-v1") { true };
       case (_) { false };
     };
   };

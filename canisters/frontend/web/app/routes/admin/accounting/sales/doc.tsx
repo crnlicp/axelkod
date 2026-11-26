@@ -71,10 +71,11 @@ export default function SalesDocPage() {
 
   const actions = (
     <>
-      {d.hashOk && <PdfActions fileName={`${docName(t, v.doc).toLowerCase().replace(/\s+/g, "-")}.pdf`} job={() => docJob(v.doc)} />}
+      {d.hashOk && <PdfActions fileName={`${docName(t, v.doc).toLowerCase().replace(/\s+/g, "-")}.pdf`} job={() => docJob(v.doc, acc)} />}
       {d.hashOk && !isQuote && <button type="button" className="btn btn-secondary" onClick={() => void peppol()}>{s.doc.peppol}</button>}
       {canBook && isInvoice && v.balance > 0n && <button type="button" className="btn btn-primary" onClick={() => setPaying(true)}>{s.doc.registerPayment}</button>}
-      {canBook && isInvoice && v.credited < x.total && (
+      {canBook && isInvoice && x.hus && v.paid > 0n && <Link className="btn btn-secondary no-underline" to={href(`/admin/accounting/rot-rut?invoice=${v.doc.id}`)}>{t.rotRut.doc.claim}</Link>}
+      {canBook && isInvoice && v.credited < v.payable && (
         <button type="button" className="btn btn-secondary" onClick={() => run(async () => { const dr = ok(await acc.creditDraftFrom(v.doc.id)); navigate(href(`/admin/accounting/sales/new?draft=${dr.id}`)); })}>{s.doc.credit}</button>
       )}
       {canBook && isInvoice && v.overdue && (
@@ -129,6 +130,11 @@ export default function SalesDocPage() {
               <dt className="text-muted">{s.editor.net}</dt><dd className="text-right"><Money ore={x.totalNet} /> {cur}</dd>
               <dt className="text-muted">{s.editor.vatTotal}</dt><dd className="text-right"><Money ore={x.totalVat} /> {cur}</dd>
               <dt className="font-semibold">{s.editor.total}</dt><dd className="text-right font-semibold"><Money ore={x.total} /> {cur}</dd>
+              {x.hus && <>
+                <dt className="text-muted">{t.rotRut.doc.deduction} ({t.rotRut.kind[x.hus.kind]})</dt><dd className="text-right">−<Money ore={x.hus.deduction} /></dd>
+                <dt className="font-semibold">{t.rotRut.doc.payable}</dt><dd className="text-right font-semibold"><Money ore={x.total - x.hus.deduction} /> {cur}</dd>
+                {v.payable > x.total - x.hus.deduction && <><dt className="text-muted">{t.rotRut.doc.refused}</dt><dd className="text-right"><Money ore={v.payable - (x.total - x.hus.deduction)} /></dd></>}
+              </>}
             </dl>
             {x.legalNotes.map((n) => <p key={n} className="mt-2 font-semibold">{n}</p>)}
           </section>

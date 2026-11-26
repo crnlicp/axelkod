@@ -16,8 +16,8 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A4 | Sales | Done (2026-11-25) | `mops test` + Playwright (hash-stable re-render) |
 | A5 | Purchases, bank, tax account | Done (2026-11-25) | `mops test` + Playwright upload/match |
 | A6 | VAT and EU sales list | Done (2026-11-25) | Box fixtures, file checked in Skatteverket's test service |
-| A7 | Payroll, AGI, växa | Done (2026-11-26), awaiting sign-off | Fee-category tests, AGI XML vs XSD, test service |
-| A8 | ROT/RUT | Not started | Cap tests, XML vs schema |
+| A7 | Payroll, AGI, växa | Done (2026-11-26) | Fee-category tests, AGI XML vs XSD, test service |
+| A8 | ROT/RUT | Done (2026-11-26), awaiting sign-off | Cap tests, XML vs schema |
 | A9 | Assets, inventory, year-end, SRU, SIE4, backup | Not started | SIE4 round trip, restore test |
 | A10 | Mainnet (European subnet) | Not started | Approval at each step |
 
@@ -82,7 +82,7 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V9 | Växa-stöd as a refund application from 2026 | Skatteverket "Växa-stöd" | A7 | Done (A7) |
 | V10 | Tax tables open-data format | Skatteverket open data (Skattetabeller) | A7 | Done (A7) |
 | V11 | Mileage, per diem, PBB/IBB 2026, car benefit formula | Skatteverket "Belopp och procent 2026" | A7 | Done (A7) |
-| V12 | ROT/RUT 2026 rates and caps, XML schema, decision JSON, 2027 fields | Skatteverket "Rot och rut – företag" technical description | A8 | Not started |
+| V12 | ROT/RUT 2026 rates and caps, XML schema, decision JSON, 2027 fields | Skatteverket "Rot och rut – företag" technical description | A8 | Done (A8) |
 | V13 | Riksbank reference rate history | riksbank.se (referensränta) | A4 | Done (A4) |
 | V14 | Late-payment compensation and reminder-fee rules | Räntelagen (1975:635), Lag (1981:739) om ersättning för inkassokostnader | A4 | Done (A4) |
 | V15 | BAS 2026 accounts and BAS → SRU (INK2R/INK2S) mapping | bas.se, Skatteverket SRU technical description (INK2) | A2 / A9 | Accounts done (A2); SRU open |
@@ -443,7 +443,7 @@ Sources checked first (V22–V24; see sources.md).
   - **Settings:** EU trade and turnover over 40 MSEK are still not settings; yearly VAT and deadlines keep the earliest date.
 
 
-### A7. Payroll, AGI, växa — Done (2026-11-26), awaiting your sign-off
+### A7. Payroll, AGI, växa — Done (2026-11-26), commit 587fef1
 - [x] V7–V11 verified and recorded (AGI 1.1.18.2 and XSDs, fee categories incl. the youth reduction from April 2026, växa-stöd as a refund, tax tables 2026 file format, amounts 2026, semesterlagen)
 - [x] Payroll parameters as dated data (fee rates and birth-year categories, youth reduction window and cap, 1 000 kr threshold, växa caps, 12 % / 0,43 %, mileage, per diem, kostförmån, PBB) with source; owner can change them (Inställningar › Lön)
 - [x] Seed `seed-2026.5`: BAS payroll accounts 7210, 7220, 7281, 7285, 7290, 7321, 7331, 7512, 7519, 2941 (2710, 2731, 2820, 2920, 7510 exist) and pay items (lönearter) with AGI field codes
@@ -484,7 +484,29 @@ Sources checked first (V22–V24; see sources.md).
   - **Local test data:** the API test approved and paid runs and filed the AGI for periods 202612 and 202610 (each period can be used once). Older e2e runs left draft pay runs in 202611 on the local canister.
 
 
-### A8–A9
+### A8. ROT/RUT — Done (2026-11-26), awaiting your sign-off
+- [x] V12 verified and recorded (2026 rates and caps, XML 1.0 and 1.1 schemas with examples, decision JSON schema, 2027 fields, SKV 4542 field meanings, BAS 1513)
+- [x] Parameters as dated data (ROT 30 %, RUT 50 %, caps 50 000 / 75 000 kr, XML 1.1 from 2027-01-01) with source; owner can change them (ROT/RUT › Inställningar)
+- [x] Invoice part: ROT or RUT on a SEK invoice (or quote) to a private customer. Each line is marked labour (with work type), material (with work type) or other. Buyers with shares; name + personnummer and the property (fastighetsbeteckning, or BRF org. nr + lägenhetsnummer) encrypted in the browser with `pii-v1` (bookkeeper now gets `pii-v1`, as C16 says)
+- [x] The canister computes the deduction: at most the rate × labour incl. VAT, truncated to whole kronor, split by share; each buyer's part within the caps. "Att betala" = total − deduction. Posting: 1510 the customer's part, 1513 the deduction (seed `seed-2026.6` adds 1513)
+- [x] Credit notes of a ROT/RUT invoice: full credit only, before any case exists
+- [x] Cases: one per claimed set of payments (same share of the deduction as the share paid, cumulative so rounding never adds up), electronic payments only, one payment year, whole hours per work type, subcontractors / staffing agency (2027), deadline 31 Jan of the year after payment (also in the deadline list)
+- [x] Claims (begäran): one type and one payment year, up to 100 buyers, unique name; XML built in the browser (1.0, or 1.1 from 2027 with the confirmation), validated against both XSDs in tests; mark submitted
+- [x] Decision import: Skatteverket's decision JSON matched in the browser on invoice number + personnummer (claim name when an invoice has several open cases), plus manual entry; payout voucher in series B (bank against 1513); a refused amount moves to the customer (1513 → 1510) and reopens the invoice balance. Cash method: the payout is booked pro rata to revenue and VAT
+- [x] UI: ROT/RUT section (hidden until enabled): ready invoices and cases with deadline countdown, claim stepper Underlag → Köpare & fastighet → Skapa fil → Markera inskickad → Importera beslut; parameters; invoice editor section; invoice page and PDF show the deduction, buyers and property
+- [x] Tests: `mops test` caps, splits, partial payment, postings, rules; unit tests XML vs both XSDs and Skatteverket's examples, decision JSON parsing and matching; API test of the whole flow; Playwright invoice with RUT → PDF → payment → case → claim → XML + axe
+- Result: `mops test` site 50, accounting 94 (9 new in `rotrut.test.mo`), vault 5. Playwright 128/128, then the deadline change rerun (7/7).
+- Deviations and open points:
+  - Rounding of the deduction to whole kronor is not stated by Skatteverket; the app truncates (never above the maximum share).
+  - Several buyers on one invoice: labour, paid amount, material, other costs and hours are split by share in the XML (whole kronor and hours, the first buyer takes the remainder). Not stated by Skatteverket; check in the e-service.
+  - The yearly cap per person is checked only within one invoice. The buyer's remaining deduction comes from Skatteverket's "Mina skattereduktioner"; use "Lägre avdrag" on the invoice when less is left.
+  - Buyer ≥ 18 in the payment year and a valid personnummer are checked in the browser when the file is built (the canister never sees personnummer). "Buyer ≠ performer" and the family rules are not checked.
+  - A decision file lists a claim and its payouts separately; the app sums the approved amounts per case. Check against your first real decision file.
+  - Utförare in the XML is "16" + organisationsnummer (the 12-digit form of the decision file).
+  - Grön teknik (also in the schema) is not included.
+  - Your manual check: import one generated XML file in "Rot och rut – företag" (before submitting) to confirm it is accepted.
+
+### A9
 Scope as in spec §13 phases 4–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.
 
 ### A10. Mainnet — Not started (approval at every step)

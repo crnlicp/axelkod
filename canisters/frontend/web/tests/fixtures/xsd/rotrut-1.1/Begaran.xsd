@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://xmls.skatteverket.se/se/skatteverket/skattered/begaran/1.1"
+           xmlns="http://xmls.skatteverket.se/se/skatteverket/skattered/begaran/1.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+    <xs:annotation>
+        <xs:appinfo>
+            <SchemaMetadata xmlns="se/skatteverket/zl/SchemaMetadata/1.0"
+                            xmlns:dc="http://purl.org/dc/elements/1.1/"
+                            xmlns:dcq="http://purl.org/dc/terms/"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            xsi:schemaLocation="se/skatteverket/zl/SchemaMetadata/1.0 https://xmls.skatteverket.se/se/skatteverket/zl/SchemaMetadata/1.0/SchemaMetadata.xsd">
+                <dc:title>Begaran1.1.xsd</dc:title>
+                <dc:description>Begäran till Skatteverket om betalning för utfört rot-, rut- eller grön teknik-arbete.
+                </dc:description>
+                <dc:description>
+                    Version 1.1:
+
+                    Elementen Underentreprenor och Bemanningsforetag har lagts till i Arende. Elementen är obligatoriska
+                    och ska anges med värdet true eller false.
+
+                    Element kan inte längre anges med xsi:nil. Frivilliga element som saknar värde ska utelämnas.
+
+                    Det frivilliga elementet Systemkontakt har lagts till som första element i Begaran. Systemkontakt
+                    innehåller uppgifter om den part som ansvarar för att skapa XML-dokumentet. Det kan exempelvis vara
+                    en programvaruleverantör, utföraren själv eller en annan part.
+
+                    Om Systemkontakt anges ska Namn och Produktnamn samt minst en och högst tio KontaktEpost anges.
+
+                    E-postadresserna får användas av Skatteverket för att informera systemkontakten om kommande
+                    förändringar i XML-schemat. Uppgifterna påverkar inte handläggningen av begäran och visas eller
+                    hanteras inte i e-tjänsten.
+
+                    Schemat använder ett nytt namespace för version 1.1:
+                    http://xmls.skatteverket.se/se/skatteverket/skattered/begaran/1.1
+                </dc:description>
+                <dc:publisher>Skatteverket</dc:publisher>
+                <dc:creator>
+                    <dcq:contact>Synpunkter eller frågor lämnas till Skatteupplysningen, se https://www.skatteverket.se/
+                    </dcq:contact>
+                    <dcq:owner>Skatteverket</dcq:owner>
+                </dc:creator>
+                <dc:date>
+                    <dcq:created>2021-02-04</dcq:created>
+                    <dcq:modified>2026-11-09</dcq:modified>
+                    <dcq:effectiveFrom>2027-01-01</dcq:effectiveFrom>
+                </dc:date>
+                <dc:subject>Husarbete</dc:subject>
+            </SchemaMetadata>
+        </xs:appinfo>
+    </xs:annotation>
+    <xs:element name="Begaran"
+                type="BegaranTYPE">
+        <xs:annotation>
+            <xs:documentation>Begäran till Skatteverket om betalning för utfört rot-, rut- eller grön teknik-arbete.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="BegaranTYPE">
+        <xs:sequence>
+            <xs:element name="Systemkontakt"
+                        type="SystemkontaktTYPE"
+                        minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Frivilliga uppgifter om den organisation eller person som vill få information om kommande
+                        förändringar i
+                        schemat. Det kan exempelvis vara en programvaruleverantör, utföraren själv eller en annan part
+                        som
+                        ansvarar för att skapa XML-dokumentet.
+
+                        Namn och Produktnamn används tillsammans för att identifiera samma systemkontakt när den används
+                        i
+                        olika XML-dokument.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="NamnPaBegaran"
+                        type="NamnPaBegaranTYPE">
+                <xs:annotation>
+                    <xs:documentation>Ditt namn på begäran</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="TypAvBegaran"
+                        type="TypAvBegaranTYPE">
+                <xs:annotation>
+                    <xs:documentation>Typ av begäran. Ska innehålla ett av följande: [ROT, RUT, GRON_TEKNIK]
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Utforare"
+                        type="PeOrgNrTYPE">
+                <xs:annotation>
+                    <xs:documentation>Utförarens person- eller organisationsnummer
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Arende"
+                        type="ArendeTYPE"
+                        maxOccurs="100">
+                <xs:annotation>
+                    <xs:documentation>Del av begäran. Avser en utförd tjänst riktat till en köpare
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SystemkontaktTYPE">
+        <xs:sequence>
+            <xs:element name="Namn"
+                        type="SystemkontaktsnamnTYPE"/>
+            <xs:element name="Produktnamn"
+                        type="ProduktnamnTYPE"/>
+            <xs:element name="KontaktEpost"
+                        type="EpostadressTYPE"
+                        maxOccurs="10"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ArendeTYPE">
+        <xs:sequence>
+            <xs:element name="FakturaNr"
+                        minOccurs="0"
+                        type="FakturaNrTYPE">
+                <xs:annotation>
+                    <xs:documentation>Ärendets fakturanummer</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Kopare"
+                        type="PeOrgNrTYPE">
+                <xs:annotation>
+                    <xs:documentation>Personnummer för den du begär utbetalning för
+                        (köpare av tjänsten)
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Fastighet"
+                        minOccurs="0"
+                        type="FastighetTYPE">
+                <xs:annotation>
+                    <xs:documentation>Fastigheten där arbete utförts. Anges för arbete av typen rot eller grön teknik
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="UtfortArbete"
+                        minOccurs="0"
+                        maxOccurs="100"
+                        type="UtfortArbeteTYPE">
+                <xs:annotation>
+                    <xs:documentation>Uppgifter om utfört arbete. Ska vara giltig
+                        tjänst för den typ av begäran som angetts
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="OvrigKostnad"
+                        minOccurs="0"
+                        type="OvrigKostnadTYPE">
+                <xs:annotation>
+                    <xs:documentation>Uppgifter om övrig kostnad. Ska fyllas i om
+                        timmar eller material angetts för någon tjänst i utfört arbete
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Betalningsdatum"
+                        type="DatumTYPE">
+                <xs:annotation>
+                    <xs:documentation>Datum för betalning. Anges enligt följande exempel: 2019-07-01</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Arbetskostnad"
+                        minOccurs="0"
+                        type="ArbetskostnadTYPE">
+                <xs:annotation>
+                    <xs:documentation>Pris för arbetet (arbetskostnaden). Anges endast för arbete av typen rot eller
+                        rut
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BetaltBelopp"
+                        type="BeloppTYPE">
+                <xs:annotation>
+                    <xs:documentation>Belopp du fått betalt för arbetet
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BegartBelopp"
+                        type="BeloppTYPE">
+                <xs:annotation>
+                    <xs:documentation>Belopp du begär</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Underentreprenor"
+                        type="xs:boolean"/>
+            <xs:element name="Bemanningsforetag"
+                        type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="SystemkontaktsnamnTYPE">
+        <xs:restriction base="xs:token">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ProduktnamnTYPE">
+        <xs:restriction base="xs:token">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="EpostadressTYPE">
+        <xs:restriction base="xs:token">
+            <xs:minLength value="3"/>
+            <xs:maxLength value="254"/>
+            <xs:pattern value="[^\s@]+@[^\s@]+\.[^\s@]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="FastighetTYPE">
+        <xs:annotation>
+            <xs:documentation>Uppgifter om fastighet. Anges för arbete av typen rot eller grön teknik</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Fastighetsbeteckning"
+                        minOccurs="0"
+                        type="FastighetsbeteckningTYPE">
+                <xs:annotation>
+                    <xs:documentation>Fastighetsbeteckning, ska fyllas i om avdraget
+                        avser en fastighet
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LagenhetsNr"
+                        minOccurs="0"
+                        type="LagenhetsNrTYPE">
+                <xs:annotation>
+                    <xs:documentation>Lägenhetsnummer, ska fyllas i om avdraget avser
+                        en lägenhet
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="BrfOrgNr"
+                        minOccurs="0"
+                        type="PeOrgNrTYPE">
+                <xs:annotation>
+                    <xs:documentation>Bostadsrättsförenings organisationsnummer, ska
+                        fyllas i om avdraget avser en lägenhet
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="UtfortArbeteTYPE">
+        <xs:sequence>
+            <xs:element name="TypAvUtfortArbete"
+                        type="TypAvUtfortArbeteTYPE">
+                <xs:annotation>
+                    <xs:documentation>Typ av tjänst som utförts. Ska matcha typ av begäran</xs:documentation>
+                    <xs:documentation>Giltiga värden när ROT valts: [BYGG, EL, GLASARBETE, MARKARBETE,
+                        MALNING_TAPETSERING, MURNING, VVS]
+                    </xs:documentation>
+                    <xs:documentation>Giltiga värden när RUT valts: [BARNPASSNING, FLYTTJANSTER, IT_TJANSTER,
+                        KLAD_TEXTILVARD, MOBLERING, PERSONLIG_OMSORG, REPARATION_VITVAROR, SNOSKOTTNING, STADNING,
+                        TILLSYN_AV_BOSTAD, TRADGARDSARBETE, TRANSPORT_TILL_FORSALJNING, TVATT_VID_TVATTINRATTNING]
+                    </xs:documentation>
+                    <xs:documentation>Giltiga värden när GRON_TEKNIK valts: [INSTALLATION_LADDPUNKT,
+                        INSTALLATION_LAGRING, INSTALLATION_SOLCELLER]
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AntalTimmar"
+                        minOccurs="0"
+                        type="AntalTimmarTYPE">
+                <xs:annotation>
+                    <xs:documentation>Antal timmar. Anges inte för schablontyper
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Kostnad"
+                        minOccurs="0"
+                        type="KostnadTYPE">
+                <xs:annotation>
+                    <xs:documentation>Kostnad för installation för grön teknik eller materialkostnad för övriga typer.
+                        Anges inte för utfört arbete av schablontyp
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="NamnPaBegaranTYPE">
+        <xs:restriction base="xs:token">
+            <xs:minLength value="1">
+            </xs:minLength>
+            <xs:maxLength value="16">
+            </xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="TypAvBegaranTYPE">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1">
+            </xs:minLength>
+            <xs:maxLength value="50">
+            </xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="TypAvUtfortArbeteTYPE">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1">
+            </xs:minLength>
+            <xs:maxLength value="50">
+            </xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="FakturaNrTYPE">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="0">
+            </xs:minLength>
+            <xs:maxLength value="20">
+            </xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="LagenhetsNrTYPE">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="0">
+            </xs:minLength>
+            <xs:maxLength value="25">
+            </xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="FastighetsbeteckningTYPE">
+        <xs:annotation>
+            <xs:documentation>Fastighetsbeteckning</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:minLength value="0">
+            </xs:minLength>
+            <xs:maxLength value="40">
+            </xs:maxLength>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="KostnadTYPE">
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="0">
+            </xs:minInclusive>
+            <xs:maxInclusive value="9999999">
+            </xs:maxInclusive>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AntalTimmarTYPE">
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="0">
+            </xs:minInclusive>
+            <xs:maxInclusive value="999">
+            </xs:maxInclusive>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="OvrigKostnadTYPE">
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="0">
+            </xs:minInclusive>
+            <xs:maxInclusive value="9999999">
+            </xs:maxInclusive>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ArbetskostnadTYPE">
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="2">
+            </xs:minInclusive>
+            <xs:maxInclusive value="99999999999">
+            </xs:maxInclusive>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="BeloppTYPE">
+        <xs:restriction base="xs:long">
+            <xs:minInclusive value="0">
+            </xs:minInclusive>
+            <xs:maxInclusive value="99999999999">
+            </xs:maxInclusive>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="DatumTYPE">
+        <xs:restriction base="xs:date">
+            <xs:minInclusive value="2009-07-01">
+            </xs:minInclusive>
+            <xs:pattern value="(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])">
+            </xs:pattern>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="PeOrgNrTYPE">
+        <xs:annotation>
+            <xs:documentation>Organisationsnummer/personnummer</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(\d{6}|\d{8})[-|+]{0,1}\d{4}">
+            </xs:pattern>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
+

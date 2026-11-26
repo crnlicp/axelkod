@@ -37,6 +37,11 @@ export const vatTabs = (t: { title: string; tabs: Record<"returns" | "ecSales", 
   tabs: [["/admin/accounting/vat", t.tabs.returns], ["/admin/accounting/vat/ec-sales", t.tabs.ecSales]] as const,
 });
 
+export const rotRutTabs = (t: { title: string; tabs: Record<"cases" | "claims" | "settings", string> }) => ({
+  label: t.title,
+  tabs: [["/admin/accounting/rot-rut", t.tabs.cases], ["/admin/accounting/rot-rut/claims", t.tabs.claims], ["/admin/accounting/rot-rut/settings", t.tabs.settings]] as const,
+});
+
 export const payrollTabs = (t: { title: string; tabs: Record<"runs" | "employees" | "agi" | "vaxa" | "settings", string> }) => ({
   label: t.title,
   tabs: [

@@ -16,7 +16,9 @@ import Encode "../lib/Encode";
 import Invoice "../lib/Invoice";
 import Posting "../lib/Posting";
 import Roles "../lib/Roles";
+import RotRutLib "../lib/RotRut";
 import SalesLib "../lib/Sales";
+import R "../types/RotRut";
 import S "../types/Sales";
 import Types "../types";
 
@@ -29,6 +31,7 @@ mixin (
   counters : Types.Counters,
   audit : Types.Audit,
   sales : S.Sales,
+  rotRut : R.RotRut,
 ) {
   transient let SALES_PAGE = 200;
   transient let SALES_DRAFTS = 1_000;
@@ -96,13 +99,38 @@ mixin (
       if (o.customerId != d.input.customerId) return #err(#invalid("customerId"));
       if (o.snapshot.currency != d.input.currency) return #err(#invalid("currency"));
     };
-    let snapshot = switch (Invoice.build(d.kind, number, d.input, config.company, customer, chart, sales.params, date, creditInfo)) {
+    let built = switch (Invoice.build(d.kind, number, d.input, config.company, customer, chart, sales.params, date, creditInfo)) {
       case (#ok(x)) x;
       case (#err(e)) return #err(e);
     };
+    // ROT/RUT (A8): computed for quotes and invoices; a credit note takes the invoice's part
+    // and must credit all of it before anything is claimed.
+    let hus : ?R.HusPart = switch (d.kind, original) {
+      case (#creditNote, ?o) {
+        switch (o.snapshot.hus) {
+          case (?h) {
+            let cases = (rotRut.casesOf.get(o.id) ?? []).filterMap(func(i : Nat) : ?R.HusCase = rotRut.cases.get(i));
+            if (cases.any(func(c : R.HusCase) : Bool = c.status != #cancelled)) return #err(#conflict("husClaimed"));
+            if (SalesLib.credited(sales, o.id) != 0 or built.lines.size() != o.snapshot.lines.size() or built.totalNet != o.snapshot.totalNet or built.totalVat != o.snapshot.totalVat) return #err(#invalid("husFullCredit"));
+            ?h;
+          };
+          case null { null };
+        };
+      };
+      case (_, _) {
+        switch (d.input.hus) {
+          case (?h) {
+            if (not config.settings.modules.rotRut) return #err(#invalid("hus.module"));
+            switch (RotRutLib.part(h, built, rotRut.params)) { case (#ok(p)) ?p; case (#err(e)) return #err(e) };
+          };
+          case null { null };
+        };
+      };
+    };
+    let snapshot = { built with hus };
     if (d.kind != #quote and snapshot.total <= 0) return #err(#invalid("total"));
     switch (original) {
-      case (?o) { if (snapshot.total > o.snapshot.total - SalesLib.credited(sales, o.id)) return #err(#invalid("creditExceedsInvoice")) };
+      case (?o) { if (RotRutLib.customerPart(snapshot) > SalesLib.total(o) - SalesLib.credited(sales, o.id)) return #err(#invalid("creditExceedsInvoice")) };
       case null {};
     };
     let voucher = if (d.kind == #quote or cashMethod()) null else {
@@ -188,6 +216,8 @@ mixin (
     let input : S.DocInput = {
       customerId = src.customerId; language = x.language; deliveryDate = null; validUntil = null; termsDays; currency = x.currency;
       fxRate = x.fxRate; lines = x.lines.map(SalesLib.docLine); ourRef = x.ourRef; yourRef = x.yourRef; notes = null;
+      // A credit note takes the invoice's part when it is issued; a quote's carries over to the invoice.
+      hus = if (kind == #invoice) (switch (x.hus) { case (?h) ?RotRutLib.input(h); case null null }) else null;
     };
     let id = sales.next;
     sales.next += 1;
@@ -204,7 +234,7 @@ mixin (
     if (not Roles.canBook(roles, caller)) return #err(#notAuthorized);
     let d = switch (sales.docs.get(invoiceId)) { case (?d) d; case null { return #err(#notFound) } };
     if (d.kind != #invoice) return #err(#invalid("kind"));
-    if (SalesLib.credited(sales, invoiceId) >= d.snapshot.total) return #err(#conflict("credited"));
+    if (SalesLib.credited(sales, invoiceId) >= SalesLib.total(d)) return #err(#conflict("credited"));
     #ok(draftFrom(caller, d, #creditNote, 0));
   };
 

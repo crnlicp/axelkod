@@ -1,10 +1,11 @@
 // Sales helpers for pages: status chips, quantities, and PDF/e-invoice jobs that
 // render only a verified snapshot (C11).
-import type { DocStatus, Reminder, SalesDoc } from "../../bindings/accounting";
+import type { DocStatus, HusPart, Reminder, SalesDoc } from "../../bindings/accounting";
+import type { Accounting } from "./api";
 import { matches, reminder as encodeReminder, snapshot as encodeSnapshot } from "./encode";
 import type { AccDict } from "./i18n/sv";
 import { nowStamp } from "./pdf/client";
-import type { Job } from "./pdf/types";
+import type { HusPrint, Job } from "./pdf/types";
 import { hex } from "./canonical";
 
 export type Tone = "neutral" | "good" | "warn" | "bad" | "info";
@@ -47,8 +48,9 @@ export class HashMismatch extends Error {
   constructor() { super("hash"); }
 }
 
-/** The PDF job of an issued document, after checking the snapshot against its stored hash. */
-export async function docJob(d: SalesDoc): Promise<Job> {
+/** The PDF job of an issued document, after checking the snapshot against its stored hash.
+ * ROT/RUT buyers and home are decrypted when `acc` is given (pii-v1). */
+export async function docJob(d: SalesDoc, acc?: Accounting): Promise<Job> {
   if (!(await matches(encodeSnapshot(d.snapshot), d.contentHash))) throw new HashMismatch();
   const x = d.snapshot;
   return {
@@ -58,7 +60,16 @@ export async function docJob(d: SalesDoc): Promise<Job> {
       date: new Date(`${x.issueDate}T00:00:00Z`), hash: hex(Uint8Array.from(d.contentHash)).slice(0, 8), lang: x.language,
     },
     snapshot: x,
+    hus: x.hus && acc ? await husPrint(acc, x.hus) : undefined,
   };
+}
+
+async function husPrint(acc: Accounting, h: HusPart): Promise<HusPrint> {
+  const { decryptIdentity, decryptProperty } = await import("./rotrut");
+  const buyers = await Promise.all(h.buyers.map(async (b) => ({ ...(await decryptIdentity(acc, b.identityEnc)), amount: b.amount })));
+  const p = h.propertyEnc ? await decryptProperty(acc, h.propertyEnc) : undefined;
+  const property = !p ? undefined : "fastighetsbeteckning" in p ? p.fastighetsbeteckning : `BRF ${p.brfOrgNr}, lgh ${p.lagenhetsnummer}`;
+  return { buyers, property };
 }
 
 export async function reminderJob(r: Reminder): Promise<Job> {

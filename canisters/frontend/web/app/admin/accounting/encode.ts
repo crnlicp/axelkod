@@ -1,6 +1,6 @@
 // acj-1 values of stored records, field for field as accounting/src/lib/Encode.mo,
 // so a hash computed here equals the audit entry's detailHash for the same record.
-import type { CompanyProfile, PartySnapshot, Reminder, Snapshot, SourceRef, Voucher, VoucherLine } from "../../bindings/accounting";
+import type { CompanyProfile, HusPart, PartySnapshot, Reminder, Snapshot, SourceRef, Voucher, VoucherLine } from "../../bindings/accounting";
 import { sha256, hex, type Value } from "./canonical";
 
 const opt = <T>(x: T | undefined, f: (y: T) => Value = (y) => y as Value): Value => (x === undefined ? null : f(x));
@@ -41,7 +41,21 @@ export const party = (p: PartySnapshot): Value => ({
   email: opt(p.email), peppolId: opt(p.peppolId), kind: tag(p.kind),
 });
 
-export const snapshot = (x: Snapshot): Value => ({
+/** ROT/RUT part (Encode.mo `hus`); ciphertext is hashed as is. */
+export const hus = (h: HusPart): Value => ({
+  kind: tag(h.kind), rateBp: h.rateBp,
+  lineParts: h.lineParts.map((p) => (p === null ? null : p.__kind__ === "other" ? { other: null } : { [p.__kind__]: p.__kind__ === "labour" ? p.labour : p.material })),
+  labour: h.labour, material: h.material, other: h.other,
+  work: h.work.map((w) => ({ workType: w.workType, labour: w.labour, material: w.material })),
+  deduction: h.deduction,
+  buyers: h.buyers.map((b) => ({ identityEnc: Uint8Array.from(b.identityEnc), shareBp: b.shareBp, amount: b.amount })),
+  propertyEnc: opt(h.propertyEnc, (b) => Uint8Array.from(b)),
+});
+
+/** `hus` is present only on ROT/RUT documents, so earlier hashes are unchanged. */
+export const snapshot = (x: Snapshot): Value => ({ ...snapshotBase(x), ...(x.hus ? { hus: hus(x.hus) } : {}) }) as Value;
+
+const snapshotBase = (x: Snapshot): { [k: string]: Value } => ({
   kind: tag(x.kind), number: x.number, seller: company(x.seller), buyer: party(x.buyer), language: tag(x.language),
   issueDate: x.issueDate, deliveryDate: opt(x.deliveryDate), dueDate: opt(x.dueDate), validUntil: opt(x.validUntil), currency: x.currency,
   fxRate: opt(x.fxRate, (f) => ({ rate: f.rate, date: f.date })),

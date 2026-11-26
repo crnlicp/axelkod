@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p:Begaran xmlns:p="http://xmls.skatteverket.se/se/skatteverket/skattered/begaran/1.1">
+    <p:NamnPaBegaran>Rut Exempel</p:NamnPaBegaran>
+    <p:TypAvBegaran>RUT</p:TypAvBegaran>
+    <p:Utforare>000000000000</p:Utforare>
+    <p:Arende>
+        <p:FakturaNr>nr. 1</p:FakturaNr>
+        <p:Kopare>000000000000</p:Kopare>
+        <p:UtfortArbete>
+            <p:TypAvUtfortArbete>BARNPASSNING</p:TypAvUtfortArbete>
+            <p:AntalTimmar>1</p:AntalTimmar>
+            <p:Kostnad>100</p:Kostnad>
+        </p:UtfortArbete>
+        <p:UtfortArbete>
+            <p:TypAvUtfortArbete>STADNING</p:TypAvUtfortArbete>
+            <p:AntalTimmar>1</p:AntalTimmar>
+            <p:Kostnad>100</p:Kostnad>
+        </p:UtfortArbete>
+        <p:OvrigKostnad>1000</p:OvrigKostnad>
+        <p:Betalningsdatum>2027-01-02</p:Betalningsdatum>
+        <p:Arbetskostnad>100</p:Arbetskostnad>
+        <p:BetaltBelopp>50</p:BetaltBelopp>
+        <p:BegartBelopp>50</p:BegartBelopp>
+        <p:Underentreprenor>false</p:Underentreprenor>
+        <p:Bemanningsforetag>false</p:Bemanningsforetag>
+    </p:Arende>
+</p:Begaran>

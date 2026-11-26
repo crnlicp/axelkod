@@ -3,6 +3,7 @@ import Array "mo:core/Array";
 import Canonical "Canonical";
 import B "../types/Bank";
 import P "../types/Purchases";
+import R "../types/RotRut";
 import S "../types/Sales";
 import Types "../types";
 
@@ -104,7 +105,38 @@ module {
     ]);
   };
 
+  func husKind(k : R.HusKind) : C.Value = #tag(switch (k) { case (#rot) "rot"; case (#rut) "rut" }, #null_);
+
+  /// ROT/RUT part of a snapshot (A8). Encrypted fields are hashed as their ciphertext.
+  public func hus(h : R.HusPart) : C.Value {
+    #obj([
+      ("kind", husKind(h.kind)),
+      ("rateBp", #int(h.rateBp)),
+      ("lineParts", #arr(h.lineParts.map(func(p : ?R.HusLinePart) : C.Value = C.opt(p, func(q : R.HusLinePart) : C.Value = switch (q) {
+        case (#labour(t)) { #tag("labour", #text(t)) };
+        case (#material(t)) { #tag("material", #text(t)) };
+        case (#other) { #tag("other", #null_) };
+      })))),
+      ("labour", #int(h.labour)),
+      ("material", #int(h.material)),
+      ("other", #int(h.other)),
+      ("work", #arr(h.work.map(func(w : R.HusWork) : C.Value = #obj([("workType", #text(w.workType)), ("labour", #int(w.labour)), ("material", #int(w.material))])))),
+      ("deduction", #int(h.deduction)),
+      ("buyers", #arr(h.buyers.map(func(b : R.HusBuyer) : C.Value = #obj([("identityEnc", #blob(b.identityEnc)), ("shareBp", #int(b.shareBp)), ("amount", #int(b.amount))])))),
+      ("propertyEnc", C.opt(h.propertyEnc, func(b : Blob) : C.Value = #blob(b))),
+    ]);
+  };
+
+  /// The `hus` field is present only on ROT/RUT documents, so earlier hashes are unchanged.
   public func snapshot(x : S.Snapshot) : C.Value {
+    let base = snapshotBase(x);
+    switch (x.hus, base) {
+      case (?h, #obj(fields)) { #obj(fields.concat([("hus", hus(h))])) };
+      case (_, _) { base };
+    };
+  };
+
+  func snapshotBase(x : S.Snapshot) : C.Value {
     #obj([
       ("kind", docKind(x.kind)),
       ("number", #int(x.number)),

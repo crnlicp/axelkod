@@ -3,7 +3,7 @@
 import { Variant_month_quarter_year, type AccountingSettings, type FiscalYear } from "../../bindings/accounting";
 import { addDays, agiDue, prelTaxDue, vatMonthDue, vatQuarterDue, vatYearDue, type Ymd } from "./deadlines";
 
-export type Obligation = { kind: "vat" | "agi" | "prel"; period: string; due: Ymd };
+export type Obligation = { kind: "vat" | "agi" | "prel" | "rotRut"; period: string; due: Ymd };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -21,6 +21,8 @@ export function upcoming(settings: AccountingSettings, years: FiscalYear[], from
     if (settings.modules.payroll) out.push({ kind: "agi", period: `${y}-${pad(m)}`, due: agiDue(y, m) });
     out.push({ kind: "prel", period: `${y}-${pad(m)}`, due: prelTaxDue(y, m) });
   }
+  // ROT/RUT claims for payments in a year must reach Skatteverket by 31 January the year after (V12).
+  if (settings.modules.rotRut) for (const yr of [y0, y0 + 1]) out.push({ kind: "rotRut", period: String(yr - 1), due: `${yr}-01-31` });
   if (settings.vatPeriod === Variant_month_quarter_year.year)
     for (const fy of years) {
       const [ey, em] = fy.end.split("-").map(Number);

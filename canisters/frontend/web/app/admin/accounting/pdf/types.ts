@@ -30,7 +30,7 @@ export type Job =
   | { template: "ledger@1"; meta: Meta; accounts: LedgerAccount[] }
   | { template: "trial-balance@1"; meta: Meta; rows: TrialRow[] }
   /** Issued sales documents render only from their stored snapshot (C11). */
-  | { template: "invoice@1" | "credit-note@1" | "quote@1"; meta: Meta; snapshot: Snapshot }
+  | { template: "invoice@1" | "credit-note@1" | "quote@1"; meta: Meta; snapshot: Snapshot; hus?: HusPrint }
   | { template: "reminder@1"; meta: Meta; reminder: Reminder }
   /** VAT return as filed: whole kronor per box, plus the facts of the lock (V3). */
   | { template: "vat-return@1"; meta: Meta; boxes: Box[]; facts: [string, string][] }
@@ -38,5 +38,8 @@ export type Job =
   /** Payslip: the lines, tax, net, and what the AGI reports (V7). */
   | { template: "payslip@1"; meta: Meta; facts: [string, string][]; lines: PayslipLine[]; totals: [string, bigint][]; agi: [string, string][] }
   | { template: "summary@1"; meta: Meta; facts: [string, string][]; table: { cols: string[]; rows: string[][] } };
+
+/** ROT/RUT buyers and home, decrypted in the browser for printing (V12: shown on the invoice). */
+export type HusPrint = { buyers: { name: string; personnummer: string; amount: bigint }[]; property?: string };
 
 export type PayslipLine = { text: string; quantity: string; rate: bigint | null; amount: bigint };

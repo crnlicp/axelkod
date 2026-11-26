@@ -10,6 +10,7 @@ import { useCrumbs } from "../../../../admin/accounting/crumbs";
 import { formatOre } from "../../../../admin/accounting/money";
 import { docName, formatPct, formatQty, parsePct, parseQty } from "../../../../admin/accounting/sales";
 import { ConfirmPost, type ConfirmLine } from "../../../../admin/accounting/ui/ConfirmPost";
+import { HusEditor, emptyHus, fromHusInput, husProblem, toHusInput, type HusForm } from "../../../../admin/accounting/ui/HusEditor";
 import { Money, MoneyInput, PageHead, input as inputCls, label } from "../../../../admin/accounting/ui/kit";
 import { Toast } from "../../../../admin/toast";
 
@@ -27,6 +28,8 @@ const fxToRate = (s: string): bigint | null => {
   const m = /^(\d+)(?:[.,](\d{1,6}))?$/.exec(s.trim());
   return m ? BigInt(m[1]) * 1_000_000n + BigInt((m[2] ?? "").padEnd(6, "0")) : null;
 };
+/** Editor rows that become document lines (an empty row is dropped). */
+const kept = (rows: Row[]) => rows.filter((r) => r.description.trim() || r.price !== null);
 const rateToFx = (r: bigint) => (Number(r) / 1_000_000).toLocaleString("sv-SE", { maximumFractionDigits: 6, useGrouping: false });
 
 export default function SalesEditor() {
@@ -54,6 +57,7 @@ export default function SalesEditor() {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [creditOfNumber, setCreditOfNumber] = useState<bigint | null>(null);
+  const [hus, setHus] = useState<HusForm>(emptyHus());
   const dirty = useRef(false);
   useCrumbs([{ label: s.title, to: "/admin/accounting/sales/invoices" }, { label: draft ? e.draft(Number(draft.id)) : e[kind] }]);
 
@@ -72,11 +76,13 @@ export default function SalesEditor() {
         const i = d.input;
         setDraft(d);
         setKind(d.kind);
+        const rows = i.lines.length ? i.lines.map(fromLine) : [emptyRow()];
         setForm({
           customerId: i.customerId, language: i.language, termsDays: String(i.termsDays), currency: i.currency, fx: i.fxRate ? rateToFx(i.fxRate.rate) : "",
           fxDate: i.fxRate?.date ?? "", deliveryDate: i.deliveryDate ?? "", validUntil: i.validUntil ?? "", ourRef: i.ourRef ?? "", yourRef: i.yourRef ?? "",
-          notes: i.notes ?? "", rows: i.lines.length ? i.lines.map(fromLine) : [emptyRow()],
+          notes: i.notes ?? "", rows,
         });
+        if (i.hus) setHus(await fromHusInput(acc, i.hus, rows.map((r) => r.key)));
         if (d.creditOf !== undefined) setCreditOfNumber(ok(await acc.getSalesDoc(d.creditOf)).doc.number);
         setLoaded(true);
       } catch (x) { setStatus({ ok: false, text: err(x) }); }
@@ -89,8 +95,7 @@ export default function SalesEditor() {
   const toInput = useCallback((): DocInput | null => {
     if (form.customerId === null) return null;
     const lines: DocLine[] = [];
-    for (const r of form.rows) {
-      if (!r.description.trim() && r.price === null) continue;
+    for (const r of kept(form.rows)) {
       lines.push({
         itemId: r.itemId, description: r.description, quantity: parseQty(r.qty) ?? 0n, unit: r.unit, unitPrice: r.price ?? 0n,
         discountBp: r.discount.trim() ? parsePct(r.discount) ?? 0n : 0n, vatCode: r.vatCode, account: r.account,
@@ -106,9 +111,10 @@ export default function SalesEditor() {
   }, [form]);
 
   const saveAndPreview = useCallback(async (quiet: boolean) => {
-    const input = toInput();
-    if (!input) return null;
+    const base = toInput();
+    if (!base) return null;
     try {
+      const input = kind === DocKind.creditNote ? base : { ...base, hus: await toHusInput(acc, hus, kept(form.rows).map((r) => r.key)) };
       const d = ok(await acc.saveSalesDraft(draft?.id ?? null, kind, input, draft?.creditOf ?? null, draft?.quoteOf ?? null));
       setDraft(d);
       dirty.current = false;
@@ -120,13 +126,13 @@ export default function SalesEditor() {
       setPreviewErr({ text: err(new AccountingError(p.err)), field: p.err.__kind__ === "invalid" ? p.err.invalid : null });
     } catch (x) { if (!quiet) setStatus({ ok: false, text: err(x) }); }
     return null;
-  }, [acc, draft, kind, toInput, err, draftParam, navigate, href]);
+  }, [acc, draft, kind, toInput, err, draftParam, navigate, href, hus, form.rows]);
 
   useEffect(() => {
     if (!loaded || !canBook || !dirty.current || form.customerId === null) return;
     const id = setTimeout(() => void saveAndPreview(true), 1500);
     return () => clearTimeout(id);
-  }, [form, loaded, canBook, saveAndPreview]);
+  }, [form, hus, loaded, canBook, saveAndPreview]);
 
   async function issue() {
     if (!draft) return;
@@ -155,7 +161,9 @@ export default function SalesEditor() {
       if (a !== undefined && r.vat) m.set(a, (m.get(a) ?? 0n) - fx(r.vat));
     }
     const total = [...m.values()].reduce((a, b) => a - b, 0n);
-    return [{ account: 1510n, amount: sign * total }, ...[...m].map(([account, amount]) => ({ account, amount: sign * amount }))].filter((l) => l.amount !== 0n);
+    // ROT/RUT: the deduction is owed by Skatteverket (1513), the rest by the customer.
+    const ded = preview.hus?.deduction ?? 0n;
+    return [{ account: 1510n, amount: sign * (total - ded) }, { account: 1513n, amount: sign * ded }, ...[...m].map(([account, amount]) => ({ account, amount: sign * amount }))].filter((l) => l.amount !== 0n);
   }, [preview, kind, data]);
 
   if (!loaded) return <><p role="status">{t.common.loading}</p><Toast status={status} /></>;
@@ -163,6 +171,10 @@ export default function SalesEditor() {
   const vatCodes = (data?.vatCodes ?? []).filter((v) => v.active && v.kind !== "inputDomestic" && v.kind !== "reverseChargePurchase" && v.kind !== "importVat");
   const bad = (f: string) => previewErr?.field === f || previewErr?.field?.startsWith(`${f}[`) || undefined;
   const cur = form.currency || "SEK";
+  const customer = customers.find((c) => c.id === form.customerId);
+  const husOn = !!data?.settings.modules.rotRut && kind !== DocKind.creditNote;
+  const husAllowed = customer?.kind === "person" && cur === "SEK";
+  const husBad = husProblem(hus) !== null;
 
   return (
     <>
@@ -278,6 +290,9 @@ export default function SalesEditor() {
             <button type="button" className="mt-3 text-sm font-semibold text-accent" onClick={() => update({ rows: [...form.rows, emptyRow()] })}>+ {e.addLine}</button>
           </fieldset>
 
+          {husOn && <HusEditor form={hus} onChange={(f) => { dirty.current = true; setHus(f); }} rows={kept(form.rows)} allowed={husAllowed} bad={(f) => bad(f)} />}
+          {kind === DocKind.creditNote && preview?.hus && <p className="card text-sm">{t.rotRut.editor.credit}</p>}
+
           <div className="card">
             <label htmlFor="s-notes" className={label}>{e.notes}</label>
             <textarea id="s-notes" rows={3} maxLength={2000} className={inputCls} value={form.notes} onChange={(x) => update({ notes: x.target.value })} />
@@ -295,6 +310,10 @@ export default function SalesEditor() {
                   {preview.vat.map((r) => <div key={r.vatCode} className="contents"><dt className="text-muted">{e.vatTotal} {formatPct(r.rateBp)} %</dt><dd className="text-right"><Money ore={r.vat} /></dd></div>)}
                   <dt className="font-semibold">{e.total}</dt><dd className="text-right font-semibold" aria-live="polite"><Money ore={preview.total} /> {cur}</dd>
                   {preview.totalVatSek !== undefined && <><dt className="text-muted">{e.vatTotal} SEK</dt><dd className="text-right"><Money ore={preview.totalVatSek} /></dd></>}
+                  {preview.hus && <>
+                    <dt className="text-muted">{t.rotRut.editor.deduction} ({t.rotRut.kind[preview.hus.kind]})</dt><dd className="text-right">−<Money ore={preview.hus.deduction} /></dd>
+                    <dt className="font-semibold">{t.rotRut.editor.toPay}</dt><dd className="text-right font-semibold"><Money ore={preview.total - preview.hus.deduction} /> {cur}</dd>
+                  </>}
                 </dl>
                 {preview.legalNotes.length > 0 && <div><p className="text-muted">{e.legal}</p><ul>{preview.legalNotes.map((n) => <li key={n} className="font-semibold">{n}</li>)}</ul></div>}
                 {preview.ocr && <p><span className="text-muted">{e.ocr}</span> {preview.ocr}</p>}
@@ -302,7 +321,7 @@ export default function SalesEditor() {
             ) : !previewErr && <p className="text-muted">{e.previewHint}</p>}
             {canBook && (
               <div className="flex flex-col gap-2 pt-2">
-                <button type="button" className="btn btn-primary justify-center" disabled={!preview || dirty.current || busy}
+                <button type="button" className="btn btn-primary justify-center" disabled={!preview || dirty.current || busy || (husOn && husBad)}
                   onClick={async () => { if (await saveAndPreview(false)) setConfirm(true); }}>{e.issue[kind]}</button>
                 <button type="button" className="btn btn-secondary justify-center" disabled={form.customerId === null} onClick={() => void saveAndPreview(false)}>{e.preview}</button>
                 {draft && <button type="button" className="text-sm text-muted hover:text-[var(--error)]" onClick={() => void removeDraft()}>{e.deleteDraft}</button>}

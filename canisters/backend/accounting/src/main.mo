@@ -15,6 +15,7 @@ import LedgerMixin "mixins/Ledger";
 import PartiesMixin "mixins/Parties";
 import PayrollMixin "mixins/Payroll";
 import PurchasesMixin "mixins/Purchases";
+import RotRutMixin "mixins/RotRut";
 import RolesMixin "mixins/Roles";
 import SalesMixin "mixins/Sales";
 import SettingsMixin "mixins/Settings";
@@ -22,6 +23,7 @@ import VatMixin "mixins/Vat";
 import B "types/Bank";
 import P "types/Purchases";
 import Pr "types/Payroll";
+import R "types/RotRut";
 import S "types/Sales";
 import V "types/Vat";
 import Types "types";
@@ -42,6 +44,7 @@ actor class Accounting(firstOwner : ?Principal) {
   let bank : B.Bank;
   let vat : V.Vat;
   let payroll : Pr.Payroll;
+  let rotRut : R.RotRut;
 
   switch (firstOwner) {
     case (?p) {
@@ -80,11 +83,12 @@ actor class Accounting(firstOwner : ?Principal) {
   include AuditMixin(roles, audit);
   include KeysMixin(roles, config, keyUse, audit);
   include PartiesMixin(roles, chart, sales, audit);
-  include SalesMixin(roles, config, chart, ledger, files, counters, audit, sales);
+  include SalesMixin(roles, config, chart, ledger, files, counters, audit, sales, rotRut);
   include PurchasesMixin(roles, config, chart, ledger, files, counters, audit, purchases);
   include BankMixin(roles, config, chart, ledger, files, counters, audit, sales, purchases, bank);
   include VatMixin(roles, config, chart, ledger, files, counters, audit, sales, purchases, bank, vat);
   include PayrollMixin(roles, config, chart, ledger, files, counters, audit, payroll);
+  include RotRutMixin(roles, config, chart, ledger, files, counters, audit, sales, rotRut);
 
   // Rejects oversized calls before they run (saves cycles; every method still
   // validates its own input). A 500-line voucher fits well within this.

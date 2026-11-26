@@ -152,7 +152,7 @@ function NewMenu() {
 
 export function DeadlineList({ items, max }: { items: ReturnType<typeof upcoming>; max?: number }) {
   const t = useAccT();
-  const label = (o: (typeof items)[number]) => (o.kind === "vat" ? t.deadline.vat(o.period) : o.kind === "agi" ? t.deadline.agi(o.period) : t.deadline.prel(o.period));
+  const label = (o: (typeof items)[number]) => (o.kind === "vat" ? t.deadline.vat(o.period) : o.kind === "agi" ? t.deadline.agi(o.period) : o.kind === "rotRut" ? t.deadline.rotRut(o.period) : t.deadline.prel(o.period));
   if (!items.length) return <p className="text-muted">{t.shell.deadlinesNone}</p>;
   return (
     <>
@@ -191,6 +191,8 @@ const PAGES = (t: ReturnType<typeof useAccT>) => [
   { label: t.payroll.tabs.employees, to: "/admin/accounting/payroll/employees" },
   { label: t.payroll.tabs.agi, to: "/admin/accounting/payroll/agi" },
   { label: t.payroll.tabs.vaxa, to: "/admin/accounting/payroll/vaxa" },
+  { label: `${t.rotRut.title} – ${t.rotRut.tabs.cases}`, to: "/admin/accounting/rot-rut" },
+  { label: `${t.rotRut.title} – ${t.rotRut.tabs.claims}`, to: "/admin/accounting/rot-rut/claims" },
   { label: t.vat.tabs.ecSales, to: "/admin/accounting/vat/ec-sales" },
   { label: t.ledger.tabs.vouchers, to: "/admin/accounting/ledger" },
   { label: t.ledger.tabs.journal, to: "/admin/accounting/ledger/journal" },

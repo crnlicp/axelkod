@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p:Begaran xmlns:p="http://xmls.skatteverket.se/se/skatteverket/skattered/begaran/1.1">
+    <p:NamnPaBegaran>Rot Exempel</p:NamnPaBegaran>
+    <p:TypAvBegaran>ROT</p:TypAvBegaran>
+    <p:Utforare>000000000000</p:Utforare>
+    <p:Arende>
+        <p:FakturaNr>nr. 2</p:FakturaNr>
+        <p:Kopare>000000000000</p:Kopare>
+        <p:Fastighet>
+            <p:Fastighetsbeteckning>XXXXX 99</p:Fastighetsbeteckning>
+        </p:Fastighet>
+        <p:UtfortArbete>
+            <p:TypAvUtfortArbete>BYGG</p:TypAvUtfortArbete>
+            <p:AntalTimmar>1</p:AntalTimmar>
+            <p:Kostnad>100</p:Kostnad>
+        </p:UtfortArbete>
+        <p:UtfortArbete>
+            <p:TypAvUtfortArbete>EL</p:TypAvUtfortArbete>
+            <p:AntalTimmar>1</p:AntalTimmar>
+            <p:Kostnad>100</p:Kostnad>
+        </p:UtfortArbete>
+        <p:OvrigKostnad>1000</p:OvrigKostnad>
+        <p:Betalningsdatum>2027-01-02</p:Betalningsdatum>
+        <p:Arbetskostnad>1000</p:Arbetskostnad>
+        <p:BetaltBelopp>700</p:BetaltBelopp>
+        <p:BegartBelopp>300</p:BegartBelopp>
+        <p:Underentreprenor>true</p:Underentreprenor>
+        <p:Bemanningsforetag>true</p:Bemanningsforetag>
+    </p:Arende>
+</p:Begaran>

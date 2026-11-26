@@ -124,11 +124,12 @@ function siteNav(t: ReturnType<typeof useAdminLang>["t"], unread: number | null)
 }
 
 /** Ekonomi navigation by how often the work happens; filtered by role (the canister enforces it too). */
-function accountingNav(lang: AdminLang, role: Role, payrollOn: boolean): NavGroup[] {
+function accountingNav(lang: AdminLang, role: Role, modules: { payroll: boolean; rotRut: boolean }): NavGroup[] {
   const n = (lang === "en" ? accEn : accSv).nav;
   const books = role !== Role.payroll;
   // Lön is hidden until the module is on (D7); the payroll role always sees it.
-  const pay = role === Role.payroll || (payrollOn && (role === Role.owner || role === Role.auditor));
+  const pay = role === Role.payroll || (modules.payroll && (role === Role.owner || role === Role.auditor));
+  const hus = books && modules.rotRut;
   return [
     { items: [{ to: "/admin/accounting", end: true, label: n.overview, icon: IconChart }] },
     ...(books ? [{ title: n.groupDaily, items: [
@@ -140,6 +141,7 @@ function accountingNav(lang: AdminLang, role: Role, payrollOn: boolean): NavGrou
     ...(books || pay ? [{ title: n.groupPeriods, items: [
       ...(books ? [{ to: "/admin/accounting/vat", label: n.vat, icon: IconPercent }] : []),
       ...(pay ? [{ to: "/admin/accounting/payroll", label: n.payroll, icon: IconPeople }] : []),
+      ...(hus ? [{ to: "/admin/accounting/rot-rut", label: n.rotRut, icon: IconHome }] : []),
     ] }] : []),
     { items: [{ to: "/admin/accounting/settings", label: n.settings, icon: IconSliders }] },
   ];
@@ -227,11 +229,11 @@ function AdminRoot() {
   const accSession = session.state === "admin" ? session.accounting : null;
   const acc = useMemo<AccSession | null>(() => accSession, // eslint-disable-line react-hooks/exhaustive-deps
     [accSession?.principal, accSession?.role]);
-  // The Lön module flag (D7); re-read on navigation so turning it on in settings shows it.
-  const [payrollOn, setPayrollOn] = useState(false);
+  // The module flags (D7); re-read on navigation so turning one on in settings shows it.
+  const [modules, setModules] = useState({ payroll: false, rotRut: false });
   useEffect(() => {
     if (!acc || !pathname.startsWith("/admin/accounting")) return;
-    acc.acc.getSettings().then((r) => { if (r.__kind__ === "ok") setPayrollOn(r.ok.settings.modules.payroll); }).catch(() => {});
+    acc.acc.getSettings().then((r) => { if (r.__kind__ === "ok") setModules({ payroll: r.ok.settings.modules.payroll, rotRut: r.ok.settings.modules.rotRut }); }).catch(() => {});
   }, [acc, pathname]);
 
   if (session.state === "loading") {
@@ -262,7 +264,7 @@ function AdminRoot() {
   const workspace = pathname.startsWith("/admin/accounting") ? "accounting" : "site";
   // Accounting-only users never see the website admin; site-only admins never see Ekonomi.
   if (workspace === "site" && !session.site) return <Navigate to="/admin/accounting" replace />;
-  const groups = workspace === "site" ? siteNav(t, unread) : acc ? accountingNav(lang, acc.role, payrollOn) : [];
+  const groups = workspace === "site" ? siteNav(t, unread) : acc ? accountingNav(lang, acc.role, modules) : [];
   const a = (lang === "en" ? accEn : accSv).shell;
 
   return (

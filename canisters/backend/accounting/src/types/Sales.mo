@@ -2,6 +2,7 @@
 // Issued documents are write-once; links (credits, payments, reminders, quote
 // status) live in index maps and are joined into views (C8, C9).
 import Map "mo:core/Map";
+import R "RotRut";
 import Types "../types";
 
 module {
@@ -67,6 +68,8 @@ module {
     ourRef : ?Text;
     yourRef : ?Text;
     notes : ?Text;
+    /// ROT/RUT (A8): SEK documents to a private customer only.
+    hus : ?R.HusInput;
   };
 
   public type DocKind = { #quote; #invoice; #creditNote };
@@ -136,6 +139,8 @@ module {
     lateInterestText : ?Text;
     creditOf : ?{ number : Nat; issueDate : Date };
     templateVersion : Text;
+    /// ROT/RUT: the customer pays `total - hus.deduction`; Skatteverket pays the deduction.
+    hus : ?R.HusPart;
   };
 
   public type SalesDoc = {
@@ -223,6 +228,8 @@ module {
     remindersOf : Map.Map<Nat, [Nat]>;
     /// "invoice" (invoices and credit notes share one series), "quote", "reminder" -> last number.
     numbering : Map.Map<Text, Nat>;
+    /// ROT/RUT: invoice -> deduction Skatteverket did not pay, now owed by the customer.
+    husAdjust : Map.Map<Nat, Int>;
     var params : Parameters;
     var next : Nat; // shared id counter for customers, items, drafts, documents, payments, reminders
   };
@@ -234,6 +241,8 @@ module {
     status : DocStatus;
     credited : Money;
     paid : Money;
+    /// What the customer pays: total less a ROT/RUT deduction, plus any part Skatteverket refused.
+    payable : Money;
     balance : Money;
     overdue : Bool;
     credits : [Nat];

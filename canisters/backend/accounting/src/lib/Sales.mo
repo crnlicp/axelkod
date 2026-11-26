@@ -12,6 +12,7 @@ import Dates "Dates";
 import Encode "Encode";
 import Invoice "Invoice";
 import Posting "Posting";
+import RotRut "RotRut";
 import S "../types/Sales";
 import Types "../types";
 
@@ -56,11 +57,14 @@ module {
   };
 
   /// Invoice method: receivable against revenue and VAT. A credit note is the reverse.
+  /// ROT/RUT: the deduction is a receivable on Skatteverket (1513), the rest on the customer.
   public func issueLines(x : S.Snapshot, chart : Types.Chart) : [Types.VoucherLine] {
     let m = creditParts(x, chart);
     var total : Int = 0;
     for (a in m.values()) total -= a;
-    add(m, RECEIVABLES, total);
+    let ded = RotRut.deduction(x);
+    add(m, RECEIVABLES, total - ded);
+    add(m, RotRut.SHARED_RECEIVABLE, ded);
     let lines = toLines(m, vatCodeFor(chart));
     if (x.kind == #creditNote) lines.map(func(l : Types.VoucherLine) : Types.VoucherLine = { l with amount = -l.amount }) else lines;
   };
@@ -98,7 +102,15 @@ module {
     toLines(m, vatCodeFor(chart));
   };
 
-  public func total(d : S.SalesDoc) : Int = d.snapshot.total;
+  /// Cash method, ROT/RUT payout: bank in, revenue and VAT out pro rata to the invoice.
+  public func husPayoutLines(x : S.Snapshot, chart : Types.Chart, approved : Int, bankAccount : Nat) : [Types.VoucherLine] {
+    let m = proRata(x, chart, approved);
+    add(m, bankAccount, approved);
+    toLines(m, vatCodeFor(chart));
+  };
+
+  /// What the customer is invoiced for (the total less a ROT/RUT deduction).
+  public func total(d : S.SalesDoc) : Int = RotRut.customerPart(d.snapshot);
 
   public func credited(sales : S.Sales, id : Nat) : Int {
     var t : Int = 0;
@@ -115,7 +127,8 @@ module {
   public func view(sales : S.Sales, d : S.SalesDoc, today : Types.Date) : S.DocView {
     let cr = if (d.kind == #invoice) credited(sales, d.id) else 0;
     let pd = paid(sales, d.id);
-    let balance = if (d.kind == #invoice) total(d) - cr - pd else 0;
+    let payable = total(d) + (sales.husAdjust.get(d.id) ?? 0);
+    let balance = if (d.kind == #invoice) payable - cr - pd else 0;
     let overdue = d.kind == #invoice and balance > 0 and (switch (d.snapshot.dueDate) { case (?due) { due < today }; case null { false } });
     let status : S.DocStatus = switch (d.kind) {
       case (#quote) {
@@ -133,7 +146,7 @@ module {
       };
     };
     {
-      doc = d; status; credited = cr; paid = pd; balance; overdue;
+      doc = d; status; credited = cr; paid = pd; payable; balance; overdue;
       credits = sales.creditsOf.get(d.id) ?? [];
       payments = (sales.paymentsOf.get(d.id) ?? []).filterMap(func(i : Nat) : ?S.Payment = sales.payments.get(i));
       reminders = sales.remindersOf.get(d.id) ?? [];
