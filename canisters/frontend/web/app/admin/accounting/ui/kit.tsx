@@ -17,8 +17,10 @@ export function Money({ ore, unit }: { ore: bigint; unit?: boolean }) {
  * Amount input: accepts "1234,56", "1 234.56", "-50". Keeps the text while typing,
  * reports öre (or null when empty) and shows an error for text that is not an amount.
  */
-export function MoneyInput({ value, onChange, id, labelText, className = "", allowNegative = false, describedBy }: {
+export function MoneyInput({ value, onChange, id, labelText, className = "", allowNegative = false, describedBy, invalid }: {
   value: bigint | null; onChange: (v: bigint | null) => void; id?: string; labelText: string; className?: string; allowNegative?: boolean; describedBy?: string;
+  /** Marked by the form (e.g. a required amount left empty). */
+  invalid?: boolean;
 }) {
   const t = useAccT();
   const [text, setText] = useState(value === null ? "" : plainOre(value));
@@ -28,7 +30,7 @@ export function MoneyInput({ value, onChange, id, labelText, className = "", all
   if (value !== last) { setLast(value); setText(value === null ? "" : plainOre(value)); setBad(false); }
   return (
     <>
-      <input id={id} inputMode="decimal" autoComplete="off" aria-label={labelText} value={text} aria-invalid={bad || undefined}
+      <input id={id} inputMode="decimal" autoComplete="off" aria-label={labelText} value={text} aria-invalid={bad || invalid || undefined}
         aria-describedby={[bad ? errId : "", describedBy ?? ""].join(" ").trim() || undefined}
         className={`w-full rounded-md border border-[var(--input-border)] bg-bg px-2 py-1.5 text-right tabular-nums aria-[invalid]:border-[var(--error)] ${className}`}
         onChange={(e) => {

@@ -89,12 +89,31 @@ export function HeroNetwork({ className = "" }: { className?: string }) {
     let running = false;
     let last = 0;
     const mouse = { x: -1e4, y: -1e4 };
+    // The pulse glow, rendered once per colour scheme instead of a new gradient per pulse per frame.
+    let sprite: HTMLCanvasElement | null = null;
+    const makeSprite = () => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 40;
+      const g2 = c.getContext("2d");
+      if (!g2) return null;
+      const g = g2.createRadialGradient(20, 20, 0, 20, 20, 16);
+      g.addColorStop(0, colors.pulse);
+      g.addColorStop(1, "transparent");
+      g2.fillStyle = g;
+      g2.fillRect(0, 0, 40, 40);
+      return c;
+    };
+    // 30 frames a second is smooth for slow drifting pulses and halves the GPU work on 60 Hz
+    // screens (more on 120 Hz ones).
+    const FRAME_MS = 1000 / 30;
+    let lastFrame = 0;
 
     const readColors = () => {
       const cs = getComputedStyle(document.documentElement);
       const light = document.documentElement.getAttribute("data-theme") === "light";
       // Light theme: brand-teal pulses (the dark cyan glow reads as grey there).
       colors = { line: cs.getPropertyValue("--circuit").trim(), node: cs.getPropertyValue("--brand").trim(), pulse: light ? cs.getPropertyValue("--brand").trim() : cs.getPropertyValue("--glow").trim() };
+      sprite = makeSprite();
     };
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -108,7 +127,9 @@ export function HeroNetwork({ className = "" }: { className?: string }) {
     };
 
     const draw = (time: number) => {
-      const dt = last ? Math.min((time - last) / 1000, 0.05) : 0;
+      if (running && lastFrame && time - lastFrame < FRAME_MS - 1) { raf = requestAnimationFrame(draw); return; }
+      lastFrame = time;
+      const dt = last ? Math.min((time - last) / 1000, 0.1) : 0;
       last = time;
       ctx.clearRect(0, 0, w, h);
       const { nodes, edges, pulses } = graph;
@@ -136,19 +157,14 @@ export function HeroNetwork({ className = "" }: { className?: string }) {
         ctx.stroke();
       }
       if (!reduced) {
-        ctx.fillStyle = colors.pulse;
         for (const p of pulses) {
           p.t += p.speed * dt;
           if (p.t > 1) { p.t = 0; p.edge = (p.edge * 7 + 3) % edges.length; }
           const e = edges[p.edge];
           if (!e) continue;
           const pt = tracePoint(nodes[e.a], nodes[e.b], p.t);
-          const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, 8);
-          g.addColorStop(0, colors.pulse);
-          g.addColorStop(1, "transparent");
           ctx.globalAlpha = 0.85;
-          ctx.fillStyle = g;
-          ctx.fillRect(pt.x - 10, pt.y - 10, 20, 20);
+          if (sprite) ctx.drawImage(sprite, pt.x - 10, pt.y - 10, 20, 20);
         }
       }
       ctx.globalAlpha = 1;
@@ -159,6 +175,7 @@ export function HeroNetwork({ className = "" }: { className?: string }) {
       if (running || reduced) return;
       running = true;
       last = 0;
+      lastFrame = 0;
       raf = requestAnimationFrame(draw);
     };
     const stop = () => {

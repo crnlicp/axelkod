@@ -8,7 +8,7 @@ test("admin edits contact info: live preview, validation, public site updates", 
   if (original.__kind__ !== "ok") throw new Error(original.err.__kind__);
   const session = await signInAsAdmin(page, context);
   try {
-    await page.getByRole("link", { name: "Kontaktuppgifter" }).click();
+    await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Kontaktuppgifter" }).click();
     await expect(page).toHaveURL(/\/admin\/contact$/);
     const preview = page.getByTestId("contact-preview");
 

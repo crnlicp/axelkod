@@ -56,15 +56,15 @@ function Workspace() {
   const deadlines = useMemo(() => (data ? upcoming(data.settings, data.years, today()) : []), [data]);
   const soon = deadlines.filter((d) => daysUntil(today(), d.due) <= 14).length;
 
-  if (loadError) return <p role="alert" className="card text-[var(--error)]">{loadError}</p>;
-  if (!data) return <p role="status">{t.common.loading}</p>;
+  if (loadError) return <div className="mx-auto max-w-6xl"><p role="alert" className="card text-[var(--error)]">{loadError}</p></div>;
+  if (!data) return <div className="mx-auto max-w-6xl"><p role="status">{t.common.loading}</p></div>;
 
   const statusTone = { open: "good", closing: "warn", locked: "neutral" } as const;
 
   return (
     <>
       <div className="sticky top-0 z-20 -mx-5 -mt-8 mb-6 border-b border-border bg-surface/95 px-5 py-3 backdrop-blur lg:-mx-10 lg:px-10">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Breadcrumb />
           <div className="ml-auto flex flex-wrap items-center gap-2">
             {data.years.length > 0 && year && (
@@ -89,8 +89,10 @@ function Workspace() {
           </div>
         </div>
       </div>
-      {readOnly && <ReadOnlyBanner />}
-      <Outlet />
+      <div className="mx-auto max-w-6xl">
+        {readOnly && <ReadOnlyBanner />}
+        <Outlet />
+      </div>
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
       <Dialog open={helpOpen} onClose={() => setHelpOpen(false)} title={t.shell.shortcuts}>
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2">
@@ -109,16 +111,16 @@ function Workspace() {
 function Breadcrumb() {
   const t = useAccT();
   const crumbs = useCrumbList();
-  const { search } = useLocation();
+  const { href } = useAcc();
   return (
     <nav aria-label={t.shell.breadcrumb} className="min-w-0 text-sm">
       <ol className="flex flex-wrap items-center gap-1.5 text-muted">
-        <li><Link to={`/admin/accounting${search}`} className="text-muted no-underline hover:text-fg">{t.nav.label}</Link></li>
+        <li><Link to={href("/admin/accounting")} className="text-muted no-underline hover:text-fg">{t.nav.label}</Link></li>
         {crumbs.map((c, i) => (
           <li key={i} className="flex items-center gap-1.5">
             <span aria-hidden="true">›</span>
             {c.to && i < crumbs.length - 1
-              ? <Link to={`${c.to}${search}`} className="text-muted no-underline hover:text-fg">{c.label}</Link>
+              ? <Link to={href(c.to)} className="text-muted no-underline hover:text-fg">{c.label}</Link>
               : <span aria-current={i === crumbs.length - 1 ? "page" : undefined} className="font-semibold text-fg">{c.label}</span>}
           </li>
         ))}
@@ -129,8 +131,8 @@ function Breadcrumb() {
 
 function NewMenu() {
   const t = useAccT();
-  const payroll = !!useAcc().data?.settings.modules.payroll;
-  const { search } = useLocation();
+  const { data, href } = useAcc();
+  const payroll = !!data?.settings.modules.payroll;
   const ref = useRef<HTMLDetailsElement>(null);
   const close = () => ref.current?.removeAttribute("open");
   return (
@@ -139,12 +141,12 @@ function NewMenu() {
         <IconPlus className="h-4 w-4" /> {t.shell.new}
       </summary>
       <ul className="absolute right-0 z-30 mt-2 w-56 rounded-xl border border-border bg-[var(--bg-elev)] p-1 shadow-xl">
-        <li><Link onClick={close} to={`/admin/accounting/sales/new${search}${search ? "&" : "?"}kind=invoice`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.sales.kind.invoice}</Link></li>
-        <li><Link onClick={close} to={`/admin/accounting/sales/new${search}${search ? "&" : "?"}kind=quote`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.sales.kind.quote}</Link></li>
-        <li><Link onClick={close} to={`/admin/accounting/purchases${search}`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.purchases.kind.supplierInvoice}</Link></li>
-        <li><Link onClick={close} to={`/admin/accounting/ledger/new${search}`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newVoucher}</Link></li>
-        <li><Link onClick={close} to={`/admin/accounting/ledger/new${search}${search ? "&" : "?"}upload=1`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newUpload}</Link></li>
-        {payroll && <li><Link onClick={close} to={`/admin/accounting/payroll${search}`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.payroll.runs.new}</Link></li>}
+        <li><Link onClick={close} to={href("/admin/accounting/sales/new?kind=invoice")} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.sales.kind.invoice}</Link></li>
+        <li><Link onClick={close} to={href("/admin/accounting/sales/new?kind=quote")} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.sales.kind.quote}</Link></li>
+        <li><Link onClick={close} to={href("/admin/accounting/purchases")} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.purchases.kind.supplierInvoice}</Link></li>
+        <li><Link onClick={close} to={href("/admin/accounting/ledger/new")} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newVoucher}</Link></li>
+        <li><Link onClick={close} to={href("/admin/accounting/ledger/new?upload=1")} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newUpload}</Link></li>
+        {payroll && <li><Link onClick={close} to={href("/admin/accounting/payroll")} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.payroll.runs.new}</Link></li>}
       </ul>
     </details>
   );
@@ -204,9 +206,8 @@ const PAGES = (t: ReturnType<typeof useAccT>) => [
 
 function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useAccT();
-  const { acc, year } = useAcc();
+  const { acc, year, href } = useAcc();
   const navigate = useNavigate();
-  const { search } = useLocation();
   const [q, setQ] = useState("");
   const [hit, setHit] = useState<{ label: string; to: string } | null>(null);
   useEffect(() => { if (!open) { setQ(""); setHit(null); } }, [open]);
@@ -223,11 +224,11 @@ function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void })
 
   const pages = PAGES(t).filter((p) => q.trim() && p.label.toLowerCase().includes(q.trim().toLowerCase()));
   const results = [...(hit ? [hit] : []), ...pages];
-  const go = (to: string) => { onClose(); navigate(`${to}${search}`); };
+  const go = (to: string) => { onClose(); navigate(href(to)); };
 
   return (
     <Dialog open={open} onClose={onClose} title={t.shell.search}>
-      <input autoFocus type="search" value={q} onChange={(e) => setQ(e.target.value)} aria-label={t.shell.searchHint} placeholder={t.shell.searchHint}
+      <input data-autofocus type="search" value={q} onChange={(e) => setQ(e.target.value)} aria-label={t.shell.searchHint} placeholder={t.shell.searchHint}
         onKeyDown={(e) => { if (e.key === "Enter" && results[0]) go(results[0].to); }}
         className="w-full rounded-md border border-[var(--input-border)] bg-bg px-3 py-2" />
       <ul className="mt-3 space-y-1" aria-live="polite">

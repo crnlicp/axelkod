@@ -2,7 +2,8 @@
 import { IconCheck } from "../../../components/Icons";
 import { useAccT } from "../context";
 
-export type Step = { key: string; title: string; state: "done" | "current" | "todo" | "later" };
+/** `note` replaces the state text (e.g. why a step must wait). */
+export type Step = { key: string; title: string; state: "done" | "current" | "todo" | "later"; note?: string };
 
 export function Stepper({ steps, onSelect }: { steps: Step[]; onSelect: (key: string) => void }) {
   const t = useAccT().setup;
@@ -18,7 +19,7 @@ export function Stepper({ steps, onSelect }: { steps: Step[]; onSelect: (key: st
             </span>
             <span className="flex-1">
               <span className="block font-medium">{s.title}</span>
-              <span className="block text-xs text-muted">{s.state === "done" ? t.done : s.state === "current" ? t.current : s.state === "later" ? t.later : t.todo}</span>
+              <span className="block text-xs text-muted">{s.note ?? (s.state === "done" ? t.done : s.state === "current" ? t.current : s.state === "later" ? t.later : t.todo)}</span>
             </span>
           </button>
         </li>

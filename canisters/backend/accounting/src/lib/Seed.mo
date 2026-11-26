@@ -7,10 +7,12 @@ import Pr "../types/Payroll";
 import Types "../types";
 
 module {
-  public let VERSION = "seed-2026.6";
+  public let VERSION = "seed-2026.7";
 
   public let accounts : [Types.Account] = [
     { number = 1220; name = "Inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 1221; name = "Inventarier, verktyg och installationer i övrigt"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 1224; name = "Datorer (ej för produktion)"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1229; name = "Ackumulerade avskrivningar på inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1460; name = "Lager av handelsvaror"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 1510; name = "Kundfordringar"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
@@ -55,6 +57,7 @@ module {
     { number = 3305; name = "Försäljning tjänster till land utanför EU"; kind = #revenue; vatCode = ?"EXPT"; sruCode = null; active = true; bas = true },
     { number = 3308; name = "Försäljning tjänster till annat EU-land"; kind = #revenue; vatCode = ?"EUTJ"; sruCode = null; active = true; bas = true },
     { number = 3740; name = "Öres- och kronutjämning"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 3973; name = "Vinst vid avyttring av maskiner och inventarier"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 3960; name = "Valutakursvinster på fordringar och skulder av rörelsekaraktär"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 3990; name = "Övriga ersättningar, bidrag och intäkter"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4010; name = "Inköp av handelsvaror i Sverige"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
@@ -76,6 +79,7 @@ module {
     { number = 4545; name = "Import av råvaror och material, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4546; name = "Import av råvaror och material, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4547; name = "Import av råvaror och material, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4960; name = "Förändring av lager av handelsvaror"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 5410; name = "Förbrukningsinventarier"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 6110; name = "Kontorsmateriel"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 6212; name = "Mobiltelefon"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
@@ -97,6 +101,7 @@ module {
     { number = 7533; name = "Särskild löneskatt för pensionskostnader"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7690; name = "Övriga personalkostnader"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7832; name = "Avskrivningar på inventarier, verktyg och installationer"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7973; name = "Förlust vid avyttring av maskiner och inventarier"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7960; name = "Valutakursförluster på fordringar och skulder av rörelsekaraktär"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8310; name = "Ränteintäkter från omsättningstillgångar"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 8313; name = "Ränteintäkter från kortfristiga fordringar"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
@@ -172,6 +177,7 @@ module {
     { code = "M"; name = "Moms" },
     { code = "X"; name = "Bokslut" },
     { code = "C"; name = "Rättelser" },
+    { code = "I"; name = "Inventarier och lager" },
   ];
 
   /// Series a correction voucher is posted in.

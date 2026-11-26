@@ -6,6 +6,7 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Audit "lib/Audit";
 import Seed "lib/Seed";
+import AssetsMixin "mixins/Assets";
 import AttachmentsMixin "mixins/Attachments";
 import AuditMixin "mixins/Audit";
 import BankMixin "mixins/Bank";
@@ -20,6 +21,7 @@ import RolesMixin "mixins/Roles";
 import SalesMixin "mixins/Sales";
 import SettingsMixin "mixins/Settings";
 import VatMixin "mixins/Vat";
+import As "types/Assets";
 import B "types/Bank";
 import P "types/Purchases";
 import Pr "types/Payroll";
@@ -45,6 +47,7 @@ actor class Accounting(firstOwner : ?Principal) {
   let vat : V.Vat;
   let payroll : Pr.Payroll;
   let rotRut : R.RotRut;
+  let assets : As.Assets;
 
   switch (firstOwner) {
     case (?p) {
@@ -89,6 +92,7 @@ actor class Accounting(firstOwner : ?Principal) {
   include VatMixin(roles, config, chart, ledger, files, counters, audit, sales, purchases, bank, vat);
   include PayrollMixin(roles, config, chart, ledger, files, counters, audit, payroll);
   include RotRutMixin(roles, config, chart, ledger, files, counters, audit, sales, rotRut);
+  include AssetsMixin(roles, config, chart, ledger, files, counters, audit, assets, payroll);
 
   // Rejects oversized calls before they run (saves cycles; every method still
   // validates its own input). A 500-line voucher fits well within this.

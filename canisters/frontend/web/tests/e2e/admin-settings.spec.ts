@@ -9,7 +9,7 @@ test("admin settings: retention + response time reach the site; admins are added
   if (original.__kind__ !== "ok") throw new Error(original.err.__kind__);
   const session = await signInAsAdmin(page, context);
   try {
-    await page.getByRole("link", { name: "Inställningar" }).click();
+    await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Inställningar" }).click();
     await expect(page).toHaveURL(/\/admin\/settings$/);
 
     await page.getByLabel("Lagringstid för meddelanden (månader)").fill("61");

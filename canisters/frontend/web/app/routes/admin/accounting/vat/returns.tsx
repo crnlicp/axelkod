@@ -63,7 +63,7 @@ export default function VatReturns() {
   const ended = selected ? selected.to < now : false;
   const steps: Step[] = [
     { key: "check", title: v.steps.check, state: r ? "done" : "current" },
-    { key: "lock", title: v.steps.lock, state: r ? "done" : ended ? "todo" : "later" },
+    { key: "lock", title: v.steps.lock, state: r ? "done" : ended ? "todo" : "later", note: !r && !ended ? v.afterEnd : undefined },
     { key: "file", title: v.steps.file, state: r ? "done" : "todo" },
     { key: "filed", title: v.steps.filed, state: r?.filedAt !== undefined ? "done" : r ? "current" : "todo" },
     { key: "pay", title: v.steps.pay, state: r?.taxEntryId !== undefined ? "done" : r?.filedAt !== undefined ? "current" : "todo" },
@@ -75,7 +75,7 @@ export default function VatReturns() {
       <PageHead title={v.title}><SectionTabs {...vatTabs(v)} /></PageHead>
       <p className="mb-4 text-sm text-muted">{v.intro}</p>
       {!periods.length ? <EmptyState text={v.noPeriods} /> : !returns ? <p role="status">{t.common.loading}</p> : (
-        <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
+        <div className="grid items-start gap-6 lg:grid-cols-[17rem_1fr]">
           <nav aria-label={v.periods} className="card max-h-[32rem] overflow-y-auto p-2">
             <ul className="space-y-1">
               {periods.map((p) => {
@@ -93,8 +93,10 @@ export default function VatReturns() {
             </ul>
           </nav>
           <section aria-labelledby="vat-period" className="space-y-6">
-            <h2 id="vat-period" className="text-xl font-semibold">{selected?.label} <span className="text-base font-normal text-muted">({selected?.from} – {selected?.to})</span></h2>
-            <div className="card"><Stepper steps={steps} onSelect={setStep} /></div>
+            <div className="card">
+              <h2 id="vat-period" className="mb-4 text-xl font-semibold">{selected?.label} <span className="text-base font-normal text-muted">({selected?.from} – {selected?.to})</span></h2>
+              <Stepper steps={steps} onSelect={setStep} />
+            </div>
             {!preview || !selected ? <p role="status">{t.common.loading}</p> : (
               <div className="card space-y-4">
                 <h3 className="text-lg font-semibold">{steps.find((s) => s.key === active)?.title}</h3>

@@ -30,7 +30,7 @@ const sv = {
   imageTypes: "Endast PNG, JPEG eller WebP.",
   imageTooBig: "Bilden är större än 1,9 MB.",
   nav: {
-    label: "Admin", inbox: "Inkorg", home: "Startsida", news: "Nyheter", contact: "Kontaktuppgifter", seo: "SEO", settings: "Inställningar",
+    label: "Admin", overview: "Översikt", inbox: "Inkorg", home: "Startsida", news: "Nyheter", contact: "Kontaktuppgifter", seo: "SEO", settings: "Inställningar",
     unread: (n: number) => `${n} olästa`, signOut: "Logga ut", language: "Språk", menu: "Meny", viewSite: "Visa webbplatsen",
   },
   login: {
@@ -43,6 +43,11 @@ const sv = {
     body: "Kopiera ditt ID nedan och skicka det till en befintlig administratör, eller till den som driftsätter sajten, och be om åtkomst. Ladda om sidan när du har lagts till.",
     idLabel: "Ditt ID (principal)", copy: "Kopiera ID", copied: "ID kopierat.",
     copyFailed: "Kunde inte kopiera. Markera ID:t och kopiera det manuellt.",
+  },
+  overview: {
+    title: "Översikt", unread: "Olästa meddelanden", total: "Meddelanden totalt", published: "Publicerade nyheter", drafts: "Utkast",
+    latest: "Senaste meddelanden", noMessages: "Inga meddelanden ännu.", openInbox: "Öppna inkorgen", news: "Nyheter", lastNews: "Senast publicerad",
+    noNews: "Inga publicerade nyheter.", shortcuts: "Genvägar", loadFailed: (m: string) => `Kunde inte hämta översikten: ${m}`,
   },
   inbox: {
     title: "Inkorg", export: "Exportera CSV", exportFailed: (m: string) => `Exporten misslyckades: ${m}`,
@@ -180,7 +185,7 @@ const en: AdminDict = {
   imageTypes: "PNG, JPEG or WebP only.",
   imageTooBig: "The image is larger than 1.9 MB.",
   nav: {
-    label: "Admin", inbox: "Inbox", home: "Home page", news: "News", contact: "Contact details", seo: "SEO", settings: "Settings",
+    label: "Admin", overview: "Overview", inbox: "Inbox", home: "Home page", news: "News", contact: "Contact details", seo: "SEO", settings: "Settings",
     unread: (n) => `${n} unread`, signOut: "Sign out", language: "Language", menu: "Menu", viewSite: "View website",
   },
   login: {
@@ -193,6 +198,11 @@ const en: AdminDict = {
     body: "Copy your ID below and send it to an existing administrator, or to whoever deploys the site, and ask for access. Reload the page once you have been added.",
     idLabel: "Your ID (principal)", copy: "Copy ID", copied: "ID copied.",
     copyFailed: "Could not copy. Select the ID and copy it manually.",
+  },
+  overview: {
+    title: "Overview", unread: "Unread messages", total: "Messages in total", published: "Published news", drafts: "Drafts",
+    latest: "Latest messages", noMessages: "No messages yet.", openInbox: "Open the inbox", news: "News", lastNews: "Last published",
+    noNews: "No published news.", shortcuts: "Shortcuts", loadFailed: (m) => `Could not load the overview: ${m}`,
   },
   inbox: {
     title: "Inbox", export: "Export CSV", exportFailed: (m) => `Export failed: ${m}`,

@@ -113,7 +113,7 @@ export default function HusClaim() {
   return (
     <>
       <PageHead title={`${r.kind[claim.kind]} · ${claim.name}`}><SectionTabs {...rotRutTabs(r)} /></PageHead>
-      <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
+      <div className="grid items-start gap-6 lg:grid-cols-[17rem_1fr]">
         <div className="card self-start"><Stepper steps={steps} onSelect={setStep} />
           <p className="mt-3 text-sm text-muted">{r.cases.year} {String(claim.year)} · XML {claim.xmlVersion}</p></div>
         <div className="space-y-4">

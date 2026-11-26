@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Navigate, NavLink, Outlet, useLocation } from "react-router";
+import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router";
 import { Role } from "../../bindings/accounting";
 import { ToastProvider } from "../../admin/toast";
 import { AdminLangProvider, useAdminLang, type AdminLang } from "../../admin/i18n";
@@ -7,7 +7,7 @@ import { AccSessionCtx, AdminCtx, useSession, type AdminContext } from "../../ad
 import type { AccSession } from "../../admin/accounting/context";
 import accSv from "../../admin/accounting/i18n/sv";
 import accEn from "../../admin/accounting/i18n/en";
-import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconBank, IconPercent, IconPeople, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
+import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconParts, IconBank, IconPercent, IconPeople, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
 import { LogoSymbol } from "../../components/Logo";
 
 export function meta() {
@@ -28,13 +28,14 @@ function LangSwitch() {
   );
 }
 
-function Brand() {
+/** The logo; links to the overview of the current workspace. */
+function Brand({ to = "/admin" }: { to?: string }) {
   const { t } = useAdminLang();
   return (
-    <div className="flex items-center gap-2.5">
+    <Link to={to} className="flex items-center gap-2.5 rounded-lg text-fg no-underline" aria-label={`${t.brand} – ${t.nav.overview}`}>
       <LogoSymbol className="h-9 w-auto text-fg" />
-      <span className="font-display text-xl font-bold uppercase">{t.brand}</span>
-    </div>
+      <span className="font-display text-xl font-bold uppercase" aria-hidden="true">{t.brand}</span>
+    </Link>
   );
 }
 
@@ -103,10 +104,10 @@ function WorkspaceSwitch({ current }: { current: "site" | "accounting" }) {
   return (
     <nav aria-label={w.label} className="grid grid-cols-2 rounded-full border border-border bg-surface p-1 text-sm font-semibold">
       {(["site", "accounting"] as const).map((k) => (
-        <NavLink key={k} to={k === "site" ? "/admin" : "/admin/accounting"} aria-current={current === k ? "page" : undefined}
+        <Link key={k} to={k === "site" ? "/admin" : "/admin/accounting"} aria-current={current === k ? "page" : undefined}
           className="rounded-full px-3 py-1.5 text-center text-muted no-underline hover:text-fg aria-[current=page]:bg-[var(--brand-soft)] aria-[current=page]:text-accent">
           {w[k]}
-        </NavLink>
+        </Link>
       ))}
     </nav>
   );
@@ -114,7 +115,8 @@ function WorkspaceSwitch({ current }: { current: "site" | "accounting" }) {
 
 function siteNav(t: ReturnType<typeof useAdminLang>["t"], unread: number | null): NavGroup[] {
   return [{ items: [
-    { to: "/admin", end: true, label: t.nav.inbox, icon: IconMail, badge: unread },
+    { to: "/admin", end: true, label: t.nav.overview, icon: IconChart },
+    { to: "/admin/inbox", label: t.nav.inbox, icon: IconMail, badge: unread },
     { to: "/admin/home", label: t.nav.home, icon: IconHome },
     { to: "/admin/news", label: t.nav.news, icon: IconNews },
     { to: "/admin/contact", label: t.nav.contact, icon: IconCompany },
@@ -143,7 +145,11 @@ function accountingNav(lang: AdminLang, role: Role, modules: { payroll: boolean;
       ...(pay ? [{ to: "/admin/accounting/payroll", label: n.payroll, icon: IconPeople }] : []),
       ...(hus ? [{ to: "/admin/accounting/rot-rut", label: n.rotRut, icon: IconHome }] : []),
     ] }] : []),
-    { items: [{ to: "/admin/accounting/settings", label: n.settings, icon: IconSliders }] },
+    ...(books ? [{ title: n.groupRegisters, items: [{ to: "/admin/accounting/assets", label: n.assets, icon: IconParts }] }] : []),
+    { items: [
+      { to: "/admin/accounting/guide", label: n.guide, icon: IconNews },
+      { to: "/admin/accounting/settings", label: n.settings, icon: IconSliders },
+    ] },
   ];
 }
 
@@ -158,7 +164,7 @@ function AdminShell({ groups, workspace, both, onSignOut, children }: {
   return (
     <div className="min-h-screen bg-surface lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
       <header className="flex items-center justify-between gap-4 border-b border-border bg-bg px-5 py-3 lg:hidden">
-        <Brand />
+        <Brand to={workspace === "site" ? "/admin" : "/admin/accounting"} />
         <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-border bg-surface"
           aria-expanded={open} aria-controls="admin-sidebar" aria-label={t.nav.menu} onClick={() => setOpen(!open)}>
           <IconMenu className="h-5 w-5" />
@@ -166,7 +172,7 @@ function AdminShell({ groups, workspace, both, onSignOut, children }: {
       </header>
       <aside id="admin-sidebar"
         className={`${open ? "flex" : "hidden"} flex-col gap-6 overflow-y-auto border-b border-border bg-bg p-5 lg:sticky lg:top-0 lg:flex lg:h-screen lg:border-r lg:border-b-0`}>
-        <div className="hidden lg:block"><Brand /></div>
+        <div className="hidden lg:block"><Brand to={workspace === "site" ? "/admin" : "/admin/accounting"} /></div>
         {both && <WorkspaceSwitch current={workspace} />}
         <nav aria-label={t.nav.label} className="space-y-4">
           {groups.map((g, gi) => (
@@ -197,7 +203,8 @@ function AdminShell({ groups, workspace, both, onSignOut, children }: {
         </div>
       </aside>
       <main id="main" className="min-w-0 px-5 py-8 lg:px-10">
-        <div className="mx-auto max-w-6xl">{children}</div>
+        {/* Ekonomi sets its own width: its header spans the whole content area. */}
+        {workspace === "accounting" ? children : <div className="mx-auto max-w-6xl">{children}</div>}
       </main>
     </div>
   );
@@ -272,7 +279,7 @@ function AdminRoot() {
       <AccSessionCtx.Provider value={acc}>
         <AdminShell groups={groups} workspace={workspace} both={!!session.site && !!acc} onSignOut={() => void signOut()}>
           {workspace === "accounting" && !acc
-            ? <RequestAccess principal={session.principal} title={a.noAccess} lead={a.noAccess} body={a.noAccessBody} />
+            ? <div className="mx-auto max-w-6xl"><RequestAccess principal={session.principal} title={a.noAccess} lead={a.noAccess} body={a.noAccessBody} /></div>
             : <Outlet />}
         </AdminShell>
       </AccSessionCtx.Provider>

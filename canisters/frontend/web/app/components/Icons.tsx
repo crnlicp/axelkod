@@ -245,6 +245,15 @@ export const IconPlus = (p: IconProps) => (
   </Icon>
 );
 
+/** Remove (a line, a row): a bin. */
+export const IconTrash = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4.5,6.5 H19.5 M9.5,6.5 V4 H14.5 V6.5" />
+    <path d="M6.5,6.5 L7.5,20 H16.5 L17.5,6.5" />
+    <path d="M10.5,10 V16.5 M13.5,10 V16.5" />
+  </Icon>
+);
+
 export const IconBell = (p: IconProps) => (
   <Icon {...p}>
     <path d="M6,16.5 V11 A6,6 0 0 1 18,11 V16.5 L19.5,18 H4.5 Z" />

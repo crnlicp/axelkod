@@ -13,7 +13,7 @@ test("admin edits home sections, publishes, and the site shows them", async ({ p
   const tag = `T${Date.now()}`;
   const session = await signInAsAdmin(page, context);
   try {
-    await page.getByRole("link", { name: "Startsida" }).click();
+    await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Startsida" }).click();
     await expect(page).toHaveURL(/\/admin\/home$/);
     await page.getByRole("tab", { name: "Vad vi gör" }).click();
 
@@ -57,7 +57,7 @@ test("admin edits home sections, publishes, and the site shows them", async ({ p
 
     // Drafts stay off the public query until Publish.
     expect((await api.actor.getHome()).services.items).toHaveLength(live);
-    await page.getByRole("link", { name: "SEO" }).click();
+    await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "SEO" }).click();
     await page.getByRole("button", { name: "Publicera", exact: true }).click();
     await expect(page.getByRole("status").filter({ hasText: "Publicerat." })).toBeVisible({ timeout: 60_000 });
     expect((await api.actor.getHome()).services.items).toHaveLength(n);
@@ -127,7 +127,7 @@ test("admin edits the hero and trust points, publishes, and the site shows them"
   const tag = `H${Date.now() % 100000}`;
   const session = await signInAsAdmin(page, context);
   try {
-    await page.getByRole("link", { name: "Startsida" }).click();
+    await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Startsida" }).click();
     await expect(page.getByRole("tab", { name: "Hero" })).toHaveAttribute("aria-selected", "true");
 
     // A new last headline word, highlighted.

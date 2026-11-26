@@ -61,7 +61,7 @@ export async function signInAsAdmin(page: Page, context: BrowserContext) {
   const principal = (await page.getByTestId("principal").textContent())!.trim();
   icp("canister", "call", "site", "addAdmin", `(principal "${principal}")`);
   await page.reload();
-  await page.getByRole("heading", { name: "Inkorg" }).waitFor();
+  await page.getByRole("heading", { name: "Översikt" }).waitFor();
   return { principal, revoke: () => icp("canister", "call", "site", "removeAdmin", `(principal "${principal}")`) };
 }
 

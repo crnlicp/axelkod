@@ -4,7 +4,7 @@ Part of the systemdokumentation (spec §3.1; BFNAR 2013:2 to be checked under V2
 
 ## How seeding works
 
-- Seed version: `seed-2026.6` (history: .1 A2, .2 and .3 sales and purchases, .4 VAT boxes and import accounts, .5 payroll accounts and pay items, .6 account 1513 for ROT/RUT). On every install or upgrade, if the stored version differs, missing accounts, VAT codes and series are **added**. Existing ones are never changed, because users may have edited them.
+- Seed version: `seed-2026.7` (history: .1 A2, .2 and .3 sales and purchases, .4 VAT boxes and import accounts, .5 payroll accounts and pay items, .6 account 1513 for ROT/RUT, .7 assets and inventory: 1221, 1224, 3973, 4960, 7973 and series I "Inventarier och lager", names from BAS 2026 (V25, V26)). On every install or upgrade, if the stored version differs, missing accounts, VAT codes and series are **added**. Existing ones are never changed, because users may have edited them.
 - Accounts can be added (non-BAS, `bas = false`) and renamed or deactivated in Ekonomi › Inställningar. Numbers never change, and no account is ever deleted.
 
 ## Series

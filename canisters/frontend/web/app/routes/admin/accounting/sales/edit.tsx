@@ -1,8 +1,9 @@
 // Invoice / quote / credit note editor. Customer first (it sets language and terms),
 // then lines. The draft autosaves; totals, VAT, legal notes and OCR come from the
 // canister's preview, which runs the same checks as issuing.
+import { IconTrash } from "../../../../components/Icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { DocKind, Lang, type Customer, type DocInput, type DocLine, type Item, type SalesDraft, type Snapshot } from "../../../../bindings/accounting";
 import { AccountingError, ok } from "../../../../admin/accounting/api";
 import { useAcc, useAccT, useErr } from "../../../../admin/accounting/context";
@@ -32,7 +33,20 @@ const fxToRate = (s: string): bigint | null => {
 const kept = (rows: Row[]) => rows.filter((r) => r.description.trim() || r.price !== null);
 const rateToFx = (r: bigint) => (Number(r) / 1_000_000).toLocaleString("sv-SE", { maximumFractionDigits: 6, useGrouping: false });
 
-export default function SalesEditor() {
+/** New invoice → new quote (or another draft) is a new editor: its state starts from the URL. */
+/** The editor's own URL update after the first save (?draft=) passes `keep` and keeps it. */
+export default function SalesEditorPage() {
+  const loc = useLocation();
+  const gen = useRef(0);
+  const last = useRef(loc.search);
+  if (loc.search !== last.current) {
+    last.current = loc.search;
+    if (!(loc.state as { keep?: boolean } | null)?.keep) gen.current += 1;
+  }
+  return <SalesEditor key={gen.current} />;
+}
+
+function SalesEditor() {
   const t = useAccT();
   const s = t.sales;
   const e = s.editor;
@@ -52,6 +66,8 @@ export default function SalesEditor() {
   const [loaded, setLoaded] = useState(!draftParam);
   const [preview, setPreview] = useState<Snapshot | null>(null);
   const [previewErr, setPreviewErr] = useState<{ text: string; field: string | null } | null>(null);
+  /** Required fields left empty, found when Kontrollera or Utfärda is clicked. */
+  const [missing, setMissing] = useState<string[]>([]);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
   const [confirm, setConfirm] = useState(false);
@@ -89,7 +105,7 @@ export default function SalesEditor() {
     })();
   }, [acc, draftParam, draft, err, t]);
 
-  const update = (f: Partial<Form>) => { dirty.current = true; setForm((x) => ({ ...x, ...f })); };
+  const update = (f: Partial<Form>) => { dirty.current = true; setMissing([]); setForm((x) => ({ ...x, ...f })); };
   const setRow = (key: number, r: Partial<Row>) => update({ rows: form.rows.map((x) => (x.key === key ? { ...x, ...r } : x)) });
 
   const toInput = useCallback((): DocInput | null => {
@@ -119,7 +135,7 @@ export default function SalesEditor() {
       setDraft(d);
       dirty.current = false;
       setSavedAt(new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" }));
-      if (!draftParam) navigate(href(`/admin/accounting/sales/new?draft=${d.id}`), { replace: true });
+      if (!draftParam) navigate(href(`/admin/accounting/sales/new?draft=${d.id}`), { replace: true, state: { keep: true } });
       const p = await acc.previewSalesDraft(d.id);
       if (p.__kind__ === "ok") { setPreview(p.ok); setPreviewErr(null); return p.ok; }
       setPreview(null);
@@ -169,7 +185,29 @@ export default function SalesEditor() {
   if (!loaded) return <><p role="status">{t.common.loading}</p><Toast status={status} /></>;
   const revenue = (data?.accounts ?? []).filter((a) => a.kind === "revenue" && a.active);
   const vatCodes = (data?.vatCodes ?? []).filter((v) => v.active && v.kind !== "inputDomestic" && v.kind !== "reverseChargePurchase" && v.kind !== "importVat");
-  const bad = (f: string) => previewErr?.field === f || previewErr?.field?.startsWith(`${f}[`) || undefined;
+  const bad = (f: string) => previewErr?.field === f || previewErr?.field?.startsWith(`${f}[`) || missing.includes(f) || undefined;
+
+  /** Marks the required fields left empty and moves focus to the first one. */
+  function requireFields(): boolean {
+    const m: string[] = [];
+    if (form.customerId === null) m.push("customerId");
+    const rows = kept(form.rows);
+    if (rows.length === 0) m.push("lines[0].description", "lines[0].unitPrice");
+    form.rows.forEach((r, i) => {
+      if (!rows.includes(r)) return;
+      if (!r.description.trim()) m.push(`lines[${i}].description`);
+      if (!parseQty(r.qty)) m.push(`lines[${i}].quantity`);
+      if (r.price === null) m.push(`lines[${i}].unitPrice`);
+    });
+    setMissing(m);
+    if (m.length) requestAnimationFrame(() => document.querySelector<HTMLElement>("main [aria-invalid='true']")?.focus());
+    return m.length === 0;
+  }
+
+  async function checkAndPreview() {
+    if (!requireFields()) return null;
+    return saveAndPreview(false);
+  }
   const cur = form.currency || "SEK";
   const customer = customers.find((c) => c.id === form.customerId);
   const husOn = !!data?.settings.modules.rotRut && kind !== DocKind.creditNote;
@@ -268,7 +306,7 @@ export default function SalesEditor() {
                   <input aria-label={e.qty(i + 1)} inputMode="decimal" className="rounded-md border border-[var(--input-border)] bg-bg px-2 py-1.5 text-right" value={r.qty}
                     aria-invalid={parseQty(r.qty) === null || bad(`lines[${i}].quantity`) || undefined} onChange={(x) => setRow(r.key, { qty: x.target.value })} />
                   <input aria-label={e.unit(i + 1)} className="rounded-md border border-[var(--input-border)] bg-bg px-2 py-1.5" maxLength={20} value={r.unit} onChange={(x) => setRow(r.key, { unit: x.target.value })} />
-                  <MoneyInput value={r.price} labelText={e.price(i + 1)} onChange={(v) => setRow(r.key, { price: v })} />
+                  <MoneyInput value={r.price} labelText={e.price(i + 1)} invalid={bad(`lines[${i}].unitPrice`)} onChange={(v) => setRow(r.key, { price: v })} />
                   <input aria-label={e.discount(i + 1)} inputMode="decimal" placeholder="%" className="rounded-md border border-[var(--input-border)] bg-bg px-2 py-1.5 text-right" value={r.discount}
                     aria-invalid={(r.discount.trim() !== "" && parsePct(r.discount) === null) || undefined} onChange={(x) => setRow(r.key, { discount: x.target.value })} />
                   <select aria-label={e.vat(i + 1)} className="rounded-md border border-[var(--input-border)] bg-bg px-2 py-1.5" value={r.vatCode} aria-invalid={bad(`lines[${i}].vatCode`)}
@@ -283,7 +321,7 @@ export default function SalesEditor() {
                     {revenue.map((a) => <option key={String(a.number)} value={String(a.number)}>{String(a.number)} {a.name}</option>)}
                   </select>
                   <button type="button" aria-label={e.removeLine(i + 1)} disabled={form.rows.length <= 1} onClick={() => update({ rows: form.rows.filter((x) => x.key !== r.key) })}
-                    className="justify-self-end text-xl leading-none text-muted hover:text-[var(--error)] disabled:opacity-30">×</button>
+                    title={e.removeLine(i + 1)} className="grid h-9 w-9 place-items-center justify-self-end rounded-full text-muted hover:bg-surface-strong hover:text-[var(--error)] disabled:opacity-30"><IconTrash className="h-5 w-5" /></button>
                 </li>
               ))}
             </ol>
@@ -302,6 +340,7 @@ export default function SalesEditor() {
         <aside className="lg:sticky lg:top-24 lg:self-start" aria-labelledby="st-h">
           <div className="card space-y-3 text-sm">
             <h2 id="st-h" className="text-2xl">{e.totals}</h2>
+            {missing.length > 0 && <p role="alert" className="rounded-lg border border-[var(--error)]/60 p-2 text-[var(--error)]">{e.required}</p>}
             {previewErr && <p role="alert" className="rounded-lg border border-[var(--error)]/60 p-2 text-[var(--error)]">{previewErr.text}</p>}
             {preview ? (
               <>
@@ -321,9 +360,9 @@ export default function SalesEditor() {
             ) : !previewErr && <p className="text-muted">{e.previewHint}</p>}
             {canBook && (
               <div className="flex flex-col gap-2 pt-2">
-                <button type="button" className="btn btn-primary justify-center" disabled={!preview || dirty.current || busy || (husOn && husBad)}
-                  onClick={async () => { if (await saveAndPreview(false)) setConfirm(true); }}>{e.issue[kind]}</button>
-                <button type="button" className="btn btn-secondary justify-center" disabled={form.customerId === null} onClick={() => void saveAndPreview(false)}>{e.preview}</button>
+                <button type="button" className="btn btn-primary justify-center" disabled={busy || (husOn && husBad)}
+                  onClick={async () => { if (await checkAndPreview()) setConfirm(true); }}>{e.issue[kind]}</button>
+                <button type="button" className="btn btn-secondary justify-center" disabled={busy} onClick={() => void checkAndPreview()}>{e.preview}</button>
                 {draft && <button type="button" className="text-sm text-muted hover:text-[var(--error)]" onClick={() => void removeDraft()}>{e.deleteDraft}</button>}
                 {savedAt && <p className="text-xs text-muted" aria-live="polite">{e.saved(savedAt)}</p>}
               </div>

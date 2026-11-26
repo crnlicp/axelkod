@@ -18,7 +18,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A6 | VAT and EU sales list | Done (2026-11-25) | Box fixtures, file checked in Skatteverket's test service |
 | A7 | Payroll, AGI, växa | Done (2026-11-26) | Fee-category tests, AGI XML vs XSD, test service |
 | A8 | ROT/RUT | Done (2026-11-26), awaiting sign-off | Cap tests, XML vs schema |
-| A9 | Assets, inventory, year-end, SRU, SIE4, backup | Not started | SIE4 round trip, restore test |
+| A9 | Assets, inventory, year-end, SRU, SIE4, backup | In progress (A9a done, awaiting sign-off) | SIE4 round trip, restore test |
 | A10 | Mainnet (European subnet) | Not started | Approval at each step |
 
 ## Conflicts and resolutions
@@ -95,6 +95,8 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V22 | Input VAT: evidence for deduction, reverse charge on purchases (EU goods, EU and non-EU services, domestic), reporting period | ML (2023:200) 13 kap. 31–36 §§, 16 kap. 5–17 §§; Skatteverket "Köpa varor/tjänster från andra EU-länder", "Fylla i momsdeklarationen", "Omvänd betalningsskyldighet inom byggsektorn" | A5 | Done (A5) |
 | V23 | BAS 2026 accounts for purchases, reverse charge, expense claims and the tax account | bas.se BAS 2026 (as V15) | A5 | Done (A5) |
 | V24 | Tax account (skattekonto): interest treatment, what export the e-service offers | Skatteverket "Skattekonto – betala och få tillbaka", "Ränta på skattekontot" | A5 | Done (A5) |
+| V25 | Fixed assets: small-equipment limit, räkenskapsenlig avskrivning (30 % / 20 % rules), restvärdesavskrivning, K2 rules, BAS asset accounts | Inkomstskattelagen (1999:1229) 18 kap. (riksdagen.se), BFNAR 2016:10 (bfn.se), bas.se | A9a | Done (A9a) |
+| V26 | Inventory valuation: lowest-value principle, 97 % schablon, FIFO, K2 rules, BAS 1460/4960 | IL 17 kap. (riksdagen.se), BFNAR 2016:10, bas.se | A9a | Done (A9a) |
 
 ## Architecture (after resolutions)
 
@@ -506,8 +508,37 @@ Sources checked first (V22–V24; see sources.md).
   - Grön teknik (also in the schema) is not included.
   - Your manual check: import one generated XML file in "Rot och rut – företag" (before submitting) to confirm it is accepted.
 
-### A9
-Scope as in spec §13 phases 4–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.
+### A9. Assets, inventory, year-end, SRU, SIE4, backup — In progress (started 2026-11-26)
+Scope as in spec §13 phase 7, with the UI from "Sections" above. A9 is large, so it is done in three parts, with a local deploy, tests and your sign-off after each part. Each part starts with its V-items.
+
+**A9a. Tillgångar & lager**
+- [x] V25 verified and recorded: small-equipment limit (half PBB), depreciation of machinery and equipment (räkenskapsenlig avskrivning: 30 % main rule, 20 % supplementary rule, restvärdesavskrivning), K2 rules for fixed assets (BFNAR 2016:10), BAS accounts for assets, accumulated depreciation and disposals
+- [x] V26 verified and recorded: inventory valuation (lowest-value principle, 97 % schablon, FIFO), K2 rules for inventory, BAS accounts 1460 / 4960
+- [x] Asset register: cost account (1220/1221/1224 …), accumulated depreciation and expense accounts, cost excl. deductible VAT, residual, life in months (60 = K2 10.27), opening depreciation for assets from earlier years, link to the purchase; editable until the first depreciation; half-PBB hint (K2 10.5) from the stored PBB
+- [x] Depreciation run for a period (own series I "Inventarier och lager"): straight line per month from the month taken into use, truncated to öre, the last month takes the remainder; one voucher per run (one line pair per account pair); each period once; a skipped month is caught up; blocked by the lock date and locked years
+- [x] Disposal: cost and accumulated depreciation removed; paid to an account → gain 3973 / loss 7973 net; invoiced on 3973 → book value set off against 3973 (loss part 7973); scrapped → 7973 (K2 7.13, 7.14)
+- [x] Inventory (periodic method): stock items (optionally linked to a sales item), moves (purchase, sale, adjustment, return), FIFO value of what is left (IL 17:3), a count on the last day of a month with NRV per item (lowest value, K2 12.4) and the optional 97 % rule (IL 17:4, K2 12.5); quantity differences become count moves; the change of stock is booked 1460 against 4960 (BAS has no 4990); moves on or before the last count or the lock date are frozen
+- [x] Lager hidden until enabled (D7); the asset register is always there for bookkeepers
+- [x] UI: Tillgångar & lager (register, schedule per financial year, "Kör avskrivningar för period", disposal, stock items and moves, count sheet), PDF + CSV for the register, schedule, inventory list and count sheet
+- [x] Tests: `mops test` (20 new in `assets.test.mo`), unit (`assets.spec.ts`: the browser plan equals the canister's), API test, Playwright + axe
+- Deviations and open points:
+  - Stock moves are entered by hand; they are not created from purchases or sales invoices yet.
+  - Depreciation is the book (K2) plan only. Tax depreciation above plan (överavskrivning, 30/20 % rules) is a year-end appropriation in A9b.
+  - Until opening balances exist (A9b), the stock account balance at a count is the sum of all postings on the account.
+
+**A9b. Bokslut, K2, SRU**
+- [ ] V15 (BAS → SRU for INK2R/INK2S), V16 (SRU file format), V19 (K2 layout), corporate tax 20.6 % and periodiseringsfond 25 % verified and recorded
+- [ ] Year-end stepper (spec §3.6): inventory count → depreciation run → accruals/prepayments → reconcile bank, tax account, VAT, payroll liabilities → unpaid invoices under the cash method → tax calculation → appropriations → closing vouchers → lock year → opening balances for the next year
+- [ ] Income statement and balance sheet in K2 layout (PDF); INK2R/INK2S data; `INFO.SRU` + `BLANKETTER.SRU`; INK2, AGM and annual report deadlines
+- [ ] Tests: `mops test`; SRU file against the format description; Playwright + axe
+
+**A9c. SIE4, backup, system documentation, dashboard**
+- [ ] V17 (SIE 4C) and V20 (BFNAR 2013:2 open part: systemdokumentation, behandlingshistorik) verified and recorded
+- [ ] SIE4 export at any time; SIE4 import of opening balances in the setup wizard; round-trip test
+- [ ] Full backup: ZIP (JSON + SIE4 + decrypted vault files + manifest with hashes), passphrase-encrypted, strength meter; restore into a fresh local network (tested)
+- [ ] Rapporter & export catalogue, Behandlingshistorik and Systemdokumentation PDFs
+- [ ] Översikt dashboard: KPI tiles, "Att göra" queue, next 5 deadlines, monthly revenue/cost chart
+- [ ] Tests: SIE4 round trip, restore test, Playwright + axe
 
 ### A10. Mainnet — Not started (approval at every step)
 - [ ] V21 + C22 legal review done

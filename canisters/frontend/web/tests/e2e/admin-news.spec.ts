@@ -9,7 +9,7 @@ test("admin writes, edits and deletes a news article", async ({ page, context })
   const title = `Öppet hus på verkstaden ${Date.now()}`;
   const slug = title.toLowerCase().replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/[^a-z0-9]+/g, "-");
   try {
-    await page.getByRole("link", { name: "Nyheter" }).click();
+    await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Nyheter" }).click();
     await page.getByRole("link", { name: "Ny nyhet" }).click();
     await expect(page).toHaveURL(/\/admin\/news\/new$/);
 

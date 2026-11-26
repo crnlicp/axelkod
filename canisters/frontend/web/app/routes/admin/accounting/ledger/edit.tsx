@@ -1,5 +1,6 @@
 // Voucher editor: separate debit/credit columns, live difference, drafts that
 // autosave to the canister, templates, attachments, then a confirm sheet to post.
+import { IconTrash } from "../../../../components/Icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import type { Attachment, VoucherInput, VoucherLine } from "../../../../bindings/accounting";
@@ -223,7 +224,7 @@ export default function VoucherEditor() {
                     onKeyDown={(x) => { if (x.key === "Tab" && !x.shiftKey && i === form.rows.length - 1) update({ rows: [...form.rows, emptyRow()] }); }} />
                   <button type="button" aria-label={e.removeLine(i + 1)} disabled={form.rows.length <= 2}
                     onClick={() => update({ rows: form.rows.filter((x) => x.key !== r.key) })}
-                    className="rounded-md text-xl leading-none text-muted hover:text-[var(--error)] disabled:opacity-30">×</button>
+                    title={e.removeLine(i + 1)} className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-surface-strong hover:text-[var(--error)] disabled:opacity-30"><IconTrash className="h-5 w-5" /></button>
                 </li>
               ))}
             </ol>

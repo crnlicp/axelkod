@@ -57,7 +57,7 @@ test("seed: BAS accounts, VAT codes and series", async () => {
   expect(accounts.find((a) => a.number === 1930n)?.name).toBe("Företagskonto");
   expect(accounts.find((a) => a.number === 2611n)?.name).toBe("Utgående moms på försäljning inom Sverige, 25 %");
   expect(ok(await owner.listVatCodes()).find((c) => c.code === "U25")?.rateBp).toBe(2500n);
-  expect(ok(await owner.listSeries()).map((s) => s.code).sort()).toEqual(["A", "B", "C", "F", "L", "M", "P", "X"]);
+  expect(ok(await owner.listSeries()).map((s) => s.code).sort()).toEqual(["A", "B", "C", "F", "I", "L", "M", "P", "X"]);
 });
 
 test("posting is balanced and gapless; a correction reverses and links", async () => {
@@ -106,8 +106,12 @@ test("roles: mirrored to the vault, permissions, last owner kept", async () => {
     expect(denied.__kind__ === "err" && denied.err.__kind__).toBe("notAuthorized");
     expect((await aud.acc.journal(fiscalYearId, null, 0n, 1n)).__kind__).toBe("ok");
     expect((await bk.acc.setLockDate("2000-01-01")).__kind__).toBe("err");
-    const last = await owner.removeRole(ownerId.getPrincipal());
-    expect(last.__kind__ === "err" && last.err.__kind__).toBe("lastOwner");
+    // Only when the test key is the sole owner: with a second (e.g. a developer's own) owner
+    // the call would succeed and remove the test key's role.
+    if (ok(await owner.listRoles()).filter((r) => r.role === Role.owner).length === 1) {
+      const last = await owner.removeRole(ownerId.getPrincipal());
+      expect(last.__kind__ === "err" && last.err.__kind__).toBe("lastOwner");
+    }
 
     // Attachment: vault upload (ciphertext) → confirm in accounting → link on a voucher.
     const cipher = randomBytes(1000);

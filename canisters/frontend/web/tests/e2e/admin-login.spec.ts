@@ -15,6 +15,9 @@ test("local II login: non-admin is denied, admin manages a message in the inbox"
   expect(icp("canister", "call", "site", "addAdmin", `(principal "${principal}")`)).toContain("ok");
   try {
     await page.reload();
+    // The website admin lands on Översikt; the inbox has its own page.
+    await expect(page.getByRole("heading", { name: "Översikt" })).toBeVisible();
+    await page.getByRole("link", { name: /^Inkorg/ }).click();
     await expect(page.getByRole("heading", { name: "Inkorg" })).toBeVisible();
 
     await page.getByLabel("Sök").fill(marker);

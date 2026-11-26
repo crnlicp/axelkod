@@ -1,5 +1,5 @@
 // Inställningar: Företag · Bokföring · Kontoplan · Användare.
-import { NavLink, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { useAcc, useAccT } from "../../../admin/accounting/context";
 import { useCrumbs } from "../../../admin/accounting/crumbs";
 import { ChartTable, CompanyForm, LockDatePanel, SettingsForm, UsersPanel, YearsPanel } from "../../../admin/accounting/forms";
@@ -21,10 +21,10 @@ export default function Settings() {
       <PageHead title={t.settings.title}>
         <nav aria-label={t.settings.title} className="-mb-px flex gap-1 overflow-x-auto border-b border-border">
           {tabs.map((k) => (
-            <NavLink key={k} to={href(`/admin/accounting/settings/${k}`)} aria-current={k === tab ? "page" : undefined}
+            <Link key={k} to={href(`/admin/accounting/settings/${k}`)} aria-current={k === tab ? "page" : undefined}
               className="whitespace-nowrap border-b-2 border-transparent px-3 py-2 font-medium text-muted no-underline hover:text-fg aria-[current=page]:border-accent aria-[current=page]:text-accent">
               {t.settings.tabs[k]}
-            </NavLink>
+            </Link>
           ))}
         </nav>
       </PageHead>

@@ -12,7 +12,8 @@ export default [
   route("en/news/:slug", "routes/article.tsx", { id: "article-en" }),
   // Admin: client-rendered from admin.html (the SPA fallback), never prerendered.
   route("admin", "routes/admin/layout.tsx", [
-    index("routes/admin/inbox.tsx"),
+    index("routes/admin/overview.tsx"),
+    route("inbox", "routes/admin/inbox.tsx"),
     route("home", "routes/admin/home.tsx"),
     route("contact", "routes/admin/contact.tsx"),
     route("seo", "routes/admin/seo.tsx"),
@@ -54,6 +55,10 @@ export default [
       route("rot-rut/claims", "routes/admin/accounting/rotrut/claims.tsx"),
       route("rot-rut/claims/:id", "routes/admin/accounting/rotrut/claim.tsx"),
       route("rot-rut/settings", "routes/admin/accounting/rotrut/settings.tsx"),
+      route("assets", "routes/admin/accounting/assets/register.tsx"),
+      route("guide", "routes/admin/accounting/guide.tsx"),
+      route("assets/inventory", "routes/admin/accounting/assets/inventory.tsx"),
+      route("assets/counts", "routes/admin/accounting/assets/counts.tsx"),
       route("ledger", "routes/admin/accounting/ledger/list.tsx"),
       route("ledger/drafts", "routes/admin/accounting/ledger/drafts.tsx"),
       route("ledger/new", "routes/admin/accounting/ledger/edit.tsx"),

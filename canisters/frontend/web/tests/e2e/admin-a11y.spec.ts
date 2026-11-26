@@ -6,7 +6,7 @@ test("admin pages have no WCAG 2.1 AA violations", async ({ page, context }) => 
   test.setTimeout(90_000);
   const session = await signInAsAdmin(page, context);
   try {
-    for (const [path, heading] of [["/admin", "Inkorg"], ["/admin/contact", "Kontaktuppgifter"], ["/admin/seo", "SEO"], ["/admin/settings", "Inställningar"], ["/admin/news", "Nyheter"], ["/admin/news/new", "Ny nyhet"]]) {
+    for (const [path, heading] of [["/admin", "Översikt"], ["/admin/inbox", "Inkorg"], ["/admin/contact", "Kontaktuppgifter"], ["/admin/seo", "SEO"], ["/admin/settings", "Inställningar"], ["/admin/news", "Nyheter"], ["/admin/news/new", "Ny nyhet"]]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
       await page.waitForLoadState("networkidle");

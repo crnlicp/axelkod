@@ -160,18 +160,19 @@
     border: 1px solid var(--border-strong);
     background: var(--surface);
     color: var(--fg);
-    backdrop-filter: blur(8px);
   }
   .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* Glass panel: translucent surface, hairline border, soft inner highlight. */
+  /* Glass panel: translucent surface, hairline border, soft inner highlight. Only .glass
+     blurs what is behind it: a backdrop blur on every card re-blurs each frame while an
+     animation runs underneath (GPU cost), and the cards look the same without it. */
   .card, .glass {
     background: linear-gradient(180deg, var(--surface-strong), var(--surface));
     border: 1px solid var(--border);
     border-radius: 1.25rem;
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
-    backdrop-filter: blur(14px);
   }
+  .glass { backdrop-filter: blur(14px); }
   .card { padding: 1.5rem; }
 
   .text-gradient {
@@ -202,14 +203,20 @@
   }
 }
 
-/* Background layers: slow aurora glow and a faint grid, both decorative. */
-.bg-aurora {
+/* Background layers: slow aurora glow and a faint grid, both decorative. The glow is drawn
+   once on a larger layer that moves with transform, so the drift runs on the compositor
+   instead of repainting the whole section every frame (as animating background-position did). */
+.bg-aurora { overflow: hidden; contain: paint; }
+.bg-aurora::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
   background:
-    radial-gradient(40% 50% at 20% 20%, var(--brand-soft), transparent 70%),
-    radial-gradient(35% 45% at 80% 30%, var(--glow-soft), transparent 70%),
-    radial-gradient(45% 40% at 50% 90%, rgb(20 80 125 / 0.25), transparent 70%);
-  background-size: 140% 140%;
+    radial-gradient(28% 35% at 30% 30%, var(--brand-soft), transparent 70%),
+    radial-gradient(25% 32% at 70% 35%, var(--glow-soft), transparent 70%),
+    radial-gradient(32% 28% at 50% 75%, rgb(20 80 125 / 0.25), transparent 70%);
   animation: var(--animate-aurora);
+  will-change: transform;
 }
 .bg-grid {
   background-image:
@@ -219,9 +226,9 @@
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
 }
 @keyframes aurora {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 60% 40%; }
-  100% { background-position: 100% 100%; }
+  0% { transform: translate3d(8%, 8%, 0); }
+  50% { transform: translate3d(-2%, 0, 0); }
+  100% { transform: translate3d(-8%, -8%, 0); }
 }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -294,7 +301,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .bg-aurora { animation: none; }
+  .bg-aurora::before { animation: none; }
   .btn, .btn:hover { transform: none; }
 }
 
@@ -499,4 +506,10 @@ html:has(.news-section .news-empty) [data-nav="news"] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .success-check circle { animation: none; }
   .success-check path { animation: none; stroke-dashoffset: 0; }
+}
+
+/* Fields a form marks as wrong or missing (aria-invalid), in every admin and public form. */
+:is(input, select, textarea)[aria-invalid="true"] {
+  border-color: var(--error);
+  box-shadow: 0 0 0 1px var(--error);
 }

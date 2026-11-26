@@ -14,7 +14,7 @@ test("admin edits SEO, publishes, and the public pages carry the new head", asyn
   const marker = `SEO-test ${Date.now()}`;
   const session = await signInAsAdmin(page, context);
   try {
-    await page.getByRole("link", { name: "SEO" }).click();
+    await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "SEO" }).click();
     await expect(page).toHaveURL(/\/admin\/seo$/);
 
     // Counter and Google preview follow the input.

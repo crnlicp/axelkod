@@ -3,7 +3,7 @@ const sv = {
   workspace: { label: "Arbetsyta", site: "Webbplats", accounting: "Ekonomi" },
   nav: {
     label: "Ekonomi", overview: "Översikt", groupDaily: "Löpande", groupPeriods: "Perioder", groupRegisters: "Register och arkiv",
-    ledger: "Bokföring", sales: "Försäljning", purchases: "Inköp", bank: "Bank & skattekonto", vat: "Moms", payroll: "Lön", rotRut: "ROT/RUT", settings: "Inställningar",
+    ledger: "Bokföring", sales: "Försäljning", purchases: "Inköp", bank: "Bank & skattekonto", vat: "Moms", payroll: "Lön", rotRut: "ROT/RUT", assets: "Tillgångar & lager", guide: "Dokumentation", settings: "Inställningar",
   },
   shell: {
     year: "Räkenskapsår", noYear: "Inget räkenskapsår", search: "Sök", searchHint: "Sök verifikation (A-12) eller sida",
@@ -51,6 +51,7 @@ const sv = {
     filter: { all: "Alla", unpaid: "Obetalda", overdue: "Förfallna", credit: "Kreditfakturor" },
     quantity: "Antal", number: "Nr", customer: "Kund", issueDate: "Datum", due: "Förfaller", total: "Belopp", balance: "Kvar att betala", validUntil: "Giltig till",
     editor: {
+      required: "Fyll i de markerade fälten: kund, och för varje rad beskrivning, antal och à-pris.", 
       invoice: "Ny faktura", quote: "Ny offert", creditNote: "Ny kreditfaktura", draft: (n: number) => `Utkast ${n}`, chooseCustomer: "Välj kund",
       newCustomer: "Ny kund", language: "Språk", terms: "Betalningsvillkor (dagar)", currency: "Valuta", fxRate: "Växelkurs till SEK",
       fxDate: "Kursdatum", fxHint: "ECB:s kurs (finns på riksbank.se) eller Nasdaq Stockholms mittkurs, normalt senast kända kurs på leveransdagen (ML 17:29).",
@@ -164,6 +165,7 @@ const sv = {
     },
   },
   vat: {
+    afterEnd: "Kan göras när perioden har slutat.", 
     title: "Moms", tabs: { returns: "Momsdeklaration", ecSales: "Periodisk sammanställning" },
     intro: "Rutorna räknas fram ur bokföringen via kontonas momskoder, så även manuella verifikationer kommer med. Ören tas bort i varje ruta.",
     periods: "Perioder", period: "Period", due: "Sista dag", status: "Status", noPeriods: "Lägg upp ett räkenskapsår först.",
@@ -205,6 +207,49 @@ const sv = {
     vies: {
       check: "Kontrollera i VIES", valid: "Giltigt i VIES", invalid: "Ogiltigt i VIES", checked: (d: string) => `kontrollerat ${d}`,
       hint: "VIES visar bara om numret är giltigt i dag.", needNr: "Fyll i ett momsregistreringsnummer först.",
+    },
+  },
+  assets: {
+    title: "Tillgångar & lager", tabs: { register: "Tillgångar", stock: "Lager", counts: "Inventering" },
+    register: {
+      intro: "Inventarier som skrivs av enligt plan. Anskaffningen bokförs som inköp på tillgångskontot; registret bokför avskrivningar och avyttring i serie I.",
+      add: "Ny tillgång", edit: "Ändra tillgång", empty: "Inga tillgångar ännu. Lägg upp en inventarie när den är bokförd som inköp.",
+      name: "Benämning", tag: "Inventarienummer", acquired: "Anskaffad", inUse: "Tagen i bruk", cost: "Anskaffningsvärde (kr)",
+      residual: "Restvärde (kr)", life: "Nyttjandeperiod (månader)", fiveYear: "Använd fem år (K2 10.27)", opening: "Tidigare avskrivet (kr)",
+      openingHint: "För tillgångar från tidigare år: ackumulerade avskrivningar innan registret.",
+      costAccount: "Tillgångskonto", accumulatedAccount: "Konto för ackumulerade avskrivningar", expenseAccount: "Kostnadskonto",
+      note: "Anteckning", depreciated: "Avskrivet", bookValue: "Bokfört värde", status: "Status",
+      active: "Aktiv", disposedOn: (d: string) => `Avyttrad ${d}`, done: "Fullt avskriven",
+      small: (limit: string, year: string) => `Under ett halvt prisbasbelopp (${limit} kr, ${year}) får tillgången kostnadsföras direkt (konto 5410), enligt K2 10.5.`,
+      residualFive: "Restvärde kan inte användas med femårsregeln (K2 10.25).", saved: "Tillgången är sparad.", deleted: "Tillgången är borttagen.",
+      locked: "Tillgången har avskrivningar och kan inte ändras.",
+    },
+    run: {
+      title: "Kör avskrivningar för period", period: "Period", preview: "Visa underlag", run: "Bokför avskrivningar",
+      none: "Inget att skriva av för perioden.", total: "Summa", done: (ref: string) => `Avskrivningarna är bokförda (${ref}).`,
+      history: "Körda perioder", catchUp: "Månader som inte körts tas med i nästa körning.",
+    },
+    dispose: {
+      title: "Avyttra eller utrangera", date: "Datum", proceeds: "Försäljningspris exkl. moms (kr)", how: "Hur togs betalt?",
+      invoiced: "Fakturerat på konto 3973", cash: "Betalt till konto", scrap: "Utrangering (inget pris)", account: "Konto", go: "Bokför avyttring",
+      done: "Avyttringen är bokförd.", hint: "Bokfört värde och ackumulerade avskrivningar tas bort; vinst bokförs på 3973 och förlust på 7973 (K2 7.13–7.14).",
+    },
+    schedule: { title: "Avskrivningsplan", year: "Räkenskapsår", amount: "Avskrivning", closing: "Utgående värde" },
+    stock: {
+      intro: "Lagret följs periodiskt: inköp kostnadsförs, rörelserna håller antal och anskaffningspris, och inventeringen bokför lagerförändringen.",
+      disabled: "Lager är avstängt. Slå på modulen under Inställningar › Bokföring.",
+      items: "Lagerartiklar", addItem: "Ny lagerartikel", sku: "Artikelnr", unit: "Enhet", salesItem: "Försäljningsartikel", noSalesItem: "Ingen",
+      moves: "Lagerrörelser", addMove: "Ny rörelse", kind: "Typ", qty: "Antal", unitCost: "À-pris (kr)", onHand: "I lager", value: "Värde (FIFO)",
+      kinds: { purchase: "Inköp", sale: "Försäljning", adjust: "Justering", returned: "Retur", count: "Inventering" } as Record<string, string>,
+      emptyItems: "Inga lagerartiklar ännu.", emptyMoves: "Inga rörelser ännu.", saved: "Sparat.", lockedHint: "Rörelser före senaste inventering eller låsdatum kan inte ändras.",
+      list: "Lagerlista",
+    },
+    count: {
+      intro: "Skriv ut inventeringslistan, räkna, och för in antalen. Värdet blir det lägsta av anskaffningsvärde (FIFO) och nettoförsäljningsvärde per artikel.",
+      date: "Inventeringsdag (sista dagen i en månad)", sheet: "Inventeringslista", counted: "Räknat antal", book: "Enligt rörelser", nrv: "Nettoförsäljningsvärde per enhet (kr)",
+      rule97: "Ta upp lagret till 97 % av anskaffningsvärdet (IL 17:4, K2 12.5)", account: "Lagerkonto", changeAccount: "Konto för lagerförändring",
+      check: "Beräkna", cost: "Anskaffningsvärde", value: "Lagervärde", before: "Bokfört före", change: "Lagerförändring", post: "Bokför inventering",
+      done: "Inventeringen är bokförd.", history: "Inventeringar", empty: "Inga inventeringar ännu.",
     },
   },
   rotRut: {
@@ -404,6 +449,12 @@ const sv = {
     invalid: (f: string) => `Ogiltigt värde: ${f}`, conflict: (m: string) => `Konflikt: ${m}`, locked: (m: string) => `Låst: ${m}`,
     vault: (m: string) => `Dokumentvalvet: ${m}`, keys: (m: string) => `Nyckeltjänsten: ${m}`, network: (m: string) => `Anropet misslyckades: ${m}`,
     fields: {
+      "accounts.cost": "tillgångskonto (1000–1399)", "accounts.accumulated": "konto för ackumulerade avskrivningar (1000–1399, inte tillgångskontot)", "accounts.expense": "kostnadskonto (7700–7899)",
+      acquired: "anskaffningsdatum", inUse: "datum taget i bruk (tidigast anskaffningsdagen)", residual: "restvärde (lägre än anskaffningsvärdet)", lifeMonths: "nyttjandeperiod (1–1 200 månader)",
+      openingDepreciation: "tidigare avskrivet (högst anskaffningsvärdet minus restvärdet)", depreciated: "tillgången har avskrivningar", periodDone: "perioden är redan avskriven",
+      nothingDue: "inget att skriva av för perioden", disposed: "tillgången är redan avyttrad", proceeds: "försäljningspris", proceedsAccount: "konto för betalningen",
+      depreciatedAfterDate: "det finns avskrivningar efter datumet", "inventory.module": "lager är avstängt", qty: "antal",
+      unitCost: "à-pris", counted: "dagen är inventerad eller låst", "rows.missing": "alla artiklar i lager måste inventeras", changeAccount: "konto för lagerförändring",
       "hus.currency": "ROT/RUT kräver en faktura i SEK", "hus.buyer": "ROT/RUT gäller bara privatpersoner", "hus.params": "ROT/RUT-parametrar saknas för datumet",
       "hus.lineParts": "ROT/RUT-uppgift per rad", "hus.lineParts[]": "typ av arbete passar inte ROT/RUT-typen", "hus.buyers": "köpare (1–100)", "hus.buyers[]": "en köpare saknar uppgifter eller andel",
       "hus.shares": "köparnas andelar ska bli 100 %", "hus.property": "bostaden (krävs för ROT, inte för RUT)", "hus.labour": "minst en rad med arbete krävs",

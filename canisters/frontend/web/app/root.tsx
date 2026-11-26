@@ -16,10 +16,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const lang = langFromPath(useLocation().pathname);
   return (
     // The head script sets data-theme / classes on <html> before hydration.
-    <html lang={lang} suppressHydrationWarning>
+    <html lang={lang} translate="no" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* The texts are written in Swedish and English already; browser translation breaks React updates. */}
+        <meta name="google" content="notranslate" />
         <meta name="theme-color" content="#020d18" />
         <script dangerouslySetInnerHTML={{ __html: HEAD_SCRIPT }} />
         <SeoHead />

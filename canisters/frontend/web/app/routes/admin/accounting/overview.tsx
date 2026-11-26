@@ -130,11 +130,12 @@ function MonthChart({ balances, kinds, months }: { balances: BalanceRow[]; kinds
               );
             })}
           </svg>
-          <table className="sr-only">
+          {/* A table ignores height/overflow, so the visually hidden box is a wrapper div. */}
+          <div className="sr-only"><table>
             <caption>{t.overview.chart}</caption>
             <thead><tr><th scope="col">{t.common.period}</th><th scope="col">{t.overview.revenue}</th><th scope="col">{t.overview.costs}</th></tr></thead>
             <tbody>{series.map((s, i) => <tr key={i}><th scope="row">{months[i]}</th><td>{formatOre(s.rev)}</td><td>{formatOre(s.cost)}</td></tr>)}</tbody>
-          </table>
+          </table></div>
         </>
       )}
     </section>

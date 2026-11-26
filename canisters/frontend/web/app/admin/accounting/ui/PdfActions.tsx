@@ -8,7 +8,8 @@ import type { Job } from "../pdf/types";
 import { Dialog } from "./Dialog";
 import { Toast } from "../../toast";
 
-export function PdfActions({ job, fileName, label, preview = true }: { job: () => Promise<Job>; fileName: string; label?: string; preview?: boolean }) {
+/** `compact`: a smaller button for table rows. */
+export function PdfActions({ job, fileName, label, preview = true, compact = false }: { job: () => Promise<Job>; fileName: string; label?: string; preview?: boolean; compact?: boolean }) {
   const t = useAccT();
   const err = useErr();
   const [busy, setBusy] = useState(false);
@@ -29,11 +30,11 @@ export function PdfActions({ job, fileName, label, preview = true }: { job: () =
 
   return (
     <>
-      <button type="button" className="btn btn-secondary" disabled={busy} onClick={async () => { const b = await make(); if (b) saveFile(b, fileName); }}>
-        <IconDownload className="h-5 w-5" /> {busy ? t.common.generating : label ?? t.common.downloadPdf}
+      <button type="button" className={`btn btn-secondary${compact ? " whitespace-nowrap px-3 py-1 text-sm" : ""}`} disabled={busy} onClick={async () => { const b = await make(); if (b) saveFile(b, fileName); }}>
+        <IconDownload className={compact ? "h-4 w-4" : "h-5 w-5"} /> {busy ? t.common.generating : label ?? t.common.downloadPdf}
       </button>
       {preview && (
-        <button type="button" className="btn btn-secondary" disabled={busy} onClick={async () => { const b = await make(); if (b) setUrl(URL.createObjectURL(b)); }}>
+        <button type="button" className={`btn btn-secondary${compact ? " px-3 py-1 text-sm" : ""}`} disabled={busy} onClick={async () => { const b = await make(); if (b) setUrl(URL.createObjectURL(b)); }}>
           {t.common.preview}
         </button>
       )}

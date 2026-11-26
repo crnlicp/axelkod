@@ -5,7 +5,7 @@ const en: AccDict = {
   workspace: { label: "Workspace", site: "Website", accounting: "Accounting" },
   nav: {
     label: "Accounting", overview: "Overview", groupDaily: "Daily", groupPeriods: "Periods", groupRegisters: "Registers and archive",
-    ledger: "Bookkeeping", sales: "Sales", purchases: "Purchases", bank: "Bank & tax account", vat: "VAT", payroll: "Payroll", rotRut: "ROT/RUT", settings: "Settings",
+    ledger: "Bookkeeping", sales: "Sales", purchases: "Purchases", bank: "Bank & tax account", vat: "VAT", payroll: "Payroll", rotRut: "ROT/RUT", assets: "Assets & inventory", guide: "Documentation", settings: "Settings",
   },
   shell: {
     year: "Fiscal year", noYear: "No fiscal year", search: "Search", searchHint: "Search a voucher (A-12) or a page",
@@ -53,6 +53,7 @@ const en: AccDict = {
     filter: { all: "All", unpaid: "Unpaid", overdue: "Overdue", credit: "Credit notes" },
     quantity: "Qty", number: "No.", customer: "Customer", issueDate: "Date", due: "Due", total: "Amount", balance: "Balance", validUntil: "Valid until",
     editor: {
+      required: "Fill in the marked fields: customer, and for each line description, quantity and unit price.", 
       invoice: "New invoice", quote: "New quote", creditNote: "New credit note", draft: (n: number) => `Draft ${n}`, chooseCustomer: "Choose customer",
       newCustomer: "New customer", language: "Language", terms: "Payment terms (days)", currency: "Currency", fxRate: "Exchange rate to SEK",
       fxDate: "Rate date", fxHint: "The ECB rate (published on riksbank.se) or Nasdaq Stockholm's mid rate, normally the latest rate known on the supply date (ML 17:29).",
@@ -166,6 +167,7 @@ const en: AccDict = {
     },
   },
   vat: {
+    afterEnd: "Available when the period has ended.", 
     title: "VAT", tabs: { returns: "VAT return", ecSales: "EU sales list" },
     intro: "The boxes are computed from the ledger through the accounts' VAT codes, so manual vouchers count too. Öre are dropped in each box.",
     periods: "Periods", period: "Period", due: "Due", status: "Status", noPeriods: "Add a fiscal year first.",
@@ -207,6 +209,49 @@ const en: AccDict = {
     vies: {
       check: "Check in VIES", valid: "Valid in VIES", invalid: "Not valid in VIES", checked: (d: string) => `checked ${d}`,
       hint: "VIES only shows whether the number is valid today.", needNr: "Enter a VAT number first.",
+    },
+  },
+  assets: {
+    title: "Assets & inventory", tabs: { register: "Assets", stock: "Inventory", counts: "Stocktaking" },
+    register: {
+      intro: "Equipment depreciated by plan. The acquisition is booked as a purchase on the asset account; the register books depreciation and disposals in series I.",
+      add: "New asset", edit: "Edit asset", empty: "No assets yet. Add equipment once it is booked as a purchase.",
+      name: "Description", tag: "Asset number", acquired: "Acquired", inUse: "Taken into use", cost: "Acquisition cost (SEK)",
+      residual: "Residual value (SEK)", life: "Useful life (months)", fiveYear: "Use five years (K2 10.27)", opening: "Depreciated earlier (SEK)",
+      openingHint: "For assets from earlier years: accumulated depreciation before the register.",
+      costAccount: "Asset account", accumulatedAccount: "Accumulated depreciation account", expenseAccount: "Expense account",
+      note: "Note", depreciated: "Depreciated", bookValue: "Book value", status: "Status",
+      active: "Active", disposedOn: (d: string) => `Disposed ${d}`, done: "Fully depreciated",
+      small: (limit: string, year: string) => `Below half a price base amount (SEK ${limit}, ${year}) the asset may be expensed directly (account 5410), K2 10.5.`,
+      residualFive: "A residual value cannot be used with the five-year rule (K2 10.25).", saved: "The asset is saved.", deleted: "The asset is deleted.",
+      locked: "The asset has depreciation and cannot be changed.",
+    },
+    run: {
+      title: "Run depreciation for a period", period: "Period", preview: "Show basis", run: "Book depreciation",
+      none: "Nothing to depreciate for the period.", total: "Total", done: (ref: string) => `Depreciation is booked (${ref}).`,
+      history: "Periods run", catchUp: "Months that were not run are included in the next run.",
+    },
+    dispose: {
+      title: "Sell or scrap", date: "Date", proceeds: "Sale price excl. VAT (SEK)", how: "How was it paid?",
+      invoiced: "Invoiced on account 3973", cash: "Paid to account", scrap: "Scrapped (no price)", account: "Account", go: "Book disposal",
+      done: "The disposal is booked.", hint: "Cost and accumulated depreciation are removed; a gain goes to 3973 and a loss to 7973 (K2 7.13–7.14).",
+    },
+    schedule: { title: "Depreciation schedule", year: "Financial year", amount: "Depreciation", closing: "Closing value" },
+    stock: {
+      intro: "Inventory is periodic: purchases are expensed, moves keep quantities and costs, and the stocktaking books the change in stock.",
+      disabled: "Inventory is turned off. Turn the module on under Settings › Bookkeeping.",
+      items: "Stock items", addItem: "New stock item", sku: "Item no.", unit: "Unit", salesItem: "Sales item", noSalesItem: "None",
+      moves: "Stock moves", addMove: "New move", kind: "Type", qty: "Quantity", unitCost: "Unit cost (SEK)", onHand: "On hand", value: "Value (FIFO)",
+      kinds: { purchase: "Purchase", sale: "Sale", adjust: "Adjustment", returned: "Return", count: "Stocktaking" } as Record<string, string>,
+      emptyItems: "No stock items yet.", emptyMoves: "No moves yet.", saved: "Saved.", lockedHint: "Moves before the last stocktaking or the lock date cannot be changed.",
+      list: "Inventory list",
+    },
+    count: {
+      intro: "Print the count sheet, count, and enter the quantities. The value is the lower of cost (FIFO) and net realisable value per item.",
+      date: "Count date (last day of a month)", sheet: "Count sheet", counted: "Counted", book: "Per moves", nrv: "Net realisable value per unit (SEK)",
+      rule97: "Value the stock at 97 % of cost (IL 17:4, K2 12.5)", account: "Stock account", changeAccount: "Change in stock account",
+      check: "Calculate", cost: "Cost", value: "Stock value", before: "Booked before", change: "Change in stock", post: "Book stocktaking",
+      done: "The stocktaking is booked.", history: "Stocktakings", empty: "No stocktakings yet.",
     },
   },
   rotRut: {
@@ -406,6 +451,12 @@ const en: AccDict = {
     invalid: (f: string) => `Invalid value: ${f}`, conflict: (m: string) => `Conflict: ${m}`, locked: (m: string) => `Locked: ${m}`,
     vault: (m: string) => `Document vault: ${m}`, keys: (m: string) => `Key service: ${m}`, network: (m: string) => `The call failed: ${m}`,
     fields: {
+      "accounts.cost": "asset account (1000–1399)", "accounts.accumulated": "accumulated depreciation account (1000–1399, not the asset account)", "accounts.expense": "expense account (7700–7899)",
+      acquired: "acquisition date", inUse: "date taken into use (not before acquisition)", residual: "residual value (below cost)", lifeMonths: "useful life (1–1,200 months)",
+      openingDepreciation: "depreciated earlier (at most cost less residual)", depreciated: "the asset has depreciation", periodDone: "the period is already depreciated",
+      nothingDue: "nothing to depreciate for the period", disposed: "the asset is already disposed of", proceeds: "sale price", proceedsAccount: "payment account",
+      depreciatedAfterDate: "there is depreciation after the date", "inventory.module": "inventory is turned off", qty: "quantity",
+      unitCost: "unit cost", counted: "the date is counted or locked", "rows.missing": "every item in stock must be counted", changeAccount: "change in stock account",
       "hus.currency": "ROT/RUT needs an invoice in SEK", "hus.buyer": "ROT/RUT applies only to private persons", "hus.params": "no ROT/RUT parameters for the date",
       "hus.lineParts": "ROT/RUT detail per line", "hus.lineParts[]": "the type of work does not match the ROT/RUT type", "hus.buyers": "buyers (1–100)", "hus.buyers[]": "a buyer lacks details or a share",
       "hus.shares": "the buyers' shares must add up to 100 %", "hus.property": "the home (required for ROT, not for RUT)", "hus.labour": "at least one labour line is required",

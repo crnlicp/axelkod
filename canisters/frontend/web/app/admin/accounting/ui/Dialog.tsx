@@ -14,7 +14,13 @@ export function Dialog({ open, onClose, title, children, wide, footer }: {
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) { opener.current = document.activeElement; d.showModal(); }
+    if (open && !d.open) {
+      opener.current = document.activeElement;
+      d.showModal();
+      // showModal focuses the first control (the close button); a field marked
+      // data-autofocus (e.g. the search box) takes focus instead.
+      d.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+    }
     if (!open && d.open) { d.close(); (opener.current as HTMLElement | null)?.focus?.(); }
   }, [open]);
 

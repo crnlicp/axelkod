@@ -1,6 +1,7 @@
 // The ROT/RUT part of the invoice editor (A8): what each line is (labour with a work
 // type, material, other), the buyers with shares, and the home for ROT. Names,
 // personnummer and the property are encrypted with pii-v1 when the draft is saved.
+import { IconTrash } from "../../../components/Icons";
 import { HusKind, type HusInput, type HusLinePart } from "../../../bindings/accounting";
 import type { Accounting } from "../api";
 import { useAccT } from "../context";
@@ -128,7 +129,7 @@ export function HusEditor({ form, onChange, rows, allowed, bad }: {
                 <input aria-label={x.buyerShare(i + 1)} className="rounded-md border border-[var(--input-border)] bg-bg px-2 py-1.5 text-right" inputMode="decimal" value={b.share}
                   aria-invalid={problem === "shares" || bad("hus.shares") || undefined} onChange={(e) => setBuyer(b.key, { share: e.target.value })} />
                 <button type="button" aria-label={x.removeBuyer(i + 1)} disabled={form.buyers.length <= 1} onClick={() => set({ buyers: form.buyers.filter((y) => y.key !== b.key) })}
-                  className="justify-self-end text-xl leading-none text-muted hover:text-[var(--error)] disabled:opacity-30">×</button>
+                  title={x.removeBuyer(i + 1)} className="grid h-9 w-9 place-items-center justify-self-end rounded-full text-muted hover:bg-surface-strong hover:text-[var(--error)] disabled:opacity-30"><IconTrash className="h-5 w-5" /></button>
               </li>
             ))}
           </ol>

@@ -14,7 +14,7 @@ import { PdfActions } from "../../../../admin/accounting/ui/PdfActions";
 import { SectionTabs, payrollTabs } from "../../../../admin/accounting/ui/SectionTabs";
 import { Stepper, type Step } from "../../../../admin/accounting/ui/Stepper";
 import { DocRef, Money, MoneyInput, PageHead, input, label } from "../../../../admin/accounting/ui/kit";
-import { IconPlus } from "../../../../components/Icons";
+import { IconPlus, IconTrash } from "../../../../components/Icons";
 import { Toast } from "../../../../admin/toast";
 
 type Line = { code: string; text: string; qty: string; rate: bigint | null };
@@ -23,6 +23,9 @@ type Input = { employeeId: bigint; lines: Line[]; taxOverride: bigint | null };
 const qtyOf = (s: string) => BigInt(Math.round(Number(s.replace(",", ".") || "0") * 1000));
 const amountOf = (l: Line) => ((l.rate ?? 0n) * qtyOf(l.qty)) / 1000n;
 const toLines = (ls: PayLine[]): Line[] => ls.map((l) => ({ code: l.code, text: l.text ?? "", qty: String(Number(l.quantity) / 1000).replace(".", ","), rate: l.rate }));
+
+/** One compact size for every field in a pay line, so the row lines up with the amount fields. */
+const cell = "mt-1 w-full rounded-md border border-[var(--input-border)] bg-bg px-2 py-1.5 text-fg";
 
 export default function PayRunPage() {
   const t = useAccT();
@@ -92,7 +95,7 @@ export default function PayRunPage() {
     <>
       <PageHead title={run ? x.title(run.period) : t.payroll.title}><SectionTabs {...payrollTabs(t.payroll)} /></PageHead>
       {!run ? <p role="status">{t.common.loading}</p> : (
-        <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
+        <div className="grid items-start gap-6 lg:grid-cols-[17rem_1fr]">
           <div className="card self-start"><Stepper steps={steps} onSelect={setStep} />
             <p className="mt-3 text-sm text-muted">{t.payroll.runs.paymentDate}: {run.paymentDate}</p></div>
           <div className="space-y-4">
@@ -104,21 +107,21 @@ export default function PayRunPage() {
                     <fieldset key={String(inp.employeeId)} className="card space-y-3" disabled={!draft || !can}>
                       <legend className="px-1 text-lg font-semibold">{en}</legend>
                       {inp.lines.map((l, li) => (
-                        <div key={li} className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-12">
-                          <div className="sm:col-span-3"><label htmlFor={`l-${ei}-${li}-c`} className="text-sm text-muted">{x.line(x.code, li + 1)}</label>
-                            <select id={`l-${ei}-${li}-c`} aria-label={`${x.line(x.code, li + 1)}, ${en}`} className={input} value={l.code} aria-invalid={bad?.includes("code") || undefined} onChange={(e) => setLine(ei, li, { code: e.target.value })}>
+                        <div key={li} className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-12 sm:items-end">
+                          <div className="sm:col-span-3"><label htmlFor={`l-${ei}-${li}-c`} className="block truncate text-sm text-muted">{x.line(x.code, li + 1)}</label>
+                            <select id={`l-${ei}-${li}-c`} aria-label={`${x.line(x.code, li + 1)}, ${en}`} className={cell} value={l.code} aria-invalid={bad?.includes("code") || undefined} onChange={(e) => setLine(ei, li, { code: e.target.value })}>
                               {items.map((it) => <option key={it.code} value={it.code}>{it.code} – {it.name}</option>)}
                             </select></div>
-                          <div className="sm:col-span-3"><label htmlFor={`l-${ei}-${li}-t`} className="text-sm text-muted">{x.line(x.text, li + 1)}</label>
-                            <input id={`l-${ei}-${li}-t`} aria-label={`${x.line(x.text, li + 1)}, ${en}`} className={input} maxLength={100} value={l.text} onChange={(e) => setLine(ei, li, { text: e.target.value })} /></div>
-                          <div className="sm:col-span-2"><label htmlFor={`l-${ei}-${li}-q`} className="text-sm text-muted">{x.line(x.quantity, li + 1)}</label>
-                            <input id={`l-${ei}-${li}-q`} aria-label={`${x.line(x.quantity, li + 1)}, ${en}`} inputMode="decimal" className={input} value={l.qty} onChange={(e) => setLine(ei, li, { qty: e.target.value })} /></div>
-                          <div className="sm:col-span-2"><span className="text-sm text-muted">{x.line(x.rate, li + 1)}</span>
-                            <MoneyInput labelText={`${x.line(x.rate, li + 1)}, ${en}`} allowNegative value={l.rate} onChange={(v) => setLine(ei, li, { rate: v })} /></div>
-                          <div className="flex items-end justify-between gap-2 sm:col-span-2">
-                            <span className="pb-2 tabular-nums"><Money ore={amountOf(l)} /></span>
-                            <button type="button" aria-label={`${x.removeLine(li + 1)}, ${en}`} className="text-sm text-[var(--error)] underline" onClick={() => setInputs(inputs.map((v, i) => (i === ei ? { ...v, lines: v.lines.filter((_, j) => j !== li) } : v)))}>
-                              {x.removeLine(li + 1)}</button>
+                          <div className="sm:col-span-3"><label htmlFor={`l-${ei}-${li}-t`} className="block truncate text-sm text-muted">{x.line(x.text, li + 1)}</label>
+                            <input id={`l-${ei}-${li}-t`} aria-label={`${x.line(x.text, li + 1)}, ${en}`} className={cell} maxLength={100} value={l.text} onChange={(e) => setLine(ei, li, { text: e.target.value })} /></div>
+                          <div className="sm:col-span-2"><label htmlFor={`l-${ei}-${li}-q`} className="block truncate text-sm text-muted">{x.line(x.quantity, li + 1)}</label>
+                            <input id={`l-${ei}-${li}-q`} aria-label={`${x.line(x.quantity, li + 1)}, ${en}`} inputMode="decimal" className={cell} value={l.qty} onChange={(e) => setLine(ei, li, { qty: e.target.value })} /></div>
+                          <div className="sm:col-span-2"><span className="block truncate text-sm text-muted">{x.line(x.rate, li + 1)}</span>
+                            <MoneyInput className="mt-1" labelText={`${x.line(x.rate, li + 1)}, ${en}`} allowNegative value={l.rate} onChange={(v) => setLine(ei, li, { rate: v })} /></div>
+                          <div className="flex items-center justify-between gap-2 sm:col-span-2 sm:pb-1">
+                            <span className="tabular-nums"><Money ore={amountOf(l)} /></span>
+                            <button type="button" aria-label={`${x.removeLine(li + 1)}, ${en}`} title={x.removeLine(li + 1)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-strong hover:text-[var(--error)]" onClick={() => setInputs(inputs.map((v, i) => (i === ei ? { ...v, lines: v.lines.filter((_, j) => j !== li) } : v)))}>
+                              <IconTrash className="h-5 w-5" /></button>
                           </div>
                         </div>
                       ))}
@@ -193,7 +196,7 @@ function Review({ run, employees, items }: { run: PayRun; employees: Employee[];
                 <td className="py-1">{s.name}</td><td className="text-right"><Money ore={s.cash} /></td><td className="text-right"><Money ore={s.benefits} /></td>
                 <td className="text-right"><Money ore={s.tax} /></td><td className="text-right font-semibold"><Money ore={s.net} /></td>
                 <td className="text-right"><Money ore={s.fees} /></td><td>{x.category[s.feeCategory]}</td>
-                <td><PdfActions preview={false} label={x.payslip} fileName={`lonespecifikation-${run.period}-${s.employeeId}.pdf`} job={async () => {
+                <td className="py-1 text-right"><PdfActions compact preview={false} label={x.payslip} fileName={`lonespecifikation-${run.period}-${s.employeeId}.pdf`} job={async () => {
                   const e = employees.find((v) => v.id === s.employeeId);
                   const pnr = e ? await decryptPii(ctx.acc, e.personnummerEnc) : "";
                   return {
