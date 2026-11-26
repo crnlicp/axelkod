@@ -273,6 +273,15 @@ export const IconBank = (p: IconProps) => (
   </Icon>
 );
 
+export const IconPeople = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3.5,19 C3.5,15.5 6,13.5 9,13.5 C12,13.5 14.5,15.5 14.5,19" />
+    <circle cx="17" cy="9" r="2.5" />
+    <path d="M15.5,13.6 C18.3,13.4 20.5,15.3 20.5,18.5" />
+  </Icon>
+);
+
 export const IconPercent = (p: IconProps) => (
   <Icon {...p}>
     <path d="M18.5,5.5 L5.5,18.5" />

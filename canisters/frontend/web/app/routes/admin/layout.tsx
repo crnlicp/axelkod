@@ -7,7 +7,7 @@ import { AccSessionCtx, AdminCtx, useSession, type AdminContext } from "../../ad
 import type { AccSession } from "../../admin/accounting/context";
 import accSv from "../../admin/accounting/i18n/sv";
 import accEn from "../../admin/accounting/i18n/en";
-import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconBank, IconPercent, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
+import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconBank, IconPercent, IconPeople, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
 import { LogoSymbol } from "../../components/Logo";
 
 export function meta() {
@@ -124,9 +124,11 @@ function siteNav(t: ReturnType<typeof useAdminLang>["t"], unread: number | null)
 }
 
 /** Ekonomi navigation by how often the work happens; filtered by role (the canister enforces it too). */
-function accountingNav(lang: AdminLang, role: Role): NavGroup[] {
+function accountingNav(lang: AdminLang, role: Role, payrollOn: boolean): NavGroup[] {
   const n = (lang === "en" ? accEn : accSv).nav;
   const books = role !== Role.payroll;
+  // Lön is hidden until the module is on (D7); the payroll role always sees it.
+  const pay = role === Role.payroll || (payrollOn && (role === Role.owner || role === Role.auditor));
   return [
     { items: [{ to: "/admin/accounting", end: true, label: n.overview, icon: IconChart }] },
     ...(books ? [{ title: n.groupDaily, items: [
@@ -134,8 +136,10 @@ function accountingNav(lang: AdminLang, role: Role): NavGroup[] {
       { to: "/admin/accounting/purchases", label: n.purchases, icon: IconPaperclip },
       { to: "/admin/accounting/bank", label: n.bank, icon: IconBank },
       { to: "/admin/accounting/ledger", label: n.ledger, icon: IconLedger },
-    ] }, { title: n.groupPeriods, items: [
-      { to: "/admin/accounting/vat", label: n.vat, icon: IconPercent },
+    ] }] : []),
+    ...(books || pay ? [{ title: n.groupPeriods, items: [
+      ...(books ? [{ to: "/admin/accounting/vat", label: n.vat, icon: IconPercent }] : []),
+      ...(pay ? [{ to: "/admin/accounting/payroll", label: n.payroll, icon: IconPeople }] : []),
     ] }] : []),
     { items: [{ to: "/admin/accounting/settings", label: n.settings, icon: IconSliders }] },
   ];
@@ -223,6 +227,12 @@ function AdminRoot() {
   const accSession = session.state === "admin" ? session.accounting : null;
   const acc = useMemo<AccSession | null>(() => accSession, // eslint-disable-line react-hooks/exhaustive-deps
     [accSession?.principal, accSession?.role]);
+  // The Lön module flag (D7); re-read on navigation so turning it on in settings shows it.
+  const [payrollOn, setPayrollOn] = useState(false);
+  useEffect(() => {
+    if (!acc || !pathname.startsWith("/admin/accounting")) return;
+    acc.acc.getSettings().then((r) => { if (r.__kind__ === "ok") setPayrollOn(r.ok.settings.modules.payroll); }).catch(() => {});
+  }, [acc, pathname]);
 
   if (session.state === "loading") {
     return <Shell><p role="status">{t.loading}</p></Shell>;
@@ -252,7 +262,7 @@ function AdminRoot() {
   const workspace = pathname.startsWith("/admin/accounting") ? "accounting" : "site";
   // Accounting-only users never see the website admin; site-only admins never see Ekonomi.
   if (workspace === "site" && !session.site) return <Navigate to="/admin/accounting" replace />;
-  const groups = workspace === "site" ? siteNav(t, unread) : acc ? accountingNav(lang, acc.role) : [];
+  const groups = workspace === "site" ? siteNav(t, unread) : acc ? accountingNav(lang, acc.role, payrollOn) : [];
   const a = (lang === "en" ? accEn : accSv).shell;
 
   return (

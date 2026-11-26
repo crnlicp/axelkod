@@ -129,6 +129,7 @@ function Breadcrumb() {
 
 function NewMenu() {
   const t = useAccT();
+  const payroll = !!useAcc().data?.settings.modules.payroll;
   const { search } = useLocation();
   const ref = useRef<HTMLDetailsElement>(null);
   const close = () => ref.current?.removeAttribute("open");
@@ -143,6 +144,7 @@ function NewMenu() {
         <li><Link onClick={close} to={`/admin/accounting/purchases${search}`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.purchases.kind.supplierInvoice}</Link></li>
         <li><Link onClick={close} to={`/admin/accounting/ledger/new${search}`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newVoucher}</Link></li>
         <li><Link onClick={close} to={`/admin/accounting/ledger/new${search}${search ? "&" : "?"}upload=1`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.shell.newUpload}</Link></li>
+        {payroll && <li><Link onClick={close} to={`/admin/accounting/payroll${search}`} className="block rounded-lg px-3 py-2 text-fg no-underline hover:bg-surface-strong">{t.payroll.runs.new}</Link></li>}
       </ul>
     </details>
   );
@@ -185,6 +187,10 @@ const PAGES = (t: ReturnType<typeof useAccT>) => [
   { label: t.bank.tabs.rules, to: "/admin/accounting/bank/rules" },
   { label: t.bank.tabs.tax, to: "/admin/accounting/bank/tax" },
   { label: t.vat.tabs.returns, to: "/admin/accounting/vat" },
+  { label: t.payroll.tabs.runs, to: "/admin/accounting/payroll" },
+  { label: t.payroll.tabs.employees, to: "/admin/accounting/payroll/employees" },
+  { label: t.payroll.tabs.agi, to: "/admin/accounting/payroll/agi" },
+  { label: t.payroll.tabs.vaxa, to: "/admin/accounting/payroll/vaxa" },
   { label: t.vat.tabs.ecSales, to: "/admin/accounting/vat/ec-sales" },
   { label: t.ledger.tabs.vouchers, to: "/admin/accounting/ledger" },
   { label: t.ledger.tabs.journal, to: "/admin/accounting/ledger/journal" },

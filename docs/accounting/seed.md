@@ -4,7 +4,7 @@ Part of the systemdokumentation (spec §3.1; BFNAR 2013:2 to be checked under V2
 
 ## How seeding works
 
-- Seed version: `seed-2026.4` (history: .1 A2, .2 and .3 sales and purchases, .4 VAT boxes and import accounts). On every install or upgrade, if the stored version differs, missing accounts, VAT codes and series are **added**. Existing ones are never changed, because users may have edited them.
+- Seed version: `seed-2026.5` (history: .1 A2, .2 and .3 sales and purchases, .4 VAT boxes and import accounts, .5 payroll accounts and pay items). On every install or upgrade, if the stored version differs, missing accounts, VAT codes and series are **added**. Existing ones are never changed, because users may have edited them.
 - Accounts can be added (non-BAS, `bas = false`) and renamed or deactivated in Ekonomi › Inställningar. Numbers never change, and no account is ever deleted.
 
 ## Series
@@ -46,7 +46,7 @@ Each code has a return box: `boxBase` for accounts that carry the code, `boxVat`
 
 ## Accounts
 
-The 88 BAS 2026 accounts listed in `Seed.mo`, with names copied verbatim from BAS 2026 v1.1. The kind comes from the account class:
+The 95 BAS 2026 accounts listed in `Seed.mo`, with names copied verbatim from BAS 2026 v1.1. The kind comes from the account class:
 - 1xxx: asset
 - 20xx: equity
 - 21–29xx: liability
@@ -68,3 +68,29 @@ The 88 BAS 2026 accounts listed in `Seed.mo`, with names copied verbatim from BA
   - Each year starts the day after the previous one ends.
   - Status goes `open ⇄ closing → locked`, and years lock in order.
 - **Audit log:** append-only, with a hash chain (`acj-1` + SHA-256). It covers every change, sign-in and key derivation.
+
+## Pay items (lönearter)
+
+Added when missing, like accounts. The AGI fields are in [agi-fields.md](agi-fields.md).
+
+| Code | Name | Kind | Earns vacation pay | AGI | Account |
+|---|---|---|---|---|---|
+| LON / TIM / OT | Månadslön / Timlön / Övertid | cash | yes | 011 | 7210 |
+| SJK / KAR | Sjuklön / Karensavdrag (negative) | cash | yes | 011 | 7281 |
+| SEM | Semesterlön (från semesterlöneskuld) | cash | no | 011 | 2920 |
+| SEMT | Semestertillägg | cash | no | 011 | 7285 |
+| BIL | Bilförmån | benefit | no | 013 | – |
+| KOST / FRM | Kostförmån / Övriga skattepliktiga förmåner | benefit | no | 012 | – |
+| DRIV | Drivmedel vid bilförmån (marknadsvärde × 1,2) | benefit | no | 018 | – |
+| MIL | Skattefri bilersättning | tax-free | no | 050 (ticked) | 7331 |
+| TRA | Skattefritt traktamente | tax-free | no | 051 (ticked) | 7321 |
+| NAVD | Nettolöneavdrag | net deduction | no | – | 2890 |
+
+Benefits are not booked; they only raise tax and contributions. The pay run posts in series P:
+- Pay items to their accounts.
+- Tax to 2710.
+- Contributions 7510 → 2731.
+- Net pay to 2820.
+- Vacation accrual (procentregeln) 7290 → 2920, with its contributions 7519 → 2941.
+
+Payment posts 2820 → 1930 in series B.

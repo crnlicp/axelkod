@@ -13,6 +13,7 @@ import ChartMixin "mixins/Chart";
 import KeysMixin "mixins/Keys";
 import LedgerMixin "mixins/Ledger";
 import PartiesMixin "mixins/Parties";
+import PayrollMixin "mixins/Payroll";
 import PurchasesMixin "mixins/Purchases";
 import RolesMixin "mixins/Roles";
 import SalesMixin "mixins/Sales";
@@ -20,6 +21,7 @@ import SettingsMixin "mixins/Settings";
 import VatMixin "mixins/Vat";
 import B "types/Bank";
 import P "types/Purchases";
+import Pr "types/Payroll";
 import S "types/Sales";
 import V "types/Vat";
 import Types "types";
@@ -39,6 +41,7 @@ actor class Accounting(firstOwner : ?Principal) {
   let purchases : P.Purchases;
   let bank : B.Bank;
   let vat : V.Vat;
+  let payroll : Pr.Payroll;
 
   switch (firstOwner) {
     case (?p) {
@@ -65,6 +68,7 @@ actor class Accounting(firstOwner : ?Principal) {
       case (?x) { if (x.boxBase == null and x.boxVat == null) chart.vatCodes.add(c.code, { x with boxBase = c.boxBase; boxVat = c.boxVat }) };
     };
     for (s in Seed.series.values()) if (not chart.series.containsKey(s.code)) chart.series.add(s.code, s);
+    for (i in Seed.payItems().values()) if (not payroll.items.containsKey(i.code)) payroll.items.add(i.code, i);
     config.seedVersion := Seed.VERSION;
   };
 
@@ -80,6 +84,7 @@ actor class Accounting(firstOwner : ?Principal) {
   include PurchasesMixin(roles, config, chart, ledger, files, counters, audit, purchases);
   include BankMixin(roles, config, chart, ledger, files, counters, audit, sales, purchases, bank);
   include VatMixin(roles, config, chart, ledger, files, counters, audit, sales, purchases, bank, vat);
+  include PayrollMixin(roles, config, chart, ledger, files, counters, audit, payroll);
 
   // Rejects oversized calls before they run (saves cycles; every method still
   // validates its own input). A 500-line voucher fits well within this.

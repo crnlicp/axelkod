@@ -36,3 +36,11 @@ export const vatTabs = (t: { title: string; tabs: Record<"returns" | "ecSales", 
   label: t.title,
   tabs: [["/admin/accounting/vat", t.tabs.returns], ["/admin/accounting/vat/ec-sales", t.tabs.ecSales]] as const,
 });
+
+export const payrollTabs = (t: { title: string; tabs: Record<"runs" | "employees" | "agi" | "vaxa" | "settings", string> }) => ({
+  label: t.title,
+  tabs: [
+    ["/admin/accounting/payroll", t.tabs.runs], ["/admin/accounting/payroll/employees", t.tabs.employees], ["/admin/accounting/payroll/agi", t.tabs.agi],
+    ["/admin/accounting/payroll/vaxa", t.tabs.vaxa], ["/admin/accounting/payroll/settings", t.tabs.settings],
+  ] as const,
+});

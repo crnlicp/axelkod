@@ -3,10 +3,11 @@
 // VAT rates: Skatteverket "Momssatser och undantag från moms" (retrieved 2026-11-25).
 // VAT return boxes: Skatteverket "Fylla i momsdeklarationen" (V3, retrieved 2026-11-25),
 // mapping in docs/accounting/vat-boxes.md.
+import Pr "../types/Payroll";
 import Types "../types";
 
 module {
-  public let VERSION = "seed-2026.4";
+  public let VERSION = "seed-2026.5";
 
   public let accounts : [Types.Account] = [
     { number = 1220; name = "Inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
@@ -83,8 +84,15 @@ module {
     { number = 6570; name = "Bankkostnader"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7010; name = "Löner till kollektivanställda"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7210; name = "Löner till tjänstemän"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7220; name = "Löner till företagsledare"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7281; name = "Sjuklöner till tjänstemän"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7285; name = "Semesterlöner till tjänstemän"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7290; name = "Förändring av semesterlöneskuld"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7321; name = "Skattefria traktamenten, Sverige"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7331; name = "Skattefria bilersättningar"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7510; name = "Arbetsgivaravgifter 31,42 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7512; name = "Arbetsgivaravgifter för förmånsvärden"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 7519; name = "Arbetsgivaravgifter för semester- och löneskulder"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7533; name = "Särskild löneskatt för pensionskostnader"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7690; name = "Övriga personalkostnader"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 7832; name = "Avskrivningar på inventarier, verktyg och installationer"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
@@ -130,6 +138,28 @@ module {
     code("EXPT", "Tjänster till land utanför EU", 0, #exportServices, null, ?40, null),
     code("OMS", "Försäljning, köparen betalningsskyldig i Sverige", 0, #buyerLiableSE, null, ?41, null),
     code("MF", "Momsfri försäljning", 0, #exempt, null, ?42, null),
+  ];
+
+  func item(code : Text, name : Text, kind : Pr.ItemKind, vacationBearing : Bool, agiField : ?Nat, account : ?Nat) : Pr.PayItem {
+    { code; name; kind; vacationBearing; agiField; account; active = true };
+  };
+
+  /// Lönearter (A7). AGI fields from the Fältlista 1.1.18.1 (V7); accounts BAS 2026.
+  public func payItems() : [Pr.PayItem] = [
+    item("LON", "Månadslön", #cash, true, ?11, ?7210),
+    item("TIM", "Timlön", #cash, true, ?11, ?7210),
+    item("OT", "Övertid", #cash, true, ?11, ?7210),
+    item("SJK", "Sjuklön", #cash, true, ?11, ?7281),
+    item("KAR", "Karensavdrag", #cash, true, ?11, ?7281),
+    item("SEM", "Semesterlön (från semesterlöneskuld)", #cash, false, ?11, ?2920),
+    item("SEMT", "Semestertillägg", #cash, false, ?11, ?7285),
+    item("BIL", "Bilförmån", #benefit, false, ?13, null),
+    item("KOST", "Kostförmån", #benefit, false, ?12, null),
+    item("FRM", "Övriga skattepliktiga förmåner", #benefit, false, ?12, null),
+    item("DRIV", "Drivmedel vid bilförmån (marknadsvärde × 1,2)", #benefit, false, ?18, null),
+    item("MIL", "Skattefri bilersättning", #taxFree, false, ?50, ?7331),
+    item("TRA", "Skattefritt traktamente", #taxFree, false, ?51, ?7321),
+    item("NAVD", "Nettolöneavdrag", #netDeduction, false, null, ?2890),
   ];
 
   public let series : [Types.Series] = [

@@ -16,7 +16,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A4 | Sales | Done (2026-11-25) | `mops test` + Playwright (hash-stable re-render) |
 | A5 | Purchases, bank, tax account | Done (2026-11-25) | `mops test` + Playwright upload/match |
 | A6 | VAT and EU sales list | Done (2026-11-25) | Box fixtures, file checked in Skatteverket's test service |
-| A7 | Payroll, AGI, växa | Not started | Fee-category tests, AGI XML vs XSD, test service |
+| A7 | Payroll, AGI, växa | Done (2026-11-26), awaiting sign-off | Fee-category tests, AGI XML vs XSD, test service |
 | A8 | ROT/RUT | Not started | Cap tests, XML vs schema |
 | A9 | Assets, inventory, year-end, SRU, SIE4, backup | Not started | SIE4 round trip, restore test |
 | A10 | Mainnet (European subnet) | Not started | Approval at each step |
@@ -77,11 +77,11 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V4 | EU sales list file format and deadlines | Skatteverket "Periodisk sammanställning" + Filöverföring format description | A6 | Done (A6) |
 | V5 | VIES REST API, and whether IC HTTPS outcalls can reach it (IPv4/IPv6) | ec.europa.eu VIES technical info, `https-outcalls` skill | A6 | Done (A6) |
 | V6 | VAT and AGI deadlines including the 17th exceptions; prepaid tax dates | Skatteverket "Deklarations- och betalningsdagar" | A3 (deadlines) | Done (A3); preliminary tax Jan/Aug exception open |
-| V7 | AGI XML schema and current document version, field codes | Skatteverket developer portal (Utvecklarportalen): Arbetsgivardeklaration teknisk beskrivning + XSD | A7 | Not started |
-| V8 | Employer contribution rates 2026, youth reduction dates, rate and birth years | Skatteverket "Arbetsgivaravgifter" + the enacted law (SFS) | A7 | Not started |
-| V9 | Växa-stöd as a refund application from 2026 | Skatteverket "Växa-stöd" | A7 | Not started |
-| V10 | Tax tables open-data format | Skatteverket open data (Skattetabeller) | A7 | Not started |
-| V11 | Mileage, per diem, PBB/IBB 2026, car benefit formula | Skatteverket "Belopp och procent 2026" | A7 | Not started |
+| V7 | AGI XML schema and current document version, field codes | Skatteverket developer portal (Utvecklarportalen): Arbetsgivardeklaration teknisk beskrivning + XSD | A7 | Done (A7) |
+| V8 | Employer contribution rates 2026, youth reduction dates, rate and birth years | Skatteverket "Arbetsgivaravgifter" + the enacted law (SFS) | A7 | Done (A7) |
+| V9 | Växa-stöd as a refund application from 2026 | Skatteverket "Växa-stöd" | A7 | Done (A7) |
+| V10 | Tax tables open-data format | Skatteverket open data (Skattetabeller) | A7 | Done (A7) |
+| V11 | Mileage, per diem, PBB/IBB 2026, car benefit formula | Skatteverket "Belopp och procent 2026" | A7 | Done (A7) |
 | V12 | ROT/RUT 2026 rates and caps, XML schema, decision JSON, 2027 fields | Skatteverket "Rot och rut – företag" technical description | A8 | Not started |
 | V13 | Riksbank reference rate history | riksbank.se (referensränta) | A4 | Done (A4) |
 | V14 | Late-payment compensation and reminder-fee rules | Räntelagen (1975:635), Lag (1981:739) om ersättning för inkassokostnader | A4 | Done (A4) |
@@ -443,7 +443,48 @@ Sources checked first (V22–V24; see sources.md).
   - **Settings:** EU trade and turnover over 40 MSEK are still not settings; yearly VAT and deadlines keep the earliest date.
 
 
-### A7–A9
+### A7. Payroll, AGI, växa — Done (2026-11-26), awaiting your sign-off
+- [x] V7–V11 verified and recorded (AGI 1.1.18.2 and XSDs, fee categories incl. the youth reduction from April 2026, växa-stöd as a refund, tax tables 2026 file format, amounts 2026, semesterlagen)
+- [x] Payroll parameters as dated data (fee rates and birth-year categories, youth reduction window and cap, 1 000 kr threshold, växa caps, 12 % / 0,43 %, mileage, per diem, kostförmån, PBB) with source; owner can change them (Inställningar › Lön)
+- [x] Seed `seed-2026.5`: BAS payroll accounts 7210, 7220, 7281, 7285, 7290, 7321, 7331, 7512, 7519, 2941 (2710, 2731, 2820, 2920, 7510 exist) and pay items (lönearter) with AGI field codes
+- [x] Employees: plaintext name, birth year, employment dates, pay, tax table/column or flat %, vacation rule, owner/related flag, växa start; personnummer, address and bank account encrypted in the browser with `pii-v1`
+- [x] Tax tables: import the tables in use from Skatteverket's monthly file (fixed width, parsed in the browser), stored with the file hash
+- [x] Pay runs: period and payment date, lines per employee, calculation in `accounting` (tax by table/column or %, fee category by birth year and period, youth split at 25 000 kr, vacation accrual by procentregeln), review, approve (series P: salaries, tax 2710, fees 7510/7512 → 2731, net pay → 2820, vacation 7290/2920 and 7519/2941), mark paid (2820 → 1930)
+- [x] Payslip PDF (payslip@1) with what the AGI reports
+- [x] AGI per period: HU (487, 497) and IU per employee (215, 570, 011, 012, 013, 001, 050, 051 …) built in the browser from the approved runs, XML validated against the official XSD in unit tests; mark filed
+- [x] Växa-stöd: eligibility checks and a refund application record per employee and month (after the AGI is filed), with a summary PDF
+- [x] Tests: `mops test` fee categories (incl. someone born 2005 paid in May 2026 → 20,81 % up to 25 000), tax lookups, postings; unit tests for the tax-table parser and the AGI XML against the XSD and Skatteverket's example 15; Playwright pay run + axe
+- Result: Playwright 120/120 (this test file rerun after a fix). `mops test` accounting 84 (10 new):
+  - fee categories, including the spec case (born 2005, paid May 2026: 20.81 % up to 25 000 kr);
+  - tax-table lookups with real 2026 rows;
+  - a payslip and its balanced voucher;
+  - AGI sums matching Skatteverket's example 15 (487 = 18 881, 497 = 28 140);
+  - växa-stöd (Skatteverket's 7 423 kr example).
+
+  Other tests:
+  - `tests/unit/payroll.spec.ts` parses Skatteverket's 2026 monthly file (tables 29–42). It validates the AGI XML against the official XSD 1.1 and matches example 15 field by field.
+  - `tests/api/payroll-api.spec.ts` runs a full pay run on the local canister (youth and pension rates, P and B vouchers, AGI return, XML vs XSD, filed).
+  - `tests/e2e/payroll.spec.ts` covers employee encryption, the pay run, the payslip PDF and axe.
+- Deviations and notes:
+  - **Your manual check:** upload one AGI file in Skatteverket's test service (no login needed) and note the result in sources.md.
+  - **Not calculated:** sick pay and karensavdrag are entered as lines (no sjuklönelag calculator, not verified). The car-benefit value is entered, because Skatteverket's page gives only a worked example and no formula. Sammalöneregeln has no accrual; semestertillägg is entered as a line.
+  - **Open legal points:**
+    - SKV 433 does not say how the percentage rows are rounded; truncation to whole kronor is assumed.
+    - The 1 000 kr yearly threshold is stored but not applied automatically. Set "Inget skatteavdrag" for such payees.
+    - A travel-cost law change from 1 July 2026 is mentioned in the open-data catalog; the amounts page shows no change.
+    - The SFS number of the youth reduction law was not found (prop. 2025/26:66).
+  - **AGI scope:**
+    - No frånvarouppgift (absence records), corrections or removals.
+    - A return uses up its period. A pay run in a period with a return can no longer be approved.
+    - The period is the payment month, and the tax table year is the payment year.
+  - **Växa-stöd:** the employer sets "växa-stöd från" after checking the conditions. The canister checks the rest: not an owner or related person, within 24 months, AGI filed, full fee category. De minimis is not tracked.
+  - **Postings:** benefits are not booked (they only drive tax and contributions); contributions all go to 7510 (7512 is seeded but unused).
+  - **Personal data:** personnummer, address and bank account use `pii-v1`, so the auditor sees runs and returns but not the decrypted data.
+  - **Not done:** expense claims are not linked to employees yet.
+  - **Local test data:** the API test approved and paid runs and filed the AGI for periods 202612 and 202610 (each period can be used once). Older e2e runs left draft pay runs in 202611 on the local canister.
+
+
+### A8–A9
 Scope as in spec §13 phases 4–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.
 
 ### A10. Mainnet — Not started (approval at every step)

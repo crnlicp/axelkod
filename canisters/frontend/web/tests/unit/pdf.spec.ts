@@ -52,6 +52,8 @@ const fingerprints: Record<string, string> = {
   "reminder@1": "5acfe7bebc5591a3dad9e8cb04c6c855322a88cab28b7b837a689c4efb3794e0",
   "vat-return@1": "3c24cb3fa4ff1b65de8058483998c784e3892e177576e601f8fbf9f2eccbdc9f",
   "ec-sales@1": "0022690972733a5182e93f001b9e3a14a6f8f873d5ecac3ce4059c9a61a544b1",
+  "payslip@1": "dd236ff8896d690c7d25ba47670b4a6cf949cc662c1edc33120d7b48f63ca255",
+  "summary@1": "58ab012eebf6a303323501991f31f86e9480495c1f8305807ce9ef1c941c44c5",
 };
 
 const invoice: Snapshot = {
@@ -85,7 +87,20 @@ jobs.push(
     boxes: [{ box: 5n, amount: 10_000n }, { box: 10n, amount: 2_500n }, { box: 48n, amount: 200n }, { box: 49n, amount: 2_300n }] },
   { template: "ec-sales@1", meta: { ...meta, title: "Periodisk sammanställning", ref: "2610" }, facts: [["Period", "2610"]],
     rows: [{ vatNr: "DE262875793", buyer: "Kunde GmbH", goods: 16_400n, triangulation: 0n, services: 15_300n }] },
+  { template: "payslip@1", meta: { ...meta, title: "Lönespecifikation", ref: "202605" },
+    facts: [["Anställd", "Anna Andersson"], ["Personnummer", "198202252386"], ["Period", "202605"], ["Skatteavdrag", "Tabell 33, kolumn 1"]],
+    lines: [{ text: "Månadslön", quantity: "1", rate: 2_800_000n, amount: 2_800_000n }, { text: "Skattefri bilersättning", quantity: "10", rate: 2_500n, amount: 25_000n }],
+    totals: [["Kontant lön", 2_800_000n], ["Avdragen skatt", -560_000n], ["Att utbetala", 2_265_000n]], agi: [["Ruta 011", "28000 kr"], ["Ruta 050", "Ja"]] },
+  { template: "summary@1", meta: { ...meta, title: "Växa-stöd – underlag", ref: "202601" }, facts: [["Period", "202601"]],
+    table: { cols: ["Underlag", "Inom taket", "Återbetalning"], rows: [["42 500 kr", "35 000 kr", "7 423 kr"]] } },
 );
+
+test("payslip@1 shows the lines, the net and the AGI fields", async () => {
+  const text = pdfText(await render(jobs[10], assets)).join("\n");
+  for (const s of ["Lönespecifikation", "Anna Andersson", "Månadslön", "28\u00a0000,00", "Att utbetala", "22\u00a0650,00", "Redovisas till Skatteverket (arbetsgivardeklaration)", "Ruta 011"])
+    expect(text).toContain(s);
+});
+
 
 test("vat-return@1: sections and box headings as on Skatteverket's form; ec-sales@1 rows", async () => {
   const text = pdfText(await render(jobs[8], assets)).join("\n");

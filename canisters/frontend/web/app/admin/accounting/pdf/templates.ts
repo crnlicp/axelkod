@@ -102,6 +102,24 @@ async function render(job: Job, assets: Assets): Promise<Uint8Array> {
       }
       break;
     }
+    case "payslip@1": {
+      d.facts(job.facts);
+      d.y -= 6;
+      const cols: Col[] = [{ title: "Löneart", width: d.width - 60 - 80 - 90 }, { title: "Antal", width: 60, align: "right" }, { title: "À-pris", width: 80, align: "right" }, { title: "Belopp", width: 90, align: "right" }];
+      d.table(cols, job.lines.map((l) => [l.text, l.quantity, l.rate === null ? "" : formatOre(l.rate), formatOre(l.amount)]));
+      d.heading("Summering", 10);
+      d.table([{ title: "", width: d.width - 120 }, { title: "Kronor", width: 120, align: "right" }], job.totals.map(([k, v]) => [k, formatOre(v)]));
+      d.heading("Redovisas till Skatteverket (arbetsgivardeklaration)", 10);
+      d.facts(job.agi);
+      break;
+    }
+    case "summary@1": {
+      d.facts(job.facts);
+      d.y -= 6;
+      const w = Math.floor(d.width / job.table.cols.length);
+      d.table(job.table.cols.map((title, i) => ({ title, width: w, align: i === 0 ? undefined : "right" as const })), job.table.rows);
+      break;
+    }
     case "ec-sales@1": {
       d.facts(job.facts);
       const cols: Col[] = [{ title: "Köparens VAT-nummer", width: 110 }, { title: "Köpare", width: d.width - 110 - 210 },

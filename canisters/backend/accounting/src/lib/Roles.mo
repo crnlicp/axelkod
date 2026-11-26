@@ -28,6 +28,18 @@ module {
     case (_) { false };
   };
 
+  /// Payroll: employees, pay runs, AGI (spec §5: #payroll and the owner).
+  public func canPayroll(roles : Types.Roles, p : Principal) : Bool = switch (roleOf(roles, p)) {
+    case (?#owner or ?#payroll) { true };
+    case (_) { false };
+  };
+
+  /// Payroll reads: the auditor sees runs and returns (personal data stays encrypted).
+  public func canReadPayroll(roles : Types.Roles, p : Principal) : Bool = switch (roleOf(roles, p)) {
+    case (?#owner or ?#payroll or ?#auditor) { true };
+    case (_) { false };
+  };
+
   /// vetKey purposes (C16). Rotation adds "-v2" next to "-v1".
   public func canDerive(roles : Types.Roles, p : Principal, purpose : Text) : Bool {
     switch (roleOf(roles, p), purpose) {

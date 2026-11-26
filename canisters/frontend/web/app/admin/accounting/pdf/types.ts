@@ -34,4 +34,9 @@ export type Job =
   | { template: "reminder@1"; meta: Meta; reminder: Reminder }
   /** VAT return as filed: whole kronor per box, plus the facts of the lock (V3). */
   | { template: "vat-return@1"; meta: Meta; boxes: Box[]; facts: [string, string][] }
-  | { template: "ec-sales@1"; meta: Meta; rows: EslRow[]; facts: [string, string][] };
+  | { template: "ec-sales@1"; meta: Meta; rows: EslRow[]; facts: [string, string][] }
+  /** Payslip: the lines, tax, net, and what the AGI reports (V7). */
+  | { template: "payslip@1"; meta: Meta; facts: [string, string][]; lines: PayslipLine[]; totals: [string, bigint][]; agi: [string, string][] }
+  | { template: "summary@1"; meta: Meta; facts: [string, string][]; table: { cols: string[]; rows: string[][] } };
+
+export type PayslipLine = { text: string; quantity: string; rate: bigint | null; amount: bigint };

@@ -70,6 +70,26 @@ type Voucher =
    series: text;
    source: SourceRef;
  };
+type VaxaStatus = 
+ variant {
+   approved;
+   draft;
+   rejected;
+   submitted;
+ };
+type VaxaApplication = 
+ record {
+   base: int;
+   cap: int;
+   createdAt: Time;
+   employeeId: nat;
+   id: nat;
+   monthIndex: nat;
+   period: text;
+   refund: int;
+   status: VaxaStatus;
+   updatedAt: Time;
+ };
 type VatRow = 
  record {
    base: Money;
@@ -129,6 +149,11 @@ type VatCheck =
    valid: bool;
    vatNr: text;
  };
+type VacationRule = 
+ variant {
+   procentregeln;
+   sammaloneregeln;
+ };
 type Treatment = 
  variant {
    domestic;
@@ -146,6 +171,21 @@ type TransformArg =
    response: HttpResponse;
  };
 type Time = int;
+type TaxTableRow = 
+ record {
+   cols: vec nat;
+   from: nat;
+   percent: bool;
+   to: nat;
+ };
+type TaxTableInfo = 
+ record {
+   importedAt: Time;
+   rows: nat;
+   sha256: blob;
+   table: nat;
+   year: nat;
+ };
 type TaxSummary = 
  record {
    balance: Money;
@@ -181,6 +221,15 @@ type TaxEntry =
    kind: TaxKind;
    "text": text;
    voucherId: opt nat;
+ };
+type Tax = 
+ variant {
+   flat: nat;
+   none;
+   table: record {
+            column: nat;
+            table: nat;
+          };
  };
 type SupplierPayment = 
  record {
@@ -311,6 +360,12 @@ type SnapLine =
    unitPrice: Money;
    vatCode: text;
  };
+type SlipInput = 
+ record {
+   employeeId: nat;
+   lines: vec PayLine;
+   taxOverride: opt Money;
+ };
 type Series = 
  record {
    code: text;
@@ -340,6 +395,24 @@ type SalesDoc =
    retainUntil: Date;
    snapshot: Snapshot;
    voucherId: opt nat;
+ };
+type RunSummary = 
+ record {
+   employees: nat;
+   fees: Money;
+   gross: Money;
+   id: nat;
+   net: Money;
+   paymentDate: Date;
+   period: text;
+   status: RunStatus;
+   tax: Money;
+ };
+type RunStatus = 
+ variant {
+   approved;
+   draft;
+   paid;
  };
 type RuleInput = 
  record {
@@ -381,42 +454,110 @@ type Role =
 type Result_9 = 
  variant {
    err: Error;
-   ok: FiscalYear;
+   ok: record {mirrored: bool;};
  };
 type Result_8 = 
  variant {
    err: Error;
-   ok: record {mirrored: bool;};
- };
-type Result_7 = 
- variant {
-   err: Error;
    ok: TaxEntry;
  };
-type Result_64 = 
+type Result_77 = 
  variant {
    err: Error;
    ok: vec AuditEntry;
  };
-type Result_63 = 
+type Result_76 = 
  variant {
    err: Error;
    ok: Page_8;
  };
-type Result_62 = 
+type Result_75 = 
  variant {
    err: Error;
    ok: vec BalanceRow;
  };
-type Result_61 = 
+type Result_74 = 
  variant {
    err: Error;
    ok: nat;
  };
-type Result_60 = 
+type Result_73 = 
  variant {
    err: Error;
    ok: VatCheck;
+ };
+type Result_72 = 
+ variant {
+   err: Error;
+   ok: Reminder;
+ };
+type Result_71 = 
+ variant {
+   err: Error;
+   ok: EslPreview;
+ };
+type Result_70 = 
+ variant {
+   err: Error;
+   ok: EcSalesList;
+ };
+type Result_7 = 
+ variant {
+   err: Error;
+   ok: VaxaApplication;
+ };
+type Result_69 = 
+ variant {
+   err: Error;
+   ok: Attachment;
+ };
+type Result_68 = 
+ variant {
+   err: Error;
+   ok: opt CompanyProfile;
+ };
+type Result_67 = 
+ variant {
+   err: Error;
+   ok: Parameters;
+ };
+type Result_66 = 
+ variant {
+   err: Error;
+   ok: Params;
+ };
+type Result_65 = 
+ variant {
+   err: Error;
+   ok: PurchaseView;
+ };
+type Result_64 = 
+ variant {
+   err: Error;
+   ok: record {
+         lockDate: opt Date;
+         settings: AccountingSettings;
+       };
+ };
+type Result_63 = 
+ variant {
+   err: Error;
+   ok: opt VatCheck;
+ };
+type Result_62 = 
+ variant {
+   err: Error;
+   ok: VoucherView;
+ };
+type Result_61 = 
+ variant {
+   err: Error;
+   ok: ImportResult;
+ };
+type Result_60 = 
+ variant {
+   err: Error;
+   ok: TaxTableInfo;
  };
 type Result_6 = 
  variant {
@@ -426,55 +567,52 @@ type Result_6 =
 type Result_59 = 
  variant {
    err: Error;
-   ok: Reminder;
+   ok: DocView;
  };
 type Result_58 = 
  variant {
    err: Error;
-   ok: EslPreview;
+   ok: Page_7;
  };
 type Result_57 = 
  variant {
    err: Error;
-   ok: EcSalesList;
+   ok: vec Account;
  };
 type Result_56 = 
  variant {
    err: Error;
-   ok: Attachment;
+   ok: vec AgiReturn;
  };
 type Result_55 = 
  variant {
    err: Error;
-   ok: opt CompanyProfile;
+   ok: Page_6;
  };
 type Result_54 = 
  variant {
    err: Error;
-   ok: Parameters;
+   ok: vec BankAccount;
  };
 type Result_53 = 
  variant {
    err: Error;
-   ok: PurchaseView;
+   ok: vec Rule;
  };
 type Result_52 = 
  variant {
    err: Error;
-   ok: record {
-         lockDate: opt Date;
-         settings: AccountingSettings;
-       };
+   ok: Page_5;
  };
 type Result_51 = 
  variant {
    err: Error;
-   ok: opt VatCheck;
+   ok: vec Customer;
  };
 type Result_50 = 
  variant {
    err: Error;
-   ok: VoucherView;
+   ok: vec VoucherDraft;
  };
 type Result_5 = 
  variant {
@@ -484,52 +622,52 @@ type Result_5 =
 type Result_49 = 
  variant {
    err: Error;
-   ok: ImportResult;
+   ok: vec EcSalesList;
  };
 type Result_48 = 
  variant {
    err: Error;
-   ok: DocView;
+   ok: vec Employee;
  };
 type Result_47 = 
  variant {
    err: Error;
-   ok: Page_7;
+   ok: vec FiscalYear;
  };
 type Result_46 = 
  variant {
    err: Error;
-   ok: vec Account;
+   ok: vec Attachment;
  };
 type Result_45 = 
  variant {
    err: Error;
-   ok: Page_6;
+   ok: vec Item;
  };
 type Result_44 = 
  variant {
    err: Error;
-   ok: vec BankAccount;
+   ok: vec PayItem;
  };
 type Result_43 = 
  variant {
    err: Error;
-   ok: vec Rule;
+   ok: vec RunSummary;
  };
 type Result_42 = 
  variant {
    err: Error;
-   ok: Page_5;
+   ok: Page_4;
  };
 type Result_41 = 
  variant {
    err: Error;
-   ok: vec Customer;
+   ok: Page_3;
  };
 type Result_40 = 
  variant {
    err: Error;
-   ok: vec VoucherDraft;
+   ok: Page_2;
  };
 type Result_4 = 
  variant {
@@ -539,52 +677,52 @@ type Result_4 =
 type Result_39 = 
  variant {
    err: Error;
-   ok: vec EcSalesList;
+   ok: vec RoleView;
  };
 type Result_38 = 
  variant {
    err: Error;
-   ok: vec FiscalYear;
+   ok: Page_1;
  };
 type Result_37 = 
  variant {
    err: Error;
-   ok: vec Attachment;
+   ok: vec SalesDraft;
  };
 type Result_36 = 
  variant {
    err: Error;
-   ok: vec Item;
+   ok: vec Series;
  };
 type Result_35 = 
  variant {
    err: Error;
-   ok: Page_4;
+   ok: vec Supplier;
  };
 type Result_34 = 
  variant {
    err: Error;
-   ok: Page_3;
+   ok: Page;
  };
 type Result_33 = 
  variant {
    err: Error;
-   ok: Page_2;
+   ok: vec TaxTableInfo;
  };
 type Result_32 = 
  variant {
    err: Error;
-   ok: vec RoleView;
+   ok: vec VatCode;
  };
 type Result_31 = 
  variant {
    err: Error;
-   ok: Page_1;
+   ok: vec VatReturn;
  };
 type Result_30 = 
  variant {
    err: Error;
-   ok: vec SalesDraft;
+   ok: vec VaxaApplication;
  };
 type Result_3 = 
  variant {
@@ -594,52 +732,47 @@ type Result_3 =
 type Result_29 = 
  variant {
    err: Error;
-   ok: vec Series;
+   ok: AgiReturn;
  };
 type Result_28 = 
  variant {
    err: Error;
-   ok: vec Supplier;
+   ok: VatReturn;
  };
 type Result_27 = 
  variant {
    err: Error;
-   ok: Page;
+   ok: BankTx;
  };
 type Result_26 = 
  variant {
    err: Error;
-   ok: vec VatCode;
+   ok: SupplierPayment;
  };
 type Result_25 = 
  variant {
    err: Error;
-   ok: vec VatReturn;
+   ok: Voucher;
  };
 type Result_24 = 
  variant {
    err: Error;
-   ok: VatReturn;
+   ok: Snapshot;
  };
 type Result_23 = 
  variant {
    err: Error;
-   ok: BankTx;
- };
-type Result_22 = 
- variant {
-   err: Error;
-   ok: SupplierPayment;
+   ok: Payment;
  };
 type Result_21 = 
  variant {
    err: Error;
-   ok: Voucher;
+   ok: BankAccount;
  };
 type Result_20 = 
  variant {
    err: Error;
-   ok: Snapshot;
+   ok: Rule;
  };
 type Result_2 = 
  variant {
@@ -649,47 +782,52 @@ type Result_2 =
 type Result_19 = 
  variant {
    err: Error;
-   ok: Payment;
- };
-type Result_17 = 
- variant {
-   err: Error;
-   ok: BankAccount;
- };
-type Result_16 = 
- variant {
-   err: Error;
-   ok: Rule;
- };
-type Result_15 = 
- variant {
-   err: Error;
    ok: Customer;
  };
-type Result_14 = 
+type Result_18 = 
  variant {
    err: Error;
    ok: VoucherDraft;
  };
-type Result_13 = 
+type Result_17 = 
+ variant {
+   err: Error;
+   ok: Employee;
+ };
+type Result_16 = 
  variant {
    err: Error;
    ok: Item;
  };
-type Result_12 = 
+type Result_15 = 
+ variant {
+   err: Error;
+   ok: PayItem;
+ };
+type Result_14 = 
+ variant {
+   err: Error;
+   ok: PayRun;
+ };
+type Result_13 = 
  variant {
    err: Error;
    ok: SalesDraft;
  };
-type Result_11 = 
+type Result_12 = 
  variant {
    err: Error;
    ok: Supplier;
  };
-type Result_10 = 
+type Result_11 = 
  variant {
    err: Error;
    ok: CompanyProfile;
+ };
+type Result_10 = 
+ variant {
+   err: Error;
+   ok: FiscalYear;
  };
 type Result_1 = 
  variant {
@@ -817,6 +955,24 @@ type Preview =
    to: Date;
    warnings: vec Warning;
  };
+type Payslip = 
+ record {
+   agi: vec AgiField;
+   benefits: Money;
+   cash: Money;
+   employeeId: nat;
+   feeBase: Money;
+   feeCategory: FeeCategory;
+   fees: Money;
+   lines: vec PayLine;
+   name: text;
+   net: Money;
+   netDeductions: Money;
+   tax: Money;
+   taxFree: Money;
+   vacationAccrual: Money;
+   vacationFees: Money;
+ };
 type PaymentMethod = 
  variant {
    bankgiro;
@@ -851,6 +1007,38 @@ type Payment =
    salesDocId: nat;
    voucherId: nat;
  };
+type PayRun = 
+ record {
+   approvedAt: opt Time;
+   approvedBy: opt principal;
+   id: nat;
+   inputs: vec SlipInput;
+   paidVoucherId: opt nat;
+   paymentDate: Date;
+   period: text;
+   slips: vec Payslip;
+   status: RunStatus;
+   updatedAt: Time;
+   voucherId: opt nat;
+ };
+type PayLine = 
+ record {
+   amount: Money;
+   code: text;
+   quantity: int;
+   rate: Money;
+   "text": opt text;
+ };
+type PayItem = 
+ record {
+   account: opt nat;
+   active: bool;
+   agiField: opt nat;
+   code: text;
+   kind: ItemKind;
+   name: text;
+   vacationBearing: bool;
+ };
 type PayInput = 
  record {
    amount: Money;
@@ -858,6 +1046,11 @@ type PayInput =
    date: Date;
    purchaseId: nat;
    reference: opt text;
+ };
+type Pay = 
+ variant {
+   hourly: Money;
+   monthly: Money;
  };
 type PartySnapshot = 
  record {
@@ -871,6 +1064,44 @@ type PartySnapshot =
    orgNr: opt text;
    peppolId: opt text;
    vatNr: opt text;
+ };
+type Params = 
+ record {
+   feeFullBp: nat;
+   feePensionBp: nat;
+   flatTaxBp: nat;
+   mealBreakfast: Money;
+   mealFull: Money;
+   mealLunch: Money;
+   mileageBenefitCar: Money;
+   mileageElectric: Money;
+   mileageOwn: Money;
+   pensionAge: nat;
+   perDiemAfter3Months: Money;
+   perDiemFull: Money;
+   perDiemHalf: Money;
+   perDiemNight: Money;
+   prisbasbelopp: Money;
+   source: text;
+   vacationPercentBp: nat;
+   vacationSupplementBp: nat;
+   vaxaCap: Money;
+   vaxaCapBefore202405: Money;
+   vaxaMonths: nat;
+   vaxaRefundBp: nat;
+   year: nat;
+   yearThreshold: Money;
+   youth:
+    opt
+     record {
+       bp: nat;
+       cap: Money;
+       fromPeriod: text;
+       maxAge: nat;
+       minAge: nat;
+       toPeriod: text;
+     };
+   zeroBornBefore: nat;
  };
 type Parameters = 
  record {
@@ -951,6 +1182,13 @@ type Lang =
    en;
    sv;
  };
+type ItemKind = 
+ variant {
+   benefit;
+   cash;
+   netDeduction;
+   taxFree;
+ };
 type ItemInput = 
  record {
    account: nat;
@@ -1016,6 +1254,13 @@ type FiscalYear =
    start: Date;
    status: FiscalYearStatus;
  };
+type FeeCategory = 
+ variant {
+   full;
+   none;
+   pension;
+   youth;
+ };
 type EslRow = 
  record {
    buyer: text;
@@ -1051,6 +1296,51 @@ type Error =
    notAuthorized;
    notFound;
    vault: text;
+ };
+type EmployeeInput = 
+ record {
+   active: bool;
+   addressEnc: opt blob;
+   bankAccountEnc: opt blob;
+   birthYear: nat;
+   costCenter: opt text;
+   email: opt text;
+   employedFrom: Date;
+   employedTo: opt Date;
+   jamkning: opt text;
+   name: text;
+   ownerOrRelated: bool;
+   pay: Pay;
+   personnummerEnc: blob;
+   tax: Tax;
+   vacationDays: nat;
+   vacationRule: VacationRule;
+   vaxaFrom: opt text;
+   workplaceCity: opt text;
+   workplaceStreet: opt text;
+ };
+type Employee = 
+ record {
+   active: bool;
+   addressEnc: opt blob;
+   bankAccountEnc: opt blob;
+   birthYear: nat;
+   costCenter: opt text;
+   email: opt text;
+   employedFrom: Date;
+   employedTo: opt Date;
+   id: nat;
+   jamkning: opt text;
+   name: text;
+   ownerOrRelated: bool;
+   pay: Pay;
+   personnummerEnc: blob;
+   tax: Tax;
+   vacationDays: nat;
+   vacationRule: VacationRule;
+   vaxaFrom: opt text;
+   workplaceCity: opt text;
+   workplaceStreet: opt text;
  };
 type EcSalesList = 
  record {
@@ -1285,6 +1575,30 @@ type Attachment =
    vaultFileId: nat;
    wrappedKey: blob;
  };
+type AgiReturn = 
+ record {
+   createdAt: Time;
+   createdBy: principal;
+   filedAt: opt Time;
+   id: nat;
+   individuals: vec AgiIndividual;
+   period: text;
+   receiptRef: opt text;
+   runIds: vec nat;
+   sumFees: int;
+   sumTax: int;
+ };
+type AgiIndividual = 
+ record {
+   employeeId: nat;
+   fields: vec AgiField;
+   specNr: nat;
+ };
+type AgiField = 
+ record {
+   amount: int;
+   code: nat;
+ };
 type Address = 
  record {
    city: text;
@@ -1315,146 +1629,176 @@ type Accounting =
  service {
    /// Huvudbok input: the vouchers that touch one account, in registration order.
    accountVouchers: (fiscalYearId: nat, account: nat, offset: nat, limit:
-    nat) -> (Result_47) query;
+    nat) -> (Result_58) query;
    addAccount: (number: nat, name: text, vatCode: opt text, sruCode:
     opt text) -> (Result_3);
+   /// Recalculates with today's parameters and tables, posts series P and freezes the run.
+   approvePayRun: (id: nat) -> (Result_14);
    /// The audit trail of one record (e.g. "voucher", id), oldest first.
-   auditFor: (entity: text, id: nat) -> (Result_64) query;
-   auditLog: (offset: nat, limit: nat) -> (Result_63) query;
+   auditFor: (entity: text, id: nat) -> (Result_77) query;
+   auditLog: (offset: nat, limit: nat) -> (Result_76) query;
    /// Net amount per account and month: the trial balance and reports read this.
-   balances: (fiscalYearId: nat) -> (Result_62) query;
-   beginAttachment: (meta: AttachmentMeta) -> (Result_61);
+   balances: (fiscalYearId: nat) -> (Result_75) query;
+   beginAttachment: (meta: AttachmentMeta) -> (Result_74);
    /// Books a transaction with a rule or with counter lines that balance the bank line.
    bookBankTx: (txId: nat, ruleId: opt nat, counter: vec VoucherLine,
-    description: text) -> (Result_23);
+    description: text) -> (Result_27);
    /// Books a received document in one update: checks, takes the L number, posts the
    /// voucher with the original file attached. Under the cash method supplier invoices
    /// and credit notes are registered now and booked at payment.
-   bookPurchase: (x: PurchaseInput) -> (Result_53);
+   bookPurchase: (x: PurchaseInput) -> (Result_65);
    /// Books an entry against 1630. `account` is required for #other and ignored otherwise.
-   bookTaxEntry: (id: nat, account: opt nat) -> (Result_7);
+   bookTaxEntry: (id: nat, account: opt nat) -> (Result_8);
    /// Checks a VAT number in VIES (HTTPS outcall from one node) and stores the answer.
-   checkVatNumber: (vatNr: text) -> (Result_60);
-   confirmAttachment: (ticket: nat, vaultFileId: nat) -> (Result_56);
+   checkVatNumber: (vatNr: text) -> (Result_73);
+   confirmAttachment: (ticket: nat, vaultFileId: nat) -> (Result_69);
    /// A correction voucher in series C that references the original (5 kap. 5 §).
    /// `lines = null` reverses the original in full.
    correctVoucher: (id: nat, eventDate: Date, description: text, lines:
-    opt vec VoucherLine) -> (Result_21);
-   createFiscalYear: (start: Date, end: Date, changeover: bool) -> (Result_9);
+    opt vec VoucherLine) -> (Result_25);
+   /// Builds the return for a period from its approved runs (none: a zero return).
+   createAgiReturn: (period: text) -> (Result_29);
+   createFiscalYear: (start: Date, end: Date, changeover: bool) ->
+    (Result_10);
    /// A payment reminder for an overdue invoice. B2B: förseningsersättning once (1981:739 4 a §),
    /// and then no reminder fee (5 §). Otherwise the agreed reminder fee (2 §). Interest from the
    /// due date at the reference rate + 8 pp (Räntelagen 3, 6 §§); it is claimed, not booked.
-   createReminder: (invoiceId: nat, date: Date) -> (Result_59);
+   createReminder: (invoiceId: nat, date: Date) -> (Result_72);
+   /// One month for one employee, after the AGI for the period is filed (V9).
+   createVaxa: (period: text, employeeId: nat) -> (Result_7);
    /// A credit note draft with the invoice's lines; edit it for a partial credit.
-   creditDraftFrom: (invoiceId: nat) -> (Result_12);
+   creditDraftFrom: (invoiceId: nat) -> (Result_13);
    /// Rules are settings, not accounting records, so they may be removed (audited).
    deleteBankRule: (id: nat) -> (Result_5);
    deleteDraft: (id: nat) -> (Result_5);
+   deletePayRun: (id: nat) -> (Result_5);
    deleteSalesDraft: (id: nat) -> (Result_5);
    /// The vetKey for `purpose`, encrypted to the caller's transport key.
    deriveKey: (purpose: text, transportPublicKey: blob) -> (Result);
-   ecSalesPreview: (from: Date, to: Date) -> (Result_58) query;
+   ecSalesPreview: (from: Date, to: Date) -> (Result_71) query;
    /// Freezes the rows that were filed, with the contact details printed on the file.
-   fileEcSalesList: (x: EslFileInput) -> (Result_57);
-   getAttachment: (id: nat) -> (Result_56) query;
-   getCompany: () -> (Result_55) query;
-   getParameters: () -> (Result_54) query;
-   getPurchase: (id: nat) -> (Result_53) query;
-   getSalesDoc: (id: nat) -> (Result_48) query;
-   getSettings: () -> (Result_52) query;
-   getVatCheck: (vatNr: text) -> (Result_51) query;
-   getVoucher: (id: nat) -> (Result_50) query;
+   fileEcSalesList: (x: EslFileInput) -> (Result_70);
+   getAttachment: (id: nat) -> (Result_69) query;
+   getCompany: () -> (Result_68) query;
+   getParameters: () -> (Result_67) query;
+   getPayRun: (id: nat) -> (Result_14) query;
+   getPayrollParams: () -> (Result_66) query;
+   getPurchase: (id: nat) -> (Result_65) query;
+   getSalesDoc: (id: nat) -> (Result_59) query;
+   getSettings: () -> (Result_64) query;
+   getVatCheck: (vatNr: text) -> (Result_63) query;
+   getVoucher: (id: nat) -> (Result_62) query;
    /// Adds rows to an account; a row already imported (same date, amount, text and
    /// reference, and the same ordinal among identical rows) is skipped.
-   importBankRows: (accountId: nat, rows: vec Row) -> (Result_49);
-   importTaxRows: (rows: vec TaxRow) -> (Result_49);
-   invoiceDraftFromQuote: (quoteId: nat) -> (Result_12);
-   issueSalesDraft: (id: nat) -> (Result_48);
+   importBankRows: (accountId: nat, rows: vec Row) -> (Result_61);
+   importTaxRows: (rows: vec TaxRow) -> (Result_61);
+   /// One table of one year, parsed in the browser from Skatteverket's file; `sha256` is the file's.
+   importTaxTable: (year: nat, table: nat, rows: vec TaxTableRow, sha256:
+    blob) -> (Result_60);
+   invoiceDraftFromQuote: (quoteId: nat) -> (Result_13);
+   issueSalesDraft: (id: nat) -> (Result_59);
    /// Grundbok: registration order, optionally one series.
    journal: (fiscalYearId: nat, series: opt text, offset: nat, limit: 
-    nat) -> (Result_47) query;
+    nat) -> (Result_58) query;
    /// Links a document to a voucher after posting (the voucher itself stays unchanged).
    linkAttachment: (attachmentId: nat, voucherId: nat) -> (Result_5);
    /// Links a transaction to a voucher that already has the same amount on the bank account.
-   linkBankTx: (txId: nat, voucherId: nat) -> (Result_23);
+   linkBankTx: (txId: nat, voucherId: nat) -> (Result_27);
    /// Links a payment or refund to the voucher that has the same amount on 1630.
-   linkTaxEntry: (id: nat, voucherId: nat) -> (Result_7);
+   linkTaxEntry: (id: nat, voucherId: nat) -> (Result_8);
    /// Links the booked tax-account VAT entry (the amount on box 49, debited or credited).
-   linkVatPayment: (id: nat, taxEntryId: nat) -> (Result_24);
-   listAccounts: () -> (Result_46) query;
+   linkVatPayment: (id: nat, taxEntryId: nat) -> (Result_28);
+   listAccounts: () -> (Result_57) query;
+   listAgiReturns: () -> (Result_56) query;
    /// Newest first.
-   listAttachments: (offset: nat, limit: nat) -> (Result_45) query;
-   listBankAccounts: () -> (Result_44) query;
-   listBankRules: () -> (Result_43) query;
+   listAttachments: (offset: nat, limit: nat) -> (Result_55) query;
+   listBankAccounts: () -> (Result_54) query;
+   listBankRules: () -> (Result_53) query;
    listBankTxs: (accountId: opt nat, unmatchedOnly: bool, offset: nat, limit:
-    nat) -> (Result_42) query;
-   listCustomers: () -> (Result_41) query;
-   listDrafts: () -> (Result_40) query;
-   listEcSalesLists: () -> (Result_39) query;
-   listFiscalYears: () -> (Result_38) query;
+    nat) -> (Result_52) query;
+   listCustomers: () -> (Result_51) query;
+   listDrafts: () -> (Result_50) query;
+   listEcSalesLists: () -> (Result_49) query;
+   listEmployees: () -> (Result_48) query;
+   listFiscalYears: () -> (Result_47) query;
    /// Received files not yet used as evidence ("Att bokföra"), newest first.
-   listInbox: () -> (Result_37) query;
-   listItems: () -> (Result_36) query;
-   listPayments: (offset: nat, limit: nat) -> (Result_35) query;
+   listInbox: () -> (Result_46) query;
+   listItems: () -> (Result_45) query;
+   listPayItems: () -> (Result_44) query;
+   listPayRuns: () -> (Result_43) query;
+   listPayments: (offset: nat, limit: nat) -> (Result_42) query;
    listPurchases: (kinds: vec PurchaseKind, offset: nat, limit: nat) ->
-    (Result_34) query;
-   listReminders: (offset: nat, limit: nat) -> (Result_33) query;
-   listRoles: () -> (Result_32) query;
+    (Result_41) query;
+   listReminders: (offset: nat, limit: nat) -> (Result_40) query;
+   listRoles: () -> (Result_39) query;
    listSalesDocs: (kind: opt DocKind, offset: nat, limit: nat) ->
-    (Result_31) query;
-   listSalesDrafts: () -> (Result_30) query;
-   listSeries: () -> (Result_29) query;
-   listSuppliers: () -> (Result_28) query;
-   listTaxEntries: (offset: nat, limit: nat) -> (Result_27) query;
-   listVatCodes: () -> (Result_26) query;
-   listVatReturns: () -> (Result_25) query;
+    (Result_38) query;
+   listSalesDrafts: () -> (Result_37) query;
+   listSeries: () -> (Result_36) query;
+   listSuppliers: () -> (Result_35) query;
+   listTaxEntries: (offset: nat, limit: nat) -> (Result_34) query;
+   listTaxTables: () -> (Result_33) query;
+   listVatCodes: () -> (Result_32) query;
+   listVatReturns: () -> (Result_31) query;
+   listVaxa: () -> (Result_30) query;
    /// Locks the period in one update: stores the boxes and the source hash, posts the
    /// settlement voucher (series M, dated the last day) and moves the lock date there.
-   lockVatReturn: (from: Date, to: Date, note: opt text) -> (Result_24);
+   lockVatReturn: (from: Date, to: Date, note: opt text) -> (Result_28);
+   markAgiFiled: (id: nat, receiptRef: opt text) -> (Result_29);
+   /// Net pay leaves the bank account (series B, 2820 → 1930).
+   markPayRunPaid: (id: nat, date: Date) -> (Result_14);
    /// Records that the return was submitted in Skatteverket's e-service.
-   markVatReturnFiled: (id: nat, receiptRef: opt text) -> (Result_24);
+   markVatReturnFiled: (id: nat, receiptRef: opt text) -> (Result_28);
    /// A deposit pays an invoice. `amount` is in the invoice currency (only needed for
    /// foreign-currency invoices; SEK invoices take the whole deposit).
    matchBankToInvoice: (txId: nat, salesDocId: nat, amount: opt Money) ->
-    (Result_23);
+    (Result_27);
    /// A withdrawal pays a supplier invoice or an expense claim.
    matchBankToPurchase: (txId: nat, purchaseId: nat, amount: opt Money) ->
-    (Result_23);
+    (Result_27);
    me: () -> (Me) query;
    /// Pays a supplier invoice or an expense claim from the bank (1930). Bank matching
    /// uses the same posting with the matched bank account.
-   paySupplier: (p: PayInput) -> (Result_22);
-   postDraft: (id: nat) -> (Result_21);
-   postVoucher: (v: VoucherInput) -> (Result_21);
+   paySupplier: (p: PayInput) -> (Result_26);
+   postDraft: (id: nat) -> (Result_25);
+   postVoucher: (v: VoucherInput) -> (Result_25);
    /// The document as it would be issued today (totals, notes, OCR), without taking a number.
-   previewSalesDraft: (id: nat) -> (Result_20) query;
-   registerPayment: (p: PaymentInput) -> (Result_19);
-   removeRole: (p: principal) -> (Result_8);
-   saveBankAccount: (id: opt nat, a: BankAccountInput) -> (Result_17);
-   saveBankRule: (id: opt nat, r: RuleInput) -> (Result_16);
+   previewSalesDraft: (id: nat) -> (Result_24) query;
+   registerPayment: (p: PaymentInput) -> (Result_23);
+   removeRole: (p: principal) -> (Result_9);
+   saveBankAccount: (id: opt nat, a: BankAccountInput) -> (Result_21);
+   saveBankRule: (id: opt nat, r: RuleInput) -> (Result_20);
    /// Creates (id = null) or updates a customer. Issued documents keep their own snapshot.
-   saveCustomer: (id: opt nat, c: CustomerInput) -> (Result_15);
+   saveCustomer: (id: opt nat, c: CustomerInput) -> (Result_19);
    /// Creates (id = null) or replaces a draft. Only sizes are checked here; the
    /// full rules run when it is posted.
-   saveDraft: (id: opt nat, v: VoucherInput) -> (Result_14);
-   saveItem: (id: opt nat, i: ItemInput) -> (Result_13);
+   saveDraft: (id: opt nat, v: VoucherInput) -> (Result_18);
+   saveEmployee: (id: opt nat, e: EmployeeInput) -> (Result_17);
+   saveItem: (id: opt nat, i: ItemInput) -> (Result_16);
+   savePayItem: (i: PayItem) -> (Result_15);
+   /// Saves a draft and calculates every payslip. The period is the payment month (AGI).
+   savePayRun: (id: opt nat, paymentDate: Date, inputs: vec SlipInput) ->
+    (Result_14);
    saveSalesDraft: (id: opt nat, kind: DocKind, input: DocInput, creditOf:
-    opt nat, quoteOf: opt nat) -> (Result_12);
-   saveSupplier: (id: opt nat, s: SupplierInput) -> (Result_11);
-   setCompany: (c: CompanyProfile) -> (Result_10);
-   setFiscalYearStatus: (id: nat, status: FiscalYearStatus) -> (Result_9);
+    opt nat, quoteOf: opt nat) -> (Result_13);
+   saveSupplier: (id: opt nat, s: SupplierInput) -> (Result_12);
+   setCompany: (c: CompanyProfile) -> (Result_11);
+   setFiscalYearStatus: (id: nat, status: FiscalYearStatus) -> (Result_10);
    /// Moves the lock date forward (never back), up to today.
    setLockDate: (date: Date) -> (Result_5);
    /// Owner only; every change is audited with its source.
    setParameters: (p: Parameters) -> (Result_5);
+   /// Owner only, audited with its source (rates are legal data, V8–V11).
+   setPayrollParams: (p: Params) -> (Result_5);
    setQuoteStatus: (id: nat, status: variant {
                                        accepted;
                                        declined;
                                      }) -> (Result_5);
-   setRole: (p: principal, role: Role) -> (Result_8);
+   setRole: (p: principal, role: Role) -> (Result_9);
    setSettings: (s: AccountingSettings) -> (Result_5);
    /// Corrects the kind of an entry that is not booked yet.
-   setTaxKind: (id: nat, kind: TaxKind) -> (Result_7);
+   setTaxKind: (id: nat, kind: TaxKind) -> (Result_8);
+   setVaxaStatus: (id: nat, status: VaxaStatus) -> (Result_7);
    /// Called by the admin UI after sign-in so logins appear in the audit log.
    signIn: () -> (Me);
    suggestBankMatches: (txId: nat) -> (Result_6) query;
