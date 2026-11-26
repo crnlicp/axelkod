@@ -2,7 +2,9 @@
 
 Goal: the accounting module (backend canisters `accounting` + `vault`, and the Ekonomi UI) can be dropped into any React ICP project, while axelkod keeps working unchanged after every phase.
 
-Status values: `Not started` · `In progress` · `Blocked` · `Done`.
+Status values: `Not started` · `In progress` · `Blocked` · `Deferred` · `Done`.
+
+**Deferred (2026-11-26):** no second consumer yet, and A10 (mainnet) comes first. Resume when a real second project needs the module; then do M1–M3 first, and M7–M8 only for outside users. Until then, add no new imports from `admin/*` or `components/*` in the accounting code.
 Each phase ends with a local deploy, the full Playwright run green in axelkod, and your sign-off. No new dependencies without asking.
 
 ## Starting point (2026-11-26)
@@ -22,7 +24,7 @@ Each phase ends with a local deploy, the full Playwright run green in axelkod, a
 
 | # | Phase | Status | Verified by |
 |---|---|---|---|
-| M0 | Plan and decisions | In progress | Your sign-off |
+| M0 | Plan and decisions | Deferred | Your sign-off |
 | M1 | Package skeleton: move the UI into `canisters/frontend/packages/accounting-ui` (pnpm workspace), and `web` imports from it | Not started | Type check, full Playwright run in `web` |
 | M2 | Host seams: a `<AccountingProvider>` with `identity`, `canisterIds`, `rootKey`, `lang`, `toast`, `icons` and `basePath`; remove the imports from `admin/*` and `components/*` | Not started | `grep` shows no `../admin`/`../components` imports in the package; Playwright |
 | M3 | Routes as an export: `accountingRoutes(basePath)` for React Router, plus a layout slot; axelkod mounts it under `/admin/accounting` | Not started | Same URLs as now; Playwright |
