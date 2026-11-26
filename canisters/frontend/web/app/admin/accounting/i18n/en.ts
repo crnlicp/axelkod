@@ -520,7 +520,7 @@ const en: AccDict = {
     done: (name: string) => `The backup ${name} is downloaded.`, unreadable: (n: number) => `${n} documents could not be read and are missing from the backup.`,
     unreadablePii: (n: number) => `${n} personal-data values could not be decrypted and are only in the backup encrypted.`,
     restoreTitle: "Restore or open", restoreLead: "Choose a backup and enter the passphrase. A restore works only in a new, empty installation.",
-    file: "Backup (.axbak)", check: "Check", checked: (created: string, company: string) => `The backup is intact: created ${created} for ${company}.`,
+    file: "Backup (.axbak)", drop: "Drop the file here or click to choose", chosen: (n: string) => `Chosen file: ${n}`, fillIn: "Enter the passphrase.", check: "Check", checked: (created: string, company: string) => `The backup is intact: created ${created} for ${company}.`,
     contents: "Contents", records: "records", unzip: "Save unencrypted ZIP", unzipWarn: "The unencrypted ZIP holds personal data in plain text.",
     restore: "Restore here", restoreConfirm: "Everything in the backup is written into this installation. Continue?", restored: "The restore is finished and the processing history is intact.",
     notEmpty: "This installation already holds bookkeeping. Restore into a new, empty installation.", skipped: (n: number) => `${n} documents were missing from the backup and were not restored.`,

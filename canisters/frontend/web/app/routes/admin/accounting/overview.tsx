@@ -79,15 +79,16 @@ export default function Overview() {
           <Link to={href("/admin/accounting/setup")} className="btn btn-primary">{t.overview.setupCta}</Link>
         </div>
       )}
+      {/* Amounts never wrap; values sit on the bottom line. */}
       {books && (
-        <section aria-label={t.overview.title} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <section aria-label={t.overview.title} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             [t.overview.bank, bank], [t.overview.receivables, receivables], [t.overview.payables, payables],
             [t.overview.vat, vat], [t.overview.result, result], [t.overview.drafts, null],
           ].map(([label, v]) => (
-            <div key={label as string} className="card">
+            <div key={label as string} className="card flex min-w-0 flex-col p-5">
               <p className="text-sm text-muted">{label as string}</p>
-              <p className="mt-1 text-2xl font-semibold">{facts ? (v === null ? facts.drafts.length : <Money ore={v as bigint} unit />) : "…"}</p>
+              <p className="mt-auto whitespace-nowrap pt-2 text-xl font-semibold tabular-nums">{facts ? (v === null ? facts.drafts.length : <Money ore={v as bigint} unit />) : "…"}</p>
             </div>
           ))}
         </section>

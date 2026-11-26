@@ -4,6 +4,8 @@ import { useState } from "react";
 import { createBackup, readBackup, restoreBackup, seal, strength, passOk, unseal, type Manifest } from "../backup";
 import { useAcc, useAccT, useErr } from "../context";
 import { saveFile } from "../pdf/client";
+import { IconPaperclip } from "../../../components/Icons";
+import { input } from "./kit";
 
 type Checked = { manifest: Manifest; zip: Uint8Array; empty: boolean };
 
@@ -19,6 +21,10 @@ export function BackupPanel() {
   const [file, setFile] = useState<File | null>(null);
   const [rpass, setRpass] = useState("");
   const [checked, setChecked] = useState<Checked | null>(null);
+  const [over, setOver] = useState(false);
+  // Fields left empty after a visit are marked; the buttons stay off until the form is valid.
+  const [left, setLeft] = useState<Record<string, boolean>>({});
+  const leave = (k: string, v: string) => setLeft((x) => ({ ...x, [k]: !v }));
 
   if (!isOwner) return <p role="note" className="card">{b.ownerOnly}</p>;
   const s = strength(pass);
@@ -69,6 +75,12 @@ export function BackupPanel() {
   }
 
   const busy = step !== null;
+  const req = (k: string, id: string) => ({
+    required: true, "aria-invalid": left[k] || undefined, "aria-describedby": left[k] ? id : undefined,
+  });
+  const reqMsg = (k: string, id: string) => left[k] && <p id={id} className="mt-1 text-sm text-[var(--error)]">{b.fillIn}</p>;
+  const inp = `${input} block aria-[invalid]:border-[var(--error)]`;
+  const pick = (f: File | null) => { setFile(f); setChecked(null); };
   return (
     <div className="space-y-6">
       {msg.map((m) => <p key={m.text} role={m.ok ? "status" : "alert"} className={m.ok ? "text-accent" : "text-[var(--error)]"}>{m.text}</p>)}
@@ -77,8 +89,10 @@ export function BackupPanel() {
         <h2 id="bk-create" className="text-2xl">{b.create}</h2>
         <p className="text-sm text-muted">{b.lead}</p>
         <label className="block">{b.passphrase}
-          <input type="password" className="input mt-1 block w-full" autoComplete="new-password" value={pass} onChange={(e) => setPass(e.target.value)} aria-describedby="bk-hint bk-meter" />
+          <input type="password" className={inp} autoComplete="new-password" value={pass} onChange={(e) => setPass(e.target.value)} onBlur={(e) => leave("pass", e.target.value)}
+            {...req("pass", "bk-pass-req")} aria-describedby={`${left.pass ? "bk-pass-req " : ""}bk-hint bk-meter`} />
         </label>
+        {reqMsg("pass", "bk-pass-req")}
         <p id="bk-hint" className="text-sm text-muted">{b.hint}</p>
         <div id="bk-meter" className="flex items-center gap-3 text-sm">
           <span>{b.strengthLabel}:</span>
@@ -86,8 +100,10 @@ export function BackupPanel() {
           <span>{pass ? b.strength[s.score] : ""}</span>
         </div>
         <label className="block">{b.confirm}
-          <input type="password" className="input mt-1 block w-full" autoComplete="new-password" value={pass2} onChange={(e) => setPass2(e.target.value)} aria-invalid={!!pass2 && pass2 !== pass} />
+          <input type="password" className={inp} autoComplete="new-password" value={pass2} onChange={(e) => setPass2(e.target.value)} onBlur={(e) => leave("pass2", e.target.value)}
+            {...req("pass2", "bk-pass2-req")} aria-invalid={left.pass2 || (!!pass2 && pass2 !== pass) || undefined} />
         </label>
+        {reqMsg("pass2", "bk-pass2-req")}
         {pass2 && pass2 !== pass && <p className="text-sm text-[var(--error)]">{b.mismatch}</p>}
         <button type="submit" className="btn btn-primary" disabled={busy || !passOk(pass) || pass !== pass2}>{b.create}</button>
       </form>
@@ -95,12 +111,20 @@ export function BackupPanel() {
       <section className="card max-w-2xl space-y-3" aria-labelledby="bk-restore">
         <h2 id="bk-restore" className="text-2xl">{b.restoreTitle}</h2>
         <p className="text-sm text-muted">{b.restoreLead}</p>
-        <label className="block">{b.file}
-          <input type="file" accept=".axbak" className="mt-1 block" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setChecked(null); }} />
-        </label>
+        <div>
+          <p id="bk-file" className="font-medium">{b.file}</p>
+          <label onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
+            onDrop={(e) => { e.preventDefault(); setOver(false); pick(e.dataTransfer.files[0] ?? null); }}
+            className={`mt-1 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-5 text-center focus-within:border-accent ${over ? "border-accent bg-[var(--brand-soft)]" : "border-border"}`}>
+            <IconPaperclip className="h-6 w-6 text-accent" />
+            <span className="font-medium">{file ? b.chosen(file.name) : b.drop}</span>
+            <input type="file" accept=".axbak" className="sr-only" aria-labelledby="bk-file" required onChange={(e) => pick(e.target.files?.[0] ?? null)} />
+          </label>
+        </div>
         <label className="block">{b.passphrase}
-          <input type="password" className="input mt-1 block w-full" autoComplete="off" value={rpass} onChange={(e) => setRpass(e.target.value)} />
+          <input type="password" className={inp} autoComplete="off" value={rpass} onChange={(e) => setRpass(e.target.value)} onBlur={(e) => leave("rpass", e.target.value)} {...req("rpass", "bk-rpass-req")} />
         </label>
+        {reqMsg("rpass", "bk-rpass-req")}
         <button type="button" className="btn btn-secondary" disabled={busy || !file || !rpass} onClick={() => void check()}>{b.check}</button>
         {checked && (
           <>

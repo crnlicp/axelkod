@@ -518,7 +518,7 @@ const sv = {
     done: (name: string) => `Säkerhetskopian ${name} är nedladdad.`, unreadable: (n: number) => `${n} underlag kunde inte läsas och saknas i kopian.`,
     unreadablePii: (n: number) => `${n} personuppgifter kunde inte dekrypteras och finns bara krypterade i kopian.`,
     restoreTitle: "Återställ eller öppna", restoreLead: "Välj en säkerhetskopia och ange lösenfrasen. Återställning går bara i en ny, tom installation.",
-    file: "Säkerhetskopia (.axbak)", check: "Kontrollera", checked: (created: string, company: string) => `Kopian är hel: skapad ${created} för ${company}.`,
+    file: "Säkerhetskopia (.axbak)", drop: "Släpp filen här eller klicka för att välja", chosen: (n: string) => `Vald fil: ${n}`, fillIn: "Fyll i lösenfrasen.", check: "Kontrollera", checked: (created: string, company: string) => `Kopian är hel: skapad ${created} för ${company}.`,
     contents: "Innehåll", records: "poster", unzip: "Spara okrypterad ZIP", unzipWarn: "Den okrypterade ZIP-filen innehåller personuppgifter i klartext.",
     restore: "Återställ hit", restoreConfirm: "Allt i kopian skrivs in i den här installationen. Fortsätt?", restored: "Återställningen är klar och behandlingshistoriken är hel.",
     notEmpty: "Den här installationen innehåller redan bokföring. Återställ i en ny, tom installation.", skipped: (n: number) => `${n} underlag saknades i kopian och återställdes inte.`,
