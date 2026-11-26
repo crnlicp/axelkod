@@ -19,6 +19,9 @@ module {
     #seGoodsRC; // 16:6, 14, 16 domestic goods, buyer liable
     #seServicesRC; // 16:6, 13, 15 domestic services, buyer liable (construction)
     #noVat; // exempt, foreign VAT (never deductible) or no VAT on the document
+    /// Import VAT from Tullverket's tullräkning (13:35, V3): lines carry the tax base per
+    /// rate, the total is 0 and the goods and any duty are booked as separate documents.
+    #importVat;
   };
 
   public type SupplierInput = {

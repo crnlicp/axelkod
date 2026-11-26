@@ -89,7 +89,7 @@ module {
     #buyerLiableSE;
     #importVat;
   };
-  /// Box numbers stay null until V3 (momsdeklaration box list) is verified in A6.
+  /// `boxBase`: the VAT return box for amounts on accounts carrying this code; `boxVat`: the box for the code's VAT account (V3).
   public type VatCode = {
     code : Text;
     name : Text;

@@ -42,6 +42,8 @@ export default [
       route("bank/rules", "routes/admin/accounting/bank/rules.tsx"),
       route("bank/tax", "routes/admin/accounting/bank/tax.tsx"),
       route("bank/tax/import", "routes/admin/accounting/bank/import.tsx", { id: "acc-tax-import" }),
+      route("vat", "routes/admin/accounting/vat/returns.tsx"),
+      route("vat/ec-sales", "routes/admin/accounting/vat/ec-sales.tsx"),
       route("ledger", "routes/admin/accounting/ledger/list.tsx"),
       route("ledger/drafts", "routes/admin/accounting/ledger/drafts.tsx"),
       route("ledger/new", "routes/admin/accounting/ledger/edit.tsx"),

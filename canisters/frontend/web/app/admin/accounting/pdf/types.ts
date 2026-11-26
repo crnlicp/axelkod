@@ -1,5 +1,5 @@
 // Plain data sent to the PDF worker (structured clone: bigint is fine).
-import type { Reminder, Snapshot } from "../../../bindings/accounting";
+import type { Box, EslRow, Reminder, Snapshot } from "../../../bindings/accounting";
 import type { DocMeta } from "./layout";
 
 export type Meta = Omit<DocMeta, "template">;
@@ -31,4 +31,7 @@ export type Job =
   | { template: "trial-balance@1"; meta: Meta; rows: TrialRow[] }
   /** Issued sales documents render only from their stored snapshot (C11). */
   | { template: "invoice@1" | "credit-note@1" | "quote@1"; meta: Meta; snapshot: Snapshot }
-  | { template: "reminder@1"; meta: Meta; reminder: Reminder };
+  | { template: "reminder@1"; meta: Meta; reminder: Reminder }
+  /** VAT return as filed: whole kronor per box, plus the facts of the lock (V3). */
+  | { template: "vat-return@1"; meta: Meta; boxes: Box[]; facts: [string, string][] }
+  | { template: "ec-sales@1"; meta: Meta; rows: EslRow[]; facts: [string, string][] };

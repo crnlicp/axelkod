@@ -7,7 +7,7 @@ import { AccSessionCtx, AdminCtx, useSession, type AdminContext } from "../../ad
 import type { AccSession } from "../../admin/accounting/context";
 import accSv from "../../admin/accounting/i18n/sv";
 import accEn from "../../admin/accounting/i18n/en";
-import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconBank, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
+import { IconArrowRight, IconChart, IconCheck, IconHome, IconCompany, IconCopy, IconInvoice, IconLedger, IconPaperclip, IconBank, IconPercent, IconLock, IconLogout, IconMail, IconMenu, IconNews, IconSearch, IconSliders } from "../../components/Icons";
 import { LogoSymbol } from "../../components/Logo";
 
 export function meta() {
@@ -134,6 +134,8 @@ function accountingNav(lang: AdminLang, role: Role): NavGroup[] {
       { to: "/admin/accounting/purchases", label: n.purchases, icon: IconPaperclip },
       { to: "/admin/accounting/bank", label: n.bank, icon: IconBank },
       { to: "/admin/accounting/ledger", label: n.ledger, icon: IconLedger },
+    ] }, { title: n.groupPeriods, items: [
+      { to: "/admin/accounting/vat", label: n.vat, icon: IconPercent },
     ] }] : []),
     { items: [{ to: "/admin/accounting/settings", label: n.settings, icon: IconSliders }] },
   ];

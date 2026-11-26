@@ -167,7 +167,7 @@ module {
 
   public func treatment(t : P.Treatment) : C.Value = tag(switch (t) {
     case (#domestic) "domestic"; case (#euGoods) "euGoods"; case (#euServices) "euServices"; case (#nonEuServices) "nonEuServices";
-    case (#seGoodsRC) "seGoodsRC"; case (#seServicesRC) "seServicesRC"; case (#noVat) "noVat";
+    case (#seGoodsRC) "seGoodsRC"; case (#seServicesRC) "seServicesRC"; case (#noVat) "noVat"; case (#importVat) "importVat";
   });
 
   public func supplier(s : P.SupplierInput) : C.Value {

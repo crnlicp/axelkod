@@ -4,6 +4,7 @@ import { formatOre } from "../money";
 import { type Assets, type Col, Doc, MUTED } from "./layout";
 import { reminderDoc, salesDoc } from "./sales";
 import type { Job, PdfVoucher } from "./types";
+import { BOX_SV, SECTION_SV, SECTIONS, boxValue } from "../vat";
 
 const debit = (a: bigint) => (a > 0n ? formatOre(a) : "");
 const credit = (a: bigint) => (a < 0n ? formatOre(-a) : "");
@@ -92,6 +93,24 @@ async function render(job: Job, assets: Assets): Promise<Uint8Array> {
     case "reminder@1":
       reminderDoc(d, job.reminder);
       break;
+    case "vat-return@1": {
+      d.facts(job.facts);
+      const cols: Col[] = [{ title: "Fält", width: 30 }, { title: "", width: d.width - 30 - 90 }, { title: "Kronor", width: 90, align: "right" }];
+      for (const [sec, boxes] of SECTIONS) {
+        d.heading(`${sec}. ${SECTION_SV[sec]}`, 10);
+        d.table(cols, boxes.map((b) => [String(b).padStart(2, "0"), BOX_SV[b], boxValue(job.boxes, b).toString()]));
+      }
+      break;
+    }
+    case "ec-sales@1": {
+      d.facts(job.facts);
+      const cols: Col[] = [{ title: "Köparens VAT-nummer", width: 110 }, { title: "Köpare", width: d.width - 110 - 210 },
+        { title: "Varor", width: 70, align: "right" }, { title: "Trepartshandel", width: 70, align: "right" }, { title: "Tjänster", width: 70, align: "right" }];
+      d.table(cols, job.rows.map((r) => [r.vatNr, r.buyer, r.goods.toString(), r.triangulation.toString(), r.services.toString()]), {
+        totals: ["", "Summa", job.rows.reduce((a, r) => a + r.goods, 0n).toString(), job.rows.reduce((a, r) => a + r.triangulation, 0n).toString(), job.rows.reduce((a, r) => a + r.services, 0n).toString()],
+      });
+      break;
+    }
   }
   return d.save();
 }

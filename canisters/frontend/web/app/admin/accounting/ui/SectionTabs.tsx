@@ -31,3 +31,8 @@ export const bankTabs = (t: { title: string; tabs: Record<"transactions" | "impo
     ["/admin/accounting/bank/rules", t.tabs.rules], ["/admin/accounting/bank/tax", t.tabs.tax],
   ] as const,
 });
+
+export const vatTabs = (t: { title: string; tabs: Record<"returns" | "ecSales", string> }) => ({
+  label: t.title,
+  tabs: [["/admin/accounting/vat", t.tabs.returns], ["/admin/accounting/vat/ec-sales", t.tabs.ecSales]] as const,
+});

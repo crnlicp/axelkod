@@ -105,7 +105,7 @@ mixin (
       };
       case null {};
     };
-    let deferred = config.settings.accountingMethod == #cash and (clean.kind == #supplierInvoice or clean.kind == #creditNote);
+    let deferred = config.settings.accountingMethod == #cash and clean.treatment != #importVat and (clean.kind == #supplierInvoice or clean.kind == #creditNote);
     let name = switch (clean.supplierId) { case (?s) { switch (purchases.suppliers.get(s)) { case (?x) x.name; case null "" } }; case null { clean.payee ?? "" } };
     let vin : Types.VoucherInput = {
       series = Purchase.SERIES; eventDate = clean.docDate; description = clean.description;

@@ -9,6 +9,7 @@ import { plainOre } from "../../../../admin/accounting/money";
 import { DataTable } from "../../../../admin/accounting/ui/DataTable";
 import { Dialog } from "../../../../admin/accounting/ui/Dialog";
 import { SalesTabs } from "../../../../admin/accounting/ui/SalesTabs";
+import { ViesCheck } from "../../../../admin/accounting/ui/ViesCheck";
 import { EmptyState, Money, MoneyInput, PageHead, input, label } from "../../../../admin/accounting/ui/kit";
 import { IconPlus } from "../../../../components/Icons";
 import { Toast } from "../../../../admin/toast";
@@ -88,7 +89,8 @@ function Customers() {
             {field("cu-orgNr", c.orgNr, edit.v.orgNr ?? "", (v) => set({ orgNr: v }))}
             <div><label htmlFor="cu-vatNr" className={label}>{c.vatNr}</label>
               <input id="cu-vatNr" className={input} value={edit.v.vatNr ?? ""} aria-describedby="cu-vat-hint" aria-invalid={bad === "vatNr" || undefined} onChange={(e) => set({ vatNr: e.target.value })} />
-              <p id="cu-vat-hint" className="mt-1 text-xs text-muted">{c.vatHint}</p></div>
+              <p id="cu-vat-hint" className="mt-1 text-xs text-muted">{c.vatHint}</p>
+              <ViesCheck vatNr={edit.v.vatNr ?? ""} /></div>
             {field("cu-email", c.email, edit.v.email ?? "", (v) => set({ email: v }), { type: "email" })}
             {field("cu-address.street", c.street, edit.v.address.street, (v) => setAddr({ street: v }))}
             {field("cu-address.postalCode", c.postalCode, edit.v.address.postalCode, (v) => setAddr({ postalCode: v }))}

@@ -100,25 +100,27 @@ export default function Book() {
   }
 
   function chooseTreatment(tr: Treatment) {
-    setF((c) => ({ ...c, treatment: tr, lines: c.lines.map((l) => (REVERSE.has(tr) ? { ...l, account: suggestedAccount(tr, l.rateBp === 0n ? 2500n : l.rateBp) ?? l.account, rateBp: l.rateBp === 0n ? 2500n : l.rateBp } : l)) }));
+    setF((c) => ({ ...c, treatment: tr, lines: c.lines.map((l) => (tr === Treatment.importVat ? { ...l, account: 2645n, rateBp: l.rateBp === 0n ? 2500n : l.rateBp } : REVERSE.has(tr) ? { ...l, account: suggestedAccount(tr, l.rateBp === 0n ? 2500n : l.rateBp) ?? l.account, rateBp: l.rateBp === 0n ? 2500n : l.rateBp } : l)) }));
   }
 
   const domestic = f.treatment === Treatment.domestic;
   const reverse = REVERSE.has(f.treatment);
+  // Import VAT (tullräkning): the lines are the tax base; nothing is payable (V3, 13:35).
+  const isImport = f.treatment === Treatment.importVat;
   const lineVat = (l: Line) => (domestic ? l.vat ?? 0n : 0n);
-  const total = f.lines.reduce((s, l) => s + (l.net ?? 0n) + lineVat(l), 0n);
-  const rcVat = reverse ? f.lines.reduce((s, l) => s + vatOf(l.net ?? 0n, l.rateBp), 0n) : 0n;
+  const total = isImport ? 0n : f.lines.reduce((s, l) => s + (l.net ?? 0n) + lineVat(l), 0n);
+  const rcVat = reverse || isImport ? f.lines.reduce((s, l) => s + vatOf(l.net ?? 0n, l.rateBp), 0n) : 0n;
   const openInvoices = useMemo(() => earlier.filter((v) => v.purchase.kind === PurchaseKind.supplierInvoice && v.purchase.supplierId === f.supplierId && v.balance > 0n), [earlier, f.supplierId]);
   const hint = f.supplierId !== null ? earlier.find((v) => v.purchase.supplierId === f.supplierId) : undefined;
 
   function build(): PurchaseInput | null {
     const fxRate = f.currency !== "SEK" ? fxToRate(f.fx) : null;
     if (f.currency !== "SEK" && !fxRate) { setBad("fxRate"); setStatus({ ok: false, text: t.errors.invalid(t.errors.fields.fxRate) }); return null; }
-    if (f.lines.some((l) => l.account === null || l.net === null)) { setBad("lines"); setStatus({ ok: false, text: t.errors.invalid(t.errors.fields["lines[].amount"]) }); return null; }
+    if (f.lines.some((l) => (l.account === null && !isImport) || l.net === null)) { setBad("lines"); setStatus({ ok: false, text: t.errors.invalid(t.errors.fields["lines[].amount"]) }); return null; }
     return {
       kind: f.kind, supplierId: f.supplierId ?? undefined, payee: opt(f.payee), docDate: f.docDate, dueDate: opt(f.dueDate), docNumber: opt(f.docNumber),
       currency: f.currency, fxRate: fxRate ? { rate: fxRate, date: f.fxDate } : undefined, treatment: f.treatment, total,
-      lines: f.lines.map((l) => ({ account: l.account!, net: l.net!, rateBp: f.treatment === Treatment.noVat || (domestic && lineVat(l) === 0n && l.rateBp === 0n) ? 0n : l.rateBp, vat: lineVat(l), text: opt(l.text) })),
+      lines: f.lines.map((l) => ({ account: isImport ? 2645n : l.account!, net: l.net!, rateBp: f.treatment === Treatment.noVat || (domestic && lineVat(l) === 0n && l.rateBp === 0n) ? 0n : l.rateBp, vat: lineVat(l), text: opt(l.text) })),
       paymentRef: opt(f.paymentRef), paidFrom: f.kind === PurchaseKind.receipt ? f.paidFrom : undefined, creditOf: f.kind === PurchaseKind.creditNote ? f.creditOf ?? undefined : undefined,
       description: f.description.trim(), attachmentIds: [attachmentId],
     };
@@ -140,7 +142,7 @@ export default function Book() {
     navigate(href(inbox.length ? `/admin/accounting/purchases/book/${inbox[0].id}` : "/admin/accounting/purchases"));
   }
 
-  const cashDeferred = data?.settings.accountingMethod === "cash" && (f.kind === PurchaseKind.supplierInvoice || f.kind === PurchaseKind.creditNote);
+  const cashDeferred = data?.settings.accountingMethod === "cash" && !isImport && (f.kind === PurchaseKind.supplierInvoice || f.kind === PurchaseKind.creditNote);
   const needsSupplier = f.kind === PurchaseKind.supplierInvoice || f.kind === PurchaseKind.creditNote;
   const inv = (k: string) => (bad === k ? true : undefined);
 
@@ -209,18 +211,18 @@ export default function Book() {
                 <select id="wb-tr" className={input} value={f.treatment} aria-describedby="wb-tr-hint" onChange={(e) => chooseTreatment(e.target.value as Treatment)}>
                   {Object.values(Treatment).map((x) => <option key={x} value={x}>{p.treatment[x]}</option>)}
                 </select>
-                <p id="wb-tr-hint" className="mt-1 text-xs text-muted">{p.treatmentHint}</p></div>
+                <p id="wb-tr-hint" className="mt-1 text-xs text-muted">{isImport ? p.importHint : p.treatmentHint}</p></div>
             </div>
 
             <fieldset className="space-y-3">
               <legend className={label}>{w.lines}</legend>
               {f.lines.map((l, i) => (
                 <div key={i} className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-6">
-                  <div className="sm:col-span-6"><AccountPicker labelText={w.account(i + 1)} value={l.account} invalid={bad === "account" || bad === "lines"} onChange={(a) => setLine(i, { account: a?.number ?? null })} /></div>
+                  {!isImport && <div className="sm:col-span-6"><AccountPicker labelText={w.account(i + 1)} value={l.account} invalid={bad === "account" || bad === "lines"} onChange={(a) => setLine(i, { account: a?.number ?? null })} /></div>}
                   <div className="sm:col-span-2"><span className="text-sm text-muted">{w.net(i + 1)}</span><MoneyInput labelText={w.net(i + 1)} value={l.net} onChange={(v) => setLine(i, { net: v })} /></div>
                   {f.treatment !== Treatment.noVat && <div className="sm:col-span-2"><label htmlFor={`wb-r${i}`} className="text-sm text-muted">{w.rate(i + 1)}</label>
                     <select id={`wb-r${i}`} className={input} value={String(l.rateBp)} aria-invalid={inv("rateBp")} onChange={(e) => setLine(i, { rateBp: BigInt(e.target.value) })}>
-                      {RATES.filter((r) => !reverse || r > 0n).map((r) => <option key={String(r)} value={String(r)}>{Number(r) / 100} %</option>)}
+                      {RATES.filter((r) => !(reverse || isImport) || r > 0n).map((r) => <option key={String(r)} value={String(r)}>{Number(r) / 100} %</option>)}
                     </select></div>}
                   {domestic && <div className="sm:col-span-2"><span className="text-sm text-muted">{w.vat(i + 1)}</span><MoneyInput labelText={w.vat(i + 1)} value={l.vat} onChange={(v) => setLine(i, { vat: v, vatTouched: true })} /></div>}
                   <div className="sm:col-span-5"><label htmlFor={`wb-t${i}`} className="sr-only">{w.text(i + 1)}</label><input id={`wb-t${i}`} placeholder={w.text(i + 1)} className={input} maxLength={200} value={l.text} onChange={(e) => setLine(i, { text: e.target.value })} /></div>
@@ -233,7 +235,7 @@ export default function Book() {
             <div className="rounded-lg border border-border p-3">
               <p className="flex justify-between font-semibold"><span>{w.total}</span><span><Money ore={total} /> {f.currency}</span></p>
               <p className="text-xs text-muted">{w.totalHint}</p>
-              {reverse && <p className="mt-1 text-sm">{w.computedVat(formatOre(rcVat, true))}</p>}
+              {(reverse || isImport) && <p className="mt-1 text-sm">{w.computedVat(formatOre(rcVat, true))}</p>}
               {cashDeferred && <p className="mt-1 text-sm text-muted">{w.cashMethod}</p>}
             </div>
             <button type="submit" className="btn btn-primary">{w.check}</button>

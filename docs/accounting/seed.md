@@ -4,7 +4,7 @@ Part of the systemdokumentation (spec §3.1; BFNAR 2013:2 to be checked under V2
 
 ## How seeding works
 
-- Seed version: `seed-2026.1`. On every install or upgrade, if the stored version differs, missing accounts, VAT codes and series are **added**. Existing ones are never changed, because users may have edited them.
+- Seed version: `seed-2026.4` (history: .1 A2, .2 and .3 sales and purchases, .4 VAT boxes and import accounts). On every install or upgrade, if the stored version differs, missing accounts, VAT codes and series are **added**. Existing ones are never changed, because users may have edited them.
 - Accounts can be added (non-BAS, `bas = false`) and renamed or deactivated in Ekonomi › Inställningar. Numbers never change, and no account is ever deleted.
 
 ## Series
@@ -28,24 +28,25 @@ Part of the systemdokumentation (spec §3.1; BFNAR 2013:2 to be checked under V2
 
 ## VAT codes
 
-Box numbers on the VAT return are not set yet (V3, phase A6).
+Each code has a return box: `boxBase` for accounts that carry the code, `boxVat` for the code's own VAT account. The full mapping is in [vat-boxes.md](vat-boxes.md). `seed-2026.4` filled the boxes on codes the earlier seeds created without them, and the VAT code on seeded purchase accounts that had none. Values a user has set are never changed.
 
-| Code | Name | Rate | Kind | Account |
-|---|---|---|---|---|
-| U25 | Utgående moms 25 % | 25 % | outputDomestic | 2611 |
-| U12 | Utgående moms 12 % | 12 % | outputDomestic | 2621 |
-| U6 | Utgående moms 6 % | 6 % | outputDomestic | 2631 |
-| I | Ingående moms | – | inputDomestic | 2641 |
-| OBP | Omvänd betalningsskyldighet, inköp 25 % | 25 % | reverseChargePurchase | 2614 |
-| EUVA | Varuförsäljning till annat EU-land | 0 | euGoodsSale | – |
-| EUTJ | Tjänsteförsäljning till annat EU-land | 0 | euServiceSale | – |
-| EXPV | Export av varor | 0 | exportGoods | – |
-| EXPT | Tjänster till land utanför EU | 0 | exportServices | – |
-| MF | Momsfri försäljning | 0 | exempt | – |
+| Code | Name | Rate | Kind | Account | Box base / VAT |
+|---|---|---|---|---|---|
+| U25 / U12 / U6 | Utgående moms 25 / 12 / 6 % | 25 / 12 / 6 % | outputDomestic | 2611 / 2621 / 2631 | 05 / 10, 11, 12 |
+| I, IG, IU, IO | Ingående moms (2641, 2640, 2645, 2647) | – | inputDomestic | as named | – / 48 |
+| OBP / OBP12 / OBP6 | Omvänd betalningsskyldighet, inköp 25 / 12 / 6 % | 25 / 12 / 6 % | reverseChargePurchase | 2614 / 2624 / 2634 | – / 30, 31, 32 |
+| EUV, EUT, UTT, SEV, SET | Purchase bases: EU goods, EU services, non-EU services, SE goods RC, SE services RC | – | reverseChargePurchase | – (on 4515–4517, 4535–4537, 4531–4533, 4415–4417, 4425–4427) | 20, 21, 22, 23, 24 / – |
+| IMP25 / IMP12 / IMP6 | Utgående moms import 25 / 12 / 6 % | 25 / 12 / 6 % | importVat | 2615 / 2625 / 2635 | – / 60, 61, 62 |
+| EUVA | Varuförsäljning till annat EU-land | 0 | euGoodsSale | – (on 3108) | 35 / – |
+| EXPV | Export av varor | 0 | exportGoods | – (on 3105) | 36 / – |
+| EUTJ | Tjänsteförsäljning till annat EU-land | 0 | euServiceSale | – (on 3308) | 39 / – |
+| EXPT | Tjänster till land utanför EU | 0 | exportServices | – (on 3305) | 40 / – |
+| OMS | Försäljning, köparen betalningsskyldig i Sverige | 0 | buyerLiableSE | – (on 3231) | 41 / – |
+| MF | Momsfri försäljning | 0 | exempt | – (on 3004) | 42 / – |
 
 ## Accounts
 
-The 63 BAS 2026 accounts listed in `Seed.mo`, with names copied verbatim from BAS 2026 v1.1. The kind comes from the account class:
+The 88 BAS 2026 accounts listed in `Seed.mo`, with names copied verbatim from BAS 2026 v1.1. The kind comes from the account class:
 - 1xxx: asset
 - 20xx: equity
 - 21–29xx: liability

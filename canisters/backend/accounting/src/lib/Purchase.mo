@@ -41,6 +41,14 @@ module {
     case (_) null;
   };
 
+  /// Output VAT account on imports (BAS 2026: 2615, 2625, 2635).
+  public func importOutput(rateBp : Nat) : ?Nat = switch (rateBp) {
+    case (2500) ?2615;
+    case (1200) ?2625;
+    case (600) ?2635;
+    case (_) null;
+  };
+
   public func isReverse(t : P.Treatment) : Bool = switch (t) {
     case (#euGoods or #euServices or #nonEuServices or #seGoodsRC or #seServicesRC) true;
     case (_) false;
@@ -108,6 +116,16 @@ module {
       for (j in Nat.range(0, i)) if (x.attachmentIds[j] == a) return #err(#invalid("attachmentIds"));
     };
     if (x.lines.size() == 0 or x.lines.size() > MAX_LINES) return #err(#invalid("lines"));
+    if (x.treatment == #importVat) {
+      if (x.kind != #supplierInvoice) return #err(#invalid("kind"));
+      if (x.currency != "SEK") return #err(#invalid("currency"));
+      if (x.total != 0) return #err(#invalid("total"));
+      for (l in x.lines.values()) {
+        if (l.net <= 0 or l.vat != 0 or importOutput(l.rateBp) == null) return #err(#invalid("amount"));
+        switch (optText(l.text, 200, "text")) { case (#ok(_)) {}; case (#err(e)) return #err(e) };
+      };
+      return #ok({ x with description; docNumber; paymentRef; payee; lines = x.lines.map(func(l : P.PurchaseLine) : P.PurchaseLine = { l with account = INPUT_VAT_FOREIGN }) });
+    };
     let reverse = isReverse(x.treatment);
     var sum : Int = 0;
     for (l in x.lines.values()) {
@@ -149,7 +167,11 @@ module {
     let reverse = isReverse(x.treatment);
     for (l in x.lines.values()) {
       let netSek = Invoice.toSek(l.net, x.fxRate);
-      add(cost, l.account, netSek);
+      if (x.treatment == #importVat) {
+        let vat = Invoice.divRound(l.net * l.rateBp, 10_000);
+        add(rc, INPUT_VAT_FOREIGN, vat);
+        switch (importOutput(l.rateBp)) { case (?o) add(rc, o, -vat); case null {} };
+      } else add(cost, l.account, netSek);
       if (x.treatment == #domestic) add(cost, INPUT_VAT, Invoice.toSek(l.vat, x.fxRate));
       if (reverse) {
         let vat = Invoice.divRound(netSek * l.rateBp, 10_000);
@@ -231,7 +253,7 @@ module {
     let pd = paid(ps, d.id);
     let balance = if (payable(d.kind)) d.total - cr - pd else 0;
     let overdue = balance > 0 and (switch (d.dueDate) { case (?due) { due < today }; case null { false } });
-    let status : P.Status = switch (d.kind) {
+    let status : P.Status = if (d.treatment == #importVat) #booked else switch (d.kind) {
       case (#receipt) #paid;
       case (#creditNote) #booked;
       case (_) {

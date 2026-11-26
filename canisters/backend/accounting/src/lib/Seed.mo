@@ -1,11 +1,12 @@
 // Seed data, versioned in code (documented in docs/accounting/seed.md).
 // Account names: BAS 2026 v1.1 (bas.se, "BAS_kontoplan_2026_v2.xlsx", retrieved 2026-11-25).
 // VAT rates: Skatteverket "Momssatser och undantag från moms" (retrieved 2026-11-25).
-// Box numbers stay null until V3 is verified in A6.
+// VAT return boxes: Skatteverket "Fylla i momsdeklarationen" (V3, retrieved 2026-11-25),
+// mapping in docs/accounting/vat-boxes.md.
 import Types "../types";
 
 module {
-  public let VERSION = "seed-2026.3";
+  public let VERSION = "seed-2026.4";
 
   public let accounts : [Types.Account] = [
     { number = 1220; name = "Inventarier, verktyg och installationer"; kind = #asset; vatCode = null; sruCode = null; active = true; bas = true },
@@ -26,9 +27,11 @@ module {
     { number = 2614; name = "Utgående moms omvänd betalskyldighet, 25 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2615; name = "Utgående moms import av varor, 25 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2621; name = "Utgående moms på försäljning inom Sverige, 12 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 2625; name = "Utgående moms import av varor, 12 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2624; name = "Utgående moms omvänd betalningsskyldighet 12 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2631; name = "Utgående moms på försäljning inom Sverige, 6 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2634; name = "Utgående moms omvänd betalningsskyldighet, 6 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 2635; name = "Utgående moms import av varor, 6 %"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2640; name = "Ingående moms"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2641; name = "Debiterad ingående moms"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 2645; name = "Beräknad ingående moms på förvärv från utlandet"; kind = #liability; vatCode = null; sruCode = null; active = true; bas = true },
@@ -46,28 +49,31 @@ module {
     { number = 3004; name = "Försäljning inom Sverige, momsfri"; kind = #revenue; vatCode = ?"MF"; sruCode = null; active = true; bas = true },
     { number = 3105; name = "Försäljning varor till land utanför EU"; kind = #revenue; vatCode = ?"EXPV"; sruCode = null; active = true; bas = true },
     { number = 3108; name = "Försäljning varor till annat EU-land, momsfri"; kind = #revenue; vatCode = ?"EUVA"; sruCode = null; active = true; bas = true },
+    { number = 3231; name = "Försäljning inom byggsektorn, omvänd betalningsskyldighet moms"; kind = #revenue; vatCode = ?"OMS"; sruCode = null; active = true; bas = true },
     { number = 3305; name = "Försäljning tjänster till land utanför EU"; kind = #revenue; vatCode = ?"EXPT"; sruCode = null; active = true; bas = true },
     { number = 3308; name = "Försäljning tjänster till annat EU-land"; kind = #revenue; vatCode = ?"EUTJ"; sruCode = null; active = true; bas = true },
     { number = 3740; name = "Öres- och kronutjämning"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 3960; name = "Valutakursvinster på fordringar och skulder av rörelsekaraktär"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 3990; name = "Övriga ersättningar, bidrag och intäkter"; kind = #revenue; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 4010; name = "Inköp av handelsvaror i Sverige"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4415; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4416; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4417; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4425; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4426; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4427; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4515; name = "Inköp av råvaror och material från annat EU-land, 25 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4516; name = "Inköp av råvaror och material från annat EU-land, 12 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4517; name = "Inköp av råvaror och material från annat EU-land, 6 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4531; name = "Inköp av tjänster från ett land utanför EU, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4532; name = "Inköp av tjänster från ett land utanför EU, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4533; name = "Inköp av tjänster från ett land utanför EU, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4535; name = "Inköp av tjänster från annat EU-land, 25 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4536; name = "Inköp av tjänster från annat EU-land, 12 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
-    { number = 4537; name = "Inköp av tjänster från annat EU-land, 6 %"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4415; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 25 % moms"; kind = #expense; vatCode = ?"SEV"; sruCode = null; active = true; bas = true },
+    { number = 4416; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 12 % moms"; kind = #expense; vatCode = ?"SEV"; sruCode = null; active = true; bas = true },
+    { number = 4417; name = "Inköp av råvaror och material i Sverige, omvänd betalningsskyldighet, 6 % moms"; kind = #expense; vatCode = ?"SEV"; sruCode = null; active = true; bas = true },
+    { number = 4425; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 25 % moms"; kind = #expense; vatCode = ?"SET"; sruCode = null; active = true; bas = true },
+    { number = 4426; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 12 % moms"; kind = #expense; vatCode = ?"SET"; sruCode = null; active = true; bas = true },
+    { number = 4427; name = "Inköp av tjänster i Sverige, omvänd betalningsskyldighet, 6 % moms"; kind = #expense; vatCode = ?"SET"; sruCode = null; active = true; bas = true },
+    { number = 4515; name = "Inköp av råvaror och material från annat EU-land, 25 %"; kind = #expense; vatCode = ?"EUV"; sruCode = null; active = true; bas = true },
+    { number = 4516; name = "Inköp av råvaror och material från annat EU-land, 12 %"; kind = #expense; vatCode = ?"EUV"; sruCode = null; active = true; bas = true },
+    { number = 4517; name = "Inköp av råvaror och material från annat EU-land, 6 %"; kind = #expense; vatCode = ?"EUV"; sruCode = null; active = true; bas = true },
+    { number = 4531; name = "Inköp av tjänster från ett land utanför EU, 25 % moms"; kind = #expense; vatCode = ?"UTT"; sruCode = null; active = true; bas = true },
+    { number = 4532; name = "Inköp av tjänster från ett land utanför EU, 12 % moms"; kind = #expense; vatCode = ?"UTT"; sruCode = null; active = true; bas = true },
+    { number = 4533; name = "Inköp av tjänster från ett land utanför EU, 6 % moms"; kind = #expense; vatCode = ?"UTT"; sruCode = null; active = true; bas = true },
+    { number = 4535; name = "Inköp av tjänster från annat EU-land, 25 %"; kind = #expense; vatCode = ?"EUT"; sruCode = null; active = true; bas = true },
+    { number = 4536; name = "Inköp av tjänster från annat EU-land, 12 %"; kind = #expense; vatCode = ?"EUT"; sruCode = null; active = true; bas = true },
+    { number = 4537; name = "Inköp av tjänster från annat EU-land, 6 %"; kind = #expense; vatCode = ?"EUT"; sruCode = null; active = true; bas = true },
     { number = 4545; name = "Import av råvaror och material, 25 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4546; name = "Import av råvaror och material, 12 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
+    { number = 4547; name = "Import av råvaror och material, 6 % moms"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 5410; name = "Förbrukningsinventarier"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 6110; name = "Kontorsmateriel"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
     { number = 6212; name = "Mobiltelefon"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
@@ -93,21 +99,37 @@ module {
     { number = 8999; name = "Årets resultat"; kind = #expense; vatCode = null; sruCode = null; active = true; bas = true },
   ];
 
-  func code(code : Text, name : Text, rateBp : Nat, kind : Types.VatKind, account : ?Nat) : Types.VatCode {
-    { code; name; rateBp; kind; account; boxBase = null; boxVat = null; active = true };
+  func code(code : Text, name : Text, rateBp : Nat, kind : Types.VatKind, account : ?Nat, boxBase : ?Nat, boxVat : ?Nat) : Types.VatCode {
+    { code; name; rateBp; kind; account; boxBase; boxVat; active = true };
   };
 
+  /// `boxBase`: where an account carrying the code reports its amount; `boxVat`: where
+  /// the code's own VAT account reports. Base codes for purchases carry no VAT account.
   public func vatCodes() : [Types.VatCode] = [
-    code("U25", "Utgående moms 25 %", 2500, #outputDomestic, ?2611),
-    code("U12", "Utgående moms 12 %", 1200, #outputDomestic, ?2621),
-    code("U6", "Utgående moms 6 %", 600, #outputDomestic, ?2631),
-    code("I", "Ingående moms", 0, #inputDomestic, ?2641),
-    code("OBP", "Omvänd betalningsskyldighet, inköp 25 %", 2500, #reverseChargePurchase, ?2614),
-    code("EUVA", "Varuförsäljning till annat EU-land", 0, #euGoodsSale, null),
-    code("EUTJ", "Tjänsteförsäljning till annat EU-land", 0, #euServiceSale, null),
-    code("EXPV", "Export av varor", 0, #exportGoods, null),
-    code("EXPT", "Tjänster till land utanför EU", 0, #exportServices, null),
-    code("MF", "Momsfri försäljning", 0, #exempt, null),
+    code("U25", "Utgående moms 25 %", 2500, #outputDomestic, ?2611, ?5, ?10),
+    code("U12", "Utgående moms 12 %", 1200, #outputDomestic, ?2621, ?5, ?11),
+    code("U6", "Utgående moms 6 %", 600, #outputDomestic, ?2631, ?5, ?12),
+    code("I", "Ingående moms", 0, #inputDomestic, ?2641, null, ?48),
+    code("IG", "Ingående moms (gruppkonto)", 0, #inputDomestic, ?2640, null, ?48),
+    code("IU", "Beräknad ingående moms, förvärv från utlandet", 0, #inputDomestic, ?2645, null, ?48),
+    code("IO", "Ingående moms, omvänd betalningsskyldighet i Sverige", 0, #inputDomestic, ?2647, null, ?48),
+    code("OBP", "Omvänd betalningsskyldighet, inköp 25 %", 2500, #reverseChargePurchase, ?2614, null, ?30),
+    code("OBP12", "Omvänd betalningsskyldighet, inköp 12 %", 1200, #reverseChargePurchase, ?2624, null, ?31),
+    code("OBP6", "Omvänd betalningsskyldighet, inköp 6 %", 600, #reverseChargePurchase, ?2634, null, ?32),
+    code("EUV", "Inköp av varor från annat EU-land", 0, #reverseChargePurchase, null, ?20, null),
+    code("EUT", "Inköp av tjänster från annat EU-land", 0, #reverseChargePurchase, null, ?21, null),
+    code("UTT", "Inköp av tjänster från land utanför EU", 0, #reverseChargePurchase, null, ?22, null),
+    code("SEV", "Inköp av varor i Sverige, omvänd betalningsskyldighet", 0, #reverseChargePurchase, null, ?23, null),
+    code("SET", "Inköp av tjänster i Sverige, omvänd betalningsskyldighet", 0, #reverseChargePurchase, null, ?24, null),
+    code("IMP25", "Utgående moms import 25 %", 2500, #importVat, ?2615, null, ?60),
+    code("IMP12", "Utgående moms import 12 %", 1200, #importVat, ?2625, null, ?61),
+    code("IMP6", "Utgående moms import 6 %", 600, #importVat, ?2635, null, ?62),
+    code("EUVA", "Varuförsäljning till annat EU-land", 0, #euGoodsSale, null, ?35, null),
+    code("EXPV", "Export av varor", 0, #exportGoods, null, ?36, null),
+    code("EUTJ", "Tjänsteförsäljning till annat EU-land", 0, #euServiceSale, null, ?39, null),
+    code("EXPT", "Tjänster till land utanför EU", 0, #exportServices, null, ?40, null),
+    code("OMS", "Försäljning, köparen betalningsskyldig i Sverige", 0, #buyerLiableSE, null, ?41, null),
+    code("MF", "Momsfri försäljning", 0, #exempt, null, ?42, null),
   ];
 
   public let series : [Types.Series] = [

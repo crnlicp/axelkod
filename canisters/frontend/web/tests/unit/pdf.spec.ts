@@ -50,6 +50,8 @@ const fingerprints: Record<string, string> = {
   "credit-note@1": "8c8bdbf86f0b31d718dcccc70d5d0b075839c1504f1cdd8dccf341cb8a253294",
   "invoice@1 en": "c4da84cb20749d8b4ed1931e374da2288918cd15348d4cec0559f40cae237f75",
   "reminder@1": "5acfe7bebc5591a3dad9e8cb04c6c855322a88cab28b7b837a689c4efb3794e0",
+  "vat-return@1": "3c24cb3fa4ff1b65de8058483998c784e3892e177576e601f8fbf9f2eccbdc9f",
+  "ec-sales@1": "0022690972733a5182e93f001b9e3a14a6f8f873d5ecac3ce4059c9a61a544b1",
 };
 
 const invoice: Snapshot = {
@@ -79,7 +81,20 @@ jobs.push(
   { template: "credit-note@1", meta: { ...meta, title: "Kreditfaktura", ref: "1043" }, snapshot: { ...invoice, kind: DocKind.creditNote, number: 1043n, ocr: undefined, creditOf: { number: 1042n, issueDate: "2026-11-25" }, templateVersion: "credit-note@1" } },
   { template: "invoice@1", meta: { ...meta, title: "Invoice", ref: "1044", lang: "en" }, snapshot: euInvoice },
   { template: "reminder@1", meta: { ...meta, title: "Betalningspåminnelse", ref: "7" }, reminder },
+  { template: "vat-return@1", meta: { ...meta, title: "Momsdeklaration", ref: "2026-10" }, facts: [["Period", "2026-10-01 – 2026-10-31"]],
+    boxes: [{ box: 5n, amount: 10_000n }, { box: 10n, amount: 2_500n }, { box: 48n, amount: 200n }, { box: 49n, amount: 2_300n }] },
+  { template: "ec-sales@1", meta: { ...meta, title: "Periodisk sammanställning", ref: "2610" }, facts: [["Period", "2610"]],
+    rows: [{ vatNr: "DE262875793", buyer: "Kunde GmbH", goods: 16_400n, triangulation: 0n, services: 15_300n }] },
 );
+
+test("vat-return@1: sections and box headings as on Skatteverket's form; ec-sales@1 rows", async () => {
+  const text = pdfText(await render(jobs[8], assets)).join("\n");
+  for (const s of ["Momsdeklaration", "A. Momspliktig försäljning eller uttag exklusive moms", "Momspliktig försäljning som inte ingår i fält 06, 07 eller 08",
+    "10000", "G. Moms att betala eller få tillbaka", "2300"])
+    expect(text).toContain(s);
+  const esl = pdfText(await render(jobs[9], assets)).join("\n");
+  for (const s of ["Periodisk sammanställning", "DE262875793", "Kunde GmbH", "16400", "15300"]) expect(esl).toContain(s);
+});
 
 test("invoice@1: ML 17:24 content, ABL 28:5 header, VAT per rate, OCR, payment details", async () => {
   const text = pdfText(await render(jobs[4], assets)).join("\n");

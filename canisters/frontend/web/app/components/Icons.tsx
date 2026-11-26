@@ -273,6 +273,14 @@ export const IconBank = (p: IconProps) => (
   </Icon>
 );
 
+export const IconPercent = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M18.5,5.5 L5.5,18.5" />
+    <circle cx="7" cy="7" r="2.5" />
+    <circle cx="17" cy="17" r="2.5" />
+  </Icon>
+);
+
 export const IconInvoice = (p: IconProps) => (
   <Icon {...p}>
     <path d="M6,3.5 H15 L18.5,7 V20.5 H6 Z" />

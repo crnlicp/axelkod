@@ -26,6 +26,7 @@ const toSek = (x: bigint, fx?: { rate: bigint }) => (fx ? divRound(x * fx.rate, 
 export const vatOf = (net: bigint, rateBp: bigint) => divRound(net * rateBp, 10_000n);
 
 const RC_OUT: Record<string, bigint> = { "2500": 2614n, "1200": 2624n, "600": 2634n };
+const IMPORT_OUT: Record<string, bigint> = { "2500": 2615n, "1200": 2625n, "600": 2635n };
 
 /** The voucher lines `bookPurchase` will post, for the confirmation (same rules as the canister). */
 export function previewLines(x: PurchaseInput): { account: bigint; amount: bigint }[] {
@@ -36,6 +37,7 @@ export function previewLines(x: PurchaseInput): { account: bigint; amount: bigin
   const rcIn = x.treatment === Treatment.seGoodsRC || x.treatment === Treatment.seServicesRC ? 2647n : 2645n;
   for (const l of x.lines) {
     const net = toSek(l.net, x.fxRate);
+    if (x.treatment === Treatment.importVat) { const v = divRound(net * l.rateBp, 10_000n); add(2645n, v); add(IMPORT_OUT[String(l.rateBp)] ?? 2615n, -v); continue; }
     add(l.account, net); cost += net;
     if (x.treatment === Treatment.domestic) { const v = toSek(l.vat, x.fxRate); add(2641n, v); cost += v; }
     if (reverse) { const v = divRound(net * l.rateBp, 10_000n); add(rcIn, v); add(RC_OUT[String(l.rateBp)] ?? 2614n, -v); }

@@ -15,7 +15,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A3 | Ekonomi shell + UI kit + PDF pipeline + setup wizard + Bokföring UI | Done (2026-11-25) | Playwright, axe, PDF snapshot test |
 | A4 | Sales | Done (2026-11-25) | `mops test` + Playwright (hash-stable re-render) |
 | A5 | Purchases, bank, tax account | Done (2026-11-25) | `mops test` + Playwright upload/match |
-| A6 | VAT and EU sales list | Not started | Box fixtures, file checked in Skatteverket's test service |
+| A6 | VAT and EU sales list | Done (2026-11-25) | Box fixtures, file checked in Skatteverket's test service |
 | A7 | Payroll, AGI, växa | Not started | Fee-category tests, AGI XML vs XSD, test service |
 | A8 | ROT/RUT | Not started | Cap tests, XML vs schema |
 | A9 | Assets, inventory, year-end, SRU, SIE4, backup | Not started | SIE4 round trip, restore test |
@@ -73,9 +73,9 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 |---|---|---|---|---|
 | V1 | Mandatory invoice content | Mervärdesskattelag (2023:200) 17 kap. (riksdagen.se), Skatteverket "Fakturering" pages | A4 | Done (A4) |
 | V2 | Simplified invoice limit, foreign-currency VAT in SEK wording | ML 17 kap., Skatteverket | A4 | Done (A4) |
-| V3 | VAT return box list, file format, whether file upload still exists | Skatteverket "Fylla i momsdeklarationen" + technical description for file submission | A6 | Not started |
-| V4 | EU sales list file format and deadlines | Skatteverket "Periodisk sammanställning" + Filöverföring format description | A6 | Not started |
-| V5 | VIES REST API, and whether IC HTTPS outcalls can reach it (IPv4/IPv6) | ec.europa.eu VIES technical info, `https-outcalls` skill | A6 | Not started |
+| V3 | VAT return box list, file format, whether file upload still exists | Skatteverket "Fylla i momsdeklarationen" + technical description for file submission | A6 | Done (A6); öre rule open |
+| V4 | EU sales list file format and deadlines | Skatteverket "Periodisk sammanställning" + Filöverföring format description | A6 | Done (A6) |
+| V5 | VIES REST API, and whether IC HTTPS outcalls can reach it (IPv4/IPv6) | ec.europa.eu VIES technical info, `https-outcalls` skill | A6 | Done (A6) |
 | V6 | VAT and AGI deadlines including the 17th exceptions; prepaid tax dates | Skatteverket "Deklarations- och betalningsdagar" | A3 (deadlines) | Done (A3); preliminary tax Jan/Aug exception open |
 | V7 | AGI XML schema and current document version, field codes | Skatteverket developer portal (Utvecklarportalen): Arbetsgivardeklaration teknisk beskrivning + XSD | A7 | Not started |
 | V8 | Employer contribution rates 2026, youth reduction dates, rate and birth years | Skatteverket "Arbetsgivaravgifter" + the enacted law (SFS) | A7 | Not started |
@@ -420,7 +420,30 @@ Sources checked first (V22–V24; see sources.md).
   - **VAT codes:** no new codes; the reverse-charge rates 12 % and 6 % post to 2624/2634 and get their box mapping in A6.
   - **Migrations:** a third pending migration adds purchases and bank; `check-limit` is 3 until mainnet.
 
-### A6–A9
+### A6. VAT and EU sales list — Done (2026-11-25)
+- [x] V3, V4, V5 verified and recorded (box list and file layout, EU sales list file, VIES API and IPv6)
+- [x] Box mapping in [vat-boxes.md](vat-boxes.md): boxes come from the ledger through VAT codes (account → VAT code → box), so manual vouchers count too. Seed `seed-2026.4`: VAT codes get their boxes; base codes for purchase accounts (20–24) and 3231 (41); input VAT codes for 2640/2645/2647 (48); import 2615/2625/2635 (60–62). Accounts 2625, 2635, 3231, 4545–4547 added (names verbatim from BAS 2026). Empty box/VAT-code fields left by the earlier seeds are filled; edited values are kept
+- [x] Import VAT (13:35): purchase treatment "Import (tullräkning)": the tax base per rate from the tullräkning, booked Dr 2645 / Cr 2615–2635 (nothing payable), box 50 from those bases; dated when the tullräkning was issued
+- [x] Return per period (month/quarter/year from settings): live preview with checks (unbooked inbox, unmatched bank rows, revenue accounts without VAT code, EU sales list vs boxes 35/39, earlier period not filed)
+- [x] Lock and settle in one step: box values (whole kronor, öre dropped) and the source voucher hash stored, settlement voucher in series M (26xx → 2650, öre to 3740) dated the period end, lock date moved to the period end
+- [x] eSKDUpload 6.0 XML (ISO-8859-1) and a PDF report; mark filed (receipt reference); link the tax-account VAT entry as paid
+- [x] EU sales list: rows per buyer VAT nr from issued invoices/credit notes (goods EUVA, services EUTJ, SEK, whole kronor), month or quarter, SKV574008 file, mark filed
+- [x] VIES check from the customer dialog (HTTPS outcall, non-replicated, result and time stored per VAT nr)
+- [x] Tests: `mops test` box fixtures (Skatteverket's import and EU examples, domestic, reverse charge, credit notes, öre), settlement balances, lock, EU sales list rows; unit tests for the XML and SKV574008 files; Playwright stepper + axe
+- Result: `mops test` accounting 74 (15 new: Skatteverket's EU goods 55 000 kr and import 100 000 kr examples, öre dropped per box, 49 from the whole-kronor boxes, settlement balanced with öre on 3740, refund and nil periods, period rules, EU sales list period codes, VIES request and answer parsing, the import document). `tests/unit/vat.spec.ts` checks the XML against Skatteverket's example 4 and the SKV574008 file against its example 1 line by line. `tests/api/vat-api.spec.ts` locks a real period on the local canister (series M settlement, lock date, filed, tax-account payment linked) and checks EU sales list rows. `tests/e2e/vat.spec.ts` covers the pages, the XML download and axe. VIES was called once from the local canister (non-replicated outcall) and answered.
+- Deviations and notes:
+  - **Lock and settle are one step** (spec: lock → file → mark filed → settle). The lock date blocks every posting in the period, so the settlement is posted in the same update, dated the period end.
+  - **Öre:** current Skatteverket pages only say "whole kronor". Öre are dropped per box (truncated) and booked to 3740. Open until confirmed (V3).
+  - **No XSD:** Skatteverket publishes no XSD or DTD for eSKDUpload 6.0 on the page, so the file is checked against the documented layout and examples instead (C14 partly). The real check is the upload in the e-service, which needs your e-legitimation: please upload the XML for the locked period once and save it without signing. The same goes for the EU sales list in Filöverföring › Testa filer (no e-legitimation needed).
+  - **Corrections after filing** are not supported: Skatteverket wants the whole return again, and the period is locked. Errors found later are corrected in an open period.
+  - **EU sales list** uses the invoice date (box 35/39 follow the voucher date; the check flags a difference, e.g. under the cash method). Triangulation (37/38) and call-off stock are not supported. Quarterly reporting is a choice on the page; goods then show Skatteverket's "Medgivande krävs" note.
+  - **Import VAT** comes from the tullräkning as its own document (Dr 2645 / Cr 2615–2635, nothing payable). BAS 2026 has no neutral 459x account, so the base is not booked; box 50 comes from the documents.
+  - **VIES** uses one node (`is_replicated = false`): VIES limits concurrent calls and the answer is advisory. At most 200 checks a day. Cycles are attached with `costHttpRequest` (pricing version 1, no new dependency).
+  - **Candid:** `Treatment` gained `#importVat`, so the local deploy needed `--yes` for the Candid check (stable compatibility passed; the only client is this frontend).
+  - **Settings:** EU trade and turnover over 40 MSEK are still not settings; yearly VAT and deadlines keep the earliest date.
+
+
+### A7–A9
 Scope as in spec §13 phases 4–7, with the UI from "Sections" above. Each phase starts with its V-items. Each phase's checklist is written out here when it starts.
 
 ### A10. Mainnet — Not started (approval at every step)

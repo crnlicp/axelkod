@@ -184,6 +184,8 @@ const PAGES = (t: ReturnType<typeof useAccT>) => [
   { label: t.bank.tabs.import, to: "/admin/accounting/bank/import" },
   { label: t.bank.tabs.rules, to: "/admin/accounting/bank/rules" },
   { label: t.bank.tabs.tax, to: "/admin/accounting/bank/tax" },
+  { label: t.vat.tabs.returns, to: "/admin/accounting/vat" },
+  { label: t.vat.tabs.ecSales, to: "/admin/accounting/vat/ec-sales" },
   { label: t.ledger.tabs.vouchers, to: "/admin/accounting/ledger" },
   { label: t.ledger.tabs.journal, to: "/admin/accounting/ledger/journal" },
   { label: t.ledger.tabs.general, to: "/admin/accounting/ledger/general" },

@@ -66,7 +66,7 @@ export function generalLedger(vouchers: VoucherView[], name: (n: bigint) => stri
   return [...map.values()].sort((a, b) => a.number - b.number);
 }
 
-function meta(ctx: AccContext, title: string, refText: string, subtitle: string[], date = new Date()): Meta {
+export function meta(ctx: AccContext, title: string, refText: string, subtitle: string[], date = new Date()): Meta {
   if (!ctx.data?.company) throw new Error("company");
   return { title, ref: refText, subtitle, company: ctx.data.company, generatedAt: nowStamp(), date };
 }
