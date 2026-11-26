@@ -91,7 +91,7 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V18 | Peppol BIS Billing 3.0 rules and UBL schema | docs.peppol.eu/poacc/billing/3.0/ | A4 | Done (A4) |
 | V19 | K2 layout (BFNAR 2016:10) for income statement and balance sheet | bfn.se | A9 | Done (A9b) |
 | V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | Done (2026-11-26; BFNAR 2015:1, 2017:6 not read) |
-| V21 | European subnet ID, node count and node countries | ICP dashboard | A10 | Not started |
+| V21 | European subnet ID, node count and node countries | ICP dashboard | A10 | Done (2026-11-26) |
 | V22 | Input VAT: evidence for deduction, reverse charge on purchases (EU goods, EU and non-EU services, domestic), reporting period | ML (2023:200) 13 kap. 31–36 §§, 16 kap. 5–17 §§; Skatteverket "Köpa varor/tjänster från andra EU-länder", "Fylla i momsdeklarationen", "Omvänd betalningsskyldighet inom byggsektorn" | A5 | Done (A5) |
 | V23 | BAS 2026 accounts for purchases, reverse charge, expense claims and the tax account | bas.se BAS 2026 (as V15) | A5 | Done (A5) |
 | V24 | Tax account (skattekonto): interest treatment, what export the e-service offers | Skatteverket "Skattekonto – betala och få tillbaka", "Ränta på skattekontot" | A5 | Done (A5) |
