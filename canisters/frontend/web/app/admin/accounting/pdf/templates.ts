@@ -120,6 +120,21 @@ async function render(job: Job, assets: Assets): Promise<Uint8Array> {
       d.table(job.table.cols.map((title, i) => ({ title, width: w, align: i === 0 ? undefined : "right" as const })), job.table.rows);
       break;
     }
+    case "statement@1": {
+      d.facts(job.facts);
+      const kr = (v: bigint) => formatOre(v * 100n).replace(/,00$/, "");
+      job.sections.forEach((s, i) => {
+        if (i > 0) d.y -= 10;
+        d.heading(s.title);
+        const cols: Col[] = [{ title: s.cols[0], width: d.width - 180 }, { title: s.cols[1], width: 90, align: "right" }, { title: s.cols[2], width: 90, align: "right" }];
+        d.table(cols, s.rows.map((r) => {
+          const bold = r.kind !== "item";
+          if (r.kind === "heading") return [{ text: r.label, bold }, "", ""];
+          return [{ text: r.label, bold }, { text: kr(r.cur), bold }, { text: r.prev === null ? "" : kr(r.prev), bold }];
+        }));
+      });
+      break;
+    }
     case "ec-sales@1": {
       d.facts(job.facts);
       const cols: Col[] = [{ title: "Köparens VAT-nummer", width: 110 }, { title: "Köpare", width: d.width - 110 - 210 },

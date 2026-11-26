@@ -144,6 +144,7 @@ function accountingNav(lang: AdminLang, role: Role, modules: { payroll: boolean;
       ...(books ? [{ to: "/admin/accounting/vat", label: n.vat, icon: IconPercent }] : []),
       ...(pay ? [{ to: "/admin/accounting/payroll", label: n.payroll, icon: IconPeople }] : []),
       ...(hus ? [{ to: "/admin/accounting/rot-rut", label: n.rotRut, icon: IconHome }] : []),
+      ...(books ? [{ to: "/admin/accounting/year-end", label: n.yearEnd, icon: IconLock }] : []),
     ] }] : []),
     ...(books ? [{ title: n.groupRegisters, items: [{ to: "/admin/accounting/assets", label: n.assets, icon: IconParts }] }] : []),
     { items: [

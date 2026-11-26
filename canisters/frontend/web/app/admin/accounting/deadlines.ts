@@ -109,3 +109,24 @@ export const ecSalesDue = (y: number, lastMonthOfPeriod: number) => due(y, lastM
  * company's own tax decision wins. January/August exceptions are not on the page read (V6).
  */
 export const prelTaxDue = (y: number, m: number) => due(y, m, 0, () => 12);
+
+/**
+ * INK2 filed electronically (SFL 32:2 plus one month, V16): year-end Jan–Apr → 1 December,
+ * May–Jun → 15 January, Jul–Aug → 1 April, Sep–Dec → 1 August (of the following year).
+ */
+export function ink2Due(end: Ymd): Ymd {
+  const [y, m] = parts(end);
+  if (m <= 4) return nextWorkingDay(ymd(y, 12, 1));
+  if (m <= 6) return nextWorkingDay(ymd(y + 1, 1, 15));
+  if (m <= 8) return nextWorkingDay(ymd(y + 1, 4, 1));
+  return nextWorkingDay(ymd(y + 1, 8, 1));
+}
+
+/** Last day of the month `n` months after the month of `end`. */
+const monthEndAfter = (end: Ymd, n: number): Ymd => { const [y, m] = parts(end); return ymd(y, m + n + 1, 0); };
+
+/** Ordinary general meeting within six months of the year-end (ABL 7:10, V19). */
+export const agmDue = (end: Ymd) => monthEndAfter(end, 6);
+
+/** Annual report at Bolagsverket within seven months of the year-end, or a late fee (ÅRL 8:6, V19). */
+export const annualReportDue = (end: Ymd) => nextWorkingDay(monthEndAfter(end, 7));

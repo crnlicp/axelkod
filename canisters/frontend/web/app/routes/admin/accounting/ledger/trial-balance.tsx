@@ -5,7 +5,7 @@ import type { BalanceRow } from "../../../../bindings/accounting";
 import { ok } from "../../../../admin/accounting/api";
 import { useAcc, useAccT, useErr } from "../../../../admin/accounting/context";
 import { useCrumbs } from "../../../../admin/accounting/crumbs";
-import { fyMonths, trialJob, trialRows } from "../../../../admin/accounting/ledger";
+import { fyMonths, openingMap, trialJob, trialRows } from "../../../../admin/accounting/ledger";
 import { plainOre } from "../../../../admin/accounting/money";
 import { DataTable } from "../../../../admin/accounting/ui/DataTable";
 import { LedgerTabs } from "../../../../admin/accounting/ui/LedgerTabs";
@@ -19,6 +19,7 @@ export default function TrialBalance() {
   const { acc, year, href, accountName, data } = ctx;
   const navigate = useNavigate();
   const [balances, setBalances] = useState<BalanceRow[] | null>(null);
+  const [opening, setOpening] = useState<Map<number, bigint>>(new Map());
   const [error, setError] = useState<string | null>(null);
   const months = useMemo(() => (year ? fyMonths(year) : []), [year]);
   const [range, setRange] = useState<[number, number]>([0, 11]);
@@ -28,12 +29,13 @@ export default function TrialBalance() {
   useEffect(() => {
     if (!year) return;
     let live = true;
-    acc.balances(year.id).then((r) => live && setBalances(ok(r))).catch((e) => live && setError(err(e)));
+    Promise.all([acc.balances(year.id), openingMap(acc, year.id)])
+      .then(([r, o]) => { if (live) { setOpening(o); setBalances(ok(r)); } }).catch((e) => live && setError(err(e)));
     return () => { live = false; };
   }, [acc, year, err]);
 
   const [from, to] = [Math.min(range[0], months.length - 1), Math.min(range[1], months.length - 1)];
-  const rows = balances ? trialRows(balances, from, to, accountName) : null;
+  const rows = balances ? trialRows(balances, from, to, accountName, opening) : null;
   const sel = (i: 0 | 1, labelText: string) => (
     <label className="text-sm">
       <span className="block text-muted">{labelText}</span>

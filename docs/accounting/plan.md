@@ -18,7 +18,7 @@ Each phase ends with a local deploy, that phase's checks, and your sign-off. Mai
 | A6 | VAT and EU sales list | Done (2026-11-25) | Box fixtures, file checked in Skatteverket's test service |
 | A7 | Payroll, AGI, växa | Done (2026-11-26) | Fee-category tests, AGI XML vs XSD, test service |
 | A8 | ROT/RUT | Done (2026-11-26), awaiting sign-off | Cap tests, XML vs schema |
-| A9 | Assets, inventory, year-end, SRU, SIE4, backup | In progress (A9a done, awaiting sign-off) | SIE4 round trip, restore test |
+| A9 | Assets, inventory, year-end, SRU, SIE4, backup | In progress (A9a and A9b done, A9b awaiting sign-off) | SIE4 round trip, restore test |
 | A10 | Mainnet (European subnet) | Not started | Approval at each step |
 
 ## Conflicts and resolutions
@@ -85,11 +85,11 @@ Nothing below is coded from memory. Each item is fetched from the official sourc
 | V12 | ROT/RUT 2026 rates and caps, XML schema, decision JSON, 2027 fields | Skatteverket "Rot och rut – företag" technical description | A8 | Done (A8) |
 | V13 | Riksbank reference rate history | riksbank.se (referensränta) | A4 | Done (A4) |
 | V14 | Late-payment compensation and reminder-fee rules | Räntelagen (1975:635), Lag (1981:739) om ersättning för inkassokostnader | A4 | Done (A4) |
-| V15 | BAS 2026 accounts and BAS → SRU (INK2R/INK2S) mapping | bas.se, Skatteverket SRU technical description (INK2) | A2 / A9 | Accounts done (A2); SRU open |
-| V16 | SRU file format (`INFO.SRU`, `BLANKETTER.SRU`) | Skatteverket "SKV 269" technical description | A9 | Not started |
+| V15 | BAS 2026 accounts and BAS → SRU (INK2R/INK2S) mapping | bas.se, Skatteverket SRU technical description (INK2) | A2 / A9 | Done (A2, A9b) |
+| V16 | SRU file format (`INFO.SRU`, `BLANKETTER.SRU`) | Skatteverket "SKV 269" technical description | A9 | Done (A9b) |
 | V17 | SIE 4C (type 4) spec | sie.se file format description | A9 | Not started |
 | V18 | Peppol BIS Billing 3.0 rules and UBL schema | docs.peppol.eu/poacc/billing/3.0/ | A4 | Done (A4) |
-| V19 | K2 layout (BFNAR 2016:10) for income statement and balance sheet | bfn.se | A9 | Not started |
+| V19 | K2 layout (BFNAR 2016:10) for income statement and balance sheet | bfn.se | A9 | Done (A9b) |
 | V20 | Bookkeeping, retention and storage rules (BFL 1999:1078, BFNAR 2013:2, 7 kap. storage abroad) | riksdagen.se, bfn.se | A2 | BFL done; BFNAR 2013:2 open |
 | V21 | European subnet ID, node count and node countries | ICP dashboard | A10 | Not started |
 | V22 | Input VAT: evidence for deduction, reverse charge on purchases (EU goods, EU and non-EU services, domestic), reporting period | ML (2023:200) 13 kap. 31–36 §§, 16 kap. 5–17 §§; Skatteverket "Köpa varor/tjänster från andra EU-länder", "Fylla i momsdeklarationen", "Omvänd betalningsskyldighet inom byggsektorn" | A5 | Done (A5) |
@@ -527,10 +527,22 @@ Scope as in spec §13 phase 7, with the UI from "Sections" above. A9 is large, s
   - Until opening balances exist (A9b), the stock account balance at a count is the sum of all postings on the account.
 
 **A9b. Bokslut, K2, SRU**
-- [ ] V15 (BAS → SRU for INK2R/INK2S), V16 (SRU file format), V19 (K2 layout), corporate tax 20.6 % and periodiseringsfond 25 % verified and recorded
-- [ ] Year-end stepper (spec §3.6): inventory count → depreciation run → accruals/prepayments → reconcile bank, tax account, VAT, payroll liabilities → unpaid invoices under the cash method → tax calculation → appropriations → closing vouchers → lock year → opening balances for the next year
-- [ ] Income statement and balance sheet in K2 layout (PDF); INK2R/INK2S data; `INFO.SRU` + `BLANKETTER.SRU`; INK2, AGM and annual report deadlines
-- [ ] Tests: `mops test`; SRU file against the format description; Playwright + axe
+- [x] V15 (BAS → SRU for INK2R/INK2S), V16 (SRU file format), V19 (K2 layout), corporate tax 20.6 % and periodiseringsfond 25 % verified and recorded
+- Design (A9b):
+  - Opening balances (IB) are data per fiscal year (`openingBalances`), not vouchers; balance reports add them. Entered by hand while no earlier year was transferred (setup step 5), or written by "Överför till nästa år", which moves 2099 Årets resultat to 2098. SIE4 import (A9c) writes the same data.
+  - Tax calculation (canister, V-tax row): result before appropriations and tax (3000–8799), plus non-deductible costs (BAS accounts named "ej avdragsgill" and 8423), minus tax-free income (8254, 8314), plus schablonintäkt on funds at the start of the year, plus funds that must be reversed (sixth year, oldest first), minus a carried-forward deficit (entered); the allocation to a periodiseringsfond is at most 25 % of what is left; tax 20.6 % of the surplus rounded down to whole tens. Tax parameters are stored per year; a year without verified parameters cannot be calculated.
+  - One closing voucher in series X dated the last day of the year: fund reversal (21xx/8819), allocation (8811/21xx, account 2120 + year mod 10), tax (8910/2512), result (8999/2099).
+  - Cash method: unpaid customer and supplier invoices are booked at year-end (1510, 2440 against revenue, costs and VAT, pro rata) and reversed on the first day of the next year.
+  - Bank and tax account are reconciled against a balance you enter from the statement; accruals and payroll liabilities are confirmed by hand.
+  - K2 statements, INK2/INK2R/INK2S and the SRU files are computed in the browser from balances and the BAS → SRU table (`sru.ts`, [bas-sru-map.md](bas-sru-map.md)).
+  - Not in A9b: överavskrivningar (tax depreciation above plan), group contributions, voluntary fund reversal, the annual report text.
+- [x] Year-end stepper (spec §3.6) at Bokslut: inventory count → depreciation run → accruals/prepayments → unpaid invoices under the cash method → reconcile bank, tax account, VAT, payroll liabilities → tax calculation and appropriations (closing voucher) → lock year → opening balances for the next year. Unpaid invoices come before the VAT step, because their VAT belongs in the year's last return.
+- [x] Income statement and balance sheet in K2 layout (PDF, this year and last); INK2/INK2R/INK2S fields; `INFO.SRU` + `BLANKETTER.SRU`; INK2, AGM and annual report deadlines; opening balances in the trial balance and general ledger
+- [x] Tests: `mops test` (13 new in `yearend.test.mo`), unit (`sru.spec.ts`: mapping, K2 balance, INK2S, SRU records against the format description, deadlines against Skatteverket's 2026P4 table), API (`yearend-api.spec.ts`), Playwright + axe (`yearend.spec.ts`)
+- Deviations and open points:
+  - Tax parameters exist for 2026 only. A later year cannot be calculated until its statslåneränta is verified and added.
+  - Under the cash method, ROT/RUT parts not yet paid by Skatteverket are not booked at year-end.
+  - The SRU files were checked against the format description, not in Skatteverket's test service (it opens 2026-12-15 for 2026P4).
 
 **A9c. SIE4, backup, system documentation, dashboard**
 - [ ] V17 (SIE 4C) and V20 (BFNAR 2013:2 open part: systemdokumentation, behandlingshistorik) verified and recorded

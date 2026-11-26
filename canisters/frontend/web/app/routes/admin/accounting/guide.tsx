@@ -40,7 +40,8 @@ const sv: Guide = {
     { when: "Vid årets slut", items: [
       "Inventera lagret och bokför inventeringen per sista dagen i räkenskapsåret.",
       "Kör årets sista avskrivningar.",
-      "Bokslut, årsredovisning (K2), INK2 och SIE4 kommer i nästa del (A9b–c).",
+      "Gå igenom checklistan under Bokslut: avstämningar, skatt och periodiseringsfond, bokslutsverifikationen, låsning och överföring till nästa år.",
+      "Ladda ner resultat- och balansräkningen (K2) och SRU-filerna för inkomstdeklaration 2. SIE4-export kommer i nästa del (A9c).",
     ] },
   ],
   sections: [
@@ -74,6 +75,10 @@ const sv: Guide = {
     { id: "assets", title: "Tillgångar & lager", to: "/admin/accounting/assets", body: [
       "Inventarier bokförs som inköp på tillgångskontot och läggs sedan upp i registret. Avskrivning sker linjärt per månad från månaden tillgången tas i bruk; kör avskrivningar per period. Under ett halvt prisbasbelopp får inköpet kostnadsföras direkt.",
       "Lager (modul): lagerartiklar och rörelser håller antal och anskaffningspris. Vid inventeringen värderas lagret enligt först in, först ut och lägsta värdets princip (valfritt 97 %), och lagerförändringen bokförs.",
+    ] },
+    { id: "year-end", title: "Bokslut", to: "/admin/accounting/year-end", body: [
+      "Checklistan visar vad som återstår: inventering, avskrivningar, periodiseringar, obetalda fakturor (kontantmetoden), bank, skattekonto, moms och löneskulder. Skatten beräknas (20,6 %, periodiseringsfond högst 25 %) och bokslutsverifikationen bokförs i serie X. Ägaren låser året efter årets slut och för över balanserna till nästa år.",
+      "Rapporter: resultat- och balansräkning i K2-uppställning, och INFO.SRU och BLANKETTER.SRU för Skatteverkets filöverföring. Ingående balanser för det första året fylls i under Bokslut › Ingående balanser.",
     ] },
     { id: "settings", title: "Inställningar", to: "/admin/accounting/settings", body: [
       "Företag (uppgifterna på alla dokument), bokföring (metod, räkenskapsår, låsdatum, moduler), kontoplan, momskoder, fakturering, lön, användare och roller, säkerhet.",
@@ -119,7 +124,8 @@ const en: Guide = {
     { when: "At year-end", items: [
       "Count the inventory and book the stocktaking on the last day of the financial year.",
       "Run the year's last depreciation.",
-      "Year-end closing, annual report (K2), INK2 and SIE4 come in the next part (A9b–c).",
+      "Work through the checklist under Year-end: reconciliations, tax and tax allocation reserve, the year-end voucher, locking and carrying over to next year.",
+      "Download the income statement and balance sheet (K2) and the SRU files for income tax return 2. SIE4 export comes in the next part (A9c).",
     ] },
   ],
   sections: [
@@ -153,6 +159,10 @@ const en: Guide = {
     { id: "assets", title: "Assets & inventory", to: "/admin/accounting/assets", body: [
       "Equipment is booked as a purchase on the asset account and then added to the register. Depreciation is straight-line per month from the month the asset is taken into use; run it per period. Below half a price base amount the purchase may be expensed directly.",
       "Inventory (module): stock items and moves keep quantities and costs. At the stocktaking the stock is valued first in, first out and at the lower of cost and net realisable value (optionally 97 %), and the change in stock is booked.",
+    ] },
+    { id: "year-end", title: "Year-end", to: "/admin/accounting/year-end", body: [
+      "The checklist shows what is left: stocktaking, depreciation, accruals, unpaid invoices (cash method), bank, tax account, VAT and payroll liabilities. Tax is calculated (20.6 %, tax allocation reserve at most 25 %) and the year-end voucher is posted in series X. After the year has ended the owner locks it and carries the balances over to next year.",
+      "Reports: income statement and balance sheet in the K2 layout, and INFO.SRU and BLANKETTER.SRU for Skatteverket's file transfer. Opening balances for the first year are entered under Year-end › Opening balances.",
     ] },
     { id: "settings", title: "Settings", to: "/admin/accounting/settings", body: [
       "Company (the details on every document), bookkeeping (method, financial years, lock date, modules), chart of accounts, VAT codes, invoicing, payroll, users and roles, security.",

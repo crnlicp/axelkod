@@ -6,7 +6,7 @@ import type { BalanceRow } from "../../../../bindings/accounting";
 import { ok } from "../../../../admin/accounting/api";
 import { useAcc, useAccT, useErr } from "../../../../admin/accounting/context";
 import { useCrumbs } from "../../../../admin/accounting/crumbs";
-import { allVouchers, generalJob, generalLedger } from "../../../../admin/accounting/ledger";
+import { allVouchers, generalJob, generalLedger, openingMap } from "../../../../admin/accounting/ledger";
 import type { LedgerAccount } from "../../../../admin/accounting/pdf/types";
 import { plainOre } from "../../../../admin/accounting/money";
 import { AccountPicker } from "../../../../admin/accounting/ui/AccountPicker";
@@ -40,7 +40,12 @@ export default function GeneralLedger() {
       acc.balances(year.id).then((r) => live && setSums(ok(r))).catch((e) => live && setError(err(e)));
     } else {
       setAccount(undefined);
-      allVouchers(acc, year.id).then((vs) => live && setAccount(generalLedger(vs, accountName, only)[0] ?? null)).catch((e) => live && setError(err(e)));
+      Promise.all([allVouchers(acc, year.id), openingMap(acc, year.id)]).then(([vs, o]) => {
+        if (!live) return;
+        const ib = o.get(only) ?? 0n;
+        const a = generalLedger(vs, accountName, only)[0] ?? (ib !== 0n ? { number: only, name: accountName(BigInt(only)), opening: 0n, rows: [] } : null);
+        setAccount(a ? { ...a, opening: ib } : null);
+      }).catch((e) => live && setError(err(e)));
     }
     return () => { live = false; };
   }, [acc, year, only, err, accountName]);

@@ -42,13 +42,20 @@ export function fyMonths(y: FiscalYear): string[] {
   }
 }
 
-export function trialRows(balances: BalanceRow[], from: number, to: number, name: (n: bigint) => string): TrialRow[] {
-  return balances
-    .map((b) => ({
-      number: Number(b.account), name: name(b.account),
-      opening: b.months.slice(0, from).reduce((a, x) => a + x, 0n),
-      change: b.months.slice(from, to + 1).reduce((a, x) => a + x, 0n),
-    }))
+/** Ingående balans per account (A9b): from the year-end transfer or entered by hand. */
+export async function openingMap(acc: AccContext["acc"], yearId: bigint): Promise<Map<number, bigint>> {
+  return new Map(ok(await acc.openingBalances(yearId)).map((l) => [Number(l.account), l.amount]));
+}
+
+/** `opening` (IB) is added before the first month of the year. */
+export function trialRows(balances: BalanceRow[], from: number, to: number, name: (n: bigint) => string, opening: ReadonlyMap<number, bigint> = new Map()): TrialRow[] {
+  const rows = balances.map((b) => ({
+    number: Number(b.account), name: name(b.account),
+    opening: (opening.get(Number(b.account)) ?? 0n) + b.months.slice(0, from).reduce((a, x) => a + x, 0n),
+    change: b.months.slice(from, to + 1).reduce((a, x) => a + x, 0n),
+  }));
+  for (const [n, a] of opening) if (!balances.some((b) => Number(b.account) === n)) rows.push({ number: n, name: name(BigInt(n)), opening: a, change: 0n });
+  return rows
     .filter((r) => r.opening !== 0n || r.change !== 0n)
     .sort((a, b) => a.number - b.number);
 }
@@ -107,17 +114,19 @@ export async function journalJob(ctx: AccContext, y: FiscalYear, series: string 
 }
 
 export async function generalJob(ctx: AccContext, y: FiscalYear, only?: number): Promise<Job> {
-  const vs = await allVouchers(ctx.acc, y.id);
+  const [vs, ib] = await Promise.all([allVouchers(ctx.acc, y.id), openingMap(ctx.acc, y.id)]);
+  const accounts = generalLedger(vs, ctx.accountName, only).map((a) => ({ ...a, opening: ib.get(a.number) ?? 0n }));
+  for (const [n, amount] of ib) if ((only === undefined || only === n) && !accounts.some((a) => a.number === n)) accounts.push({ number: n, name: ctx.accountName(BigInt(n)), opening: amount, rows: [] });
   return {
     template: "ledger@1",
     meta: meta(ctx, "Huvudbok", y.start.slice(0, 4), [yearLabel(y), ...(only !== undefined ? [`Konto ${only}`] : [])]),
-    accounts: generalLedger(vs, ctx.accountName, only),
+    accounts: accounts.sort((a, b) => a.number - b.number),
   };
 }
 
 export async function trialJob(ctx: AccContext, y: FiscalYear, from: number, to: number): Promise<Job> {
   const months = fyMonths(y);
-  const rows = trialRows(ok(await ctx.acc.balances(y.id)), from, to, ctx.accountName);
+  const rows = trialRows(ok(await ctx.acc.balances(y.id)), from, to, ctx.accountName, await openingMap(ctx.acc, y.id));
   return {
     template: "trial-balance@1",
     meta: meta(ctx, "Saldobalans", y.start.slice(0, 4), [yearLabel(y), `Period ${months[from]} – ${months[to]}`]),

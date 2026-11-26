@@ -3,7 +3,7 @@ const sv = {
   workspace: { label: "Arbetsyta", site: "Webbplats", accounting: "Ekonomi" },
   nav: {
     label: "Ekonomi", overview: "Översikt", groupDaily: "Löpande", groupPeriods: "Perioder", groupRegisters: "Register och arkiv",
-    ledger: "Bokföring", sales: "Försäljning", purchases: "Inköp", bank: "Bank & skattekonto", vat: "Moms", payroll: "Lön", rotRut: "ROT/RUT", assets: "Tillgångar & lager", guide: "Dokumentation", settings: "Inställningar",
+    ledger: "Bokföring", sales: "Försäljning", purchases: "Inköp", bank: "Bank & skattekonto", vat: "Moms", payroll: "Lön", rotRut: "ROT/RUT", assets: "Tillgångar & lager", yearEnd: "Bokslut", guide: "Dokumentation", settings: "Inställningar",
   },
   shell: {
     year: "Räkenskapsår", noYear: "Inget räkenskapsår", search: "Sök", searchHint: "Sök verifikation (A-12) eller sida",
@@ -252,6 +252,65 @@ const sv = {
       done: "Inventeringen är bokförd.", history: "Inventeringar", empty: "Inga inventeringar ännu.",
     },
   },
+  yearEnd: {
+    title: "Bokslut", tabs: { checklist: "Checklista", reports: "Rapporter och deklaration", opening: "Ingående balanser" },
+    intro: "Bokslutet görs steg för steg. Varje steg visar vad som återstår och länkar dit; året kan låsas när alla steg är klara.",
+    steps: {
+      inventory: "Inventera lagret", depreciation: "Kör avskrivningar", accruals: "Periodisera intäkter och kostnader", cash: "Obetalda fakturor (kontantmetoden)",
+      bank: "Stäm av bankkontot", taxAccount: "Stäm av skattekontot", vat: "Momsdeklarationer för året", payroll: "Stäm av löneskulder",
+      tax: "Skatt och bokslutsdispositioner", lock: "Lås räkenskapsåret", transfer: "Överför till nästa år",
+    } as Record<string, string>,
+    saved: "Sparat.", na: "Gäller inte", open: (n: string) => `${n} kvar`,
+    inventory: { text: "Inventera lagret på årets sista dag och bokför lagerförändringen.", go: "Till inventering" },
+    depreciation: { text: (n: string) => `${n} tillgångar har avskrivningar kvar för året. Kör avskrivningarna för årets sista månad; missade månader tas med.`, done: "Alla avskrivningar för året är bokförda.", go: "Till tillgångar" },
+    accruals: {
+      text: "Boka upplupna och förutbetalda poster så att intäkter och kostnader hamnar på rätt år: 1700-konton (förutbetalda kostnader, upplupna intäkter) och 2900-konton (upplupna kostnader, förutbetalda intäkter). K2 tillåter att belopp under 5 000 kr inte periodiseras.",
+      go: "Ny verifikation", confirm: "Periodiseringarna är bokförda",
+    },
+    cash: {
+      text: "Med kontantmetoden bokförs obetalda kund- och leverantörsfakturor på årets sista dag och återförs första dagen nästa år.",
+      none: "Inga obetalda fakturor vid årets slut.", book: "Bokför obetalda fakturor", creates: "Skapar en verifikation i serie X på årets sista dag och en återföring första dagen nästa år.",
+      done: "De obetalda fakturorna är bokförda.",
+    },
+    statement: {
+      bank: "Saldo enligt bankens kontoutdrag på årets sista dag", taxAccount: "Saldo enligt skattekontot på årets sista dag",
+      ledger: (a: string) => `Bokfört saldo: ${a}`, save: "Spara saldo", diff: (a: string) => `Skillnad: ${a}. Leta efter saknade eller dubbla poster.`, match: "Saldona stämmer.",
+      goBank: "Till banken", goTax: "Till skattekontot",
+    },
+    vat: { text: (n: string) => `${n} månader saknar en låst momsdeklaration.`, done: "Alla månader har en låst momsdeklaration.", go: "Till moms" },
+    payroll: { text: (n: string) => `${n} lönekörningar saknar en inlämnad arbetsgivardeklaration.`, check: "Kontrollera att 2710 (personalskatt), 2731 (arbetsgivaravgifter) och 2920 (semesterlöneskuld) stämmer.", confirm: "Löneskulderna är avstämda", go: "Till lön" },
+    tax: {
+      text: "Skatten beräknas från årets resultat med de skattemässiga justeringarna. Bokningen skapar en verifikation i serie X på årets sista dag.",
+      deficitIn: "Outnyttjat underskott från förra årets deklaration (kr)", fund: "Avsättning till periodiseringsfond (kr)", fundMax: (a: string) => `Högst ${a} (25 % av överskottet).`,
+      otherAdd: "Andra skattemässiga justeringar, ökning (kr)", otherDeduct: "Andra skattemässiga justeringar, minskning (kr)", calc: "Beräkna",
+      rows: {
+        result: "Resultat före bokslutsdispositioner och skatt", nonDeductible: "Ej avdragsgilla kostnader", taxFree: "Skattefria intäkter", schablon: "Schablonintäkt på periodiseringsfonder",
+        reversed: "Återförda periodiseringsfonder", deficitIn: "Outnyttjat underskott", base: "Överskott före avsättning", fund: "Avsättning till periodiseringsfond",
+        taxable: "Skattepliktigt överskott (avrundat nedåt till tiotal kronor)", deficitOut: "Underskott att föra vidare", tax: (rate: string) => `Inkomstskatt ${rate} %`, after: "Årets resultat efter skatt",
+      } as Record<string, string | ((x: string) => string)>,
+      book: "Bokför bokslut", creates: "Skapar bokslutsverifikationen i serie X: periodiseringsfonder, skatt (8910/2512) och årets resultat (8999/2099). Året markeras Bokslut pågår.",
+      done: "Bokslutet är bokfört.", voucher: "Visa bokslutsverifikationen", params: (y: string, r: string) => `Parametrar ${y}: bolagsskatt ${r} %, statslåneränta 30 nov året före.`,
+    },
+    lock: {
+      text: "När året är låst kan inget mer bokföras på det. Låsdatumet flyttas till årets sista dag.", button: "Lås räkenskapsåret", notEnded: "Året är inte slut än.",
+      blocked: "Alla steg ovanför måste vara klara.", done: "Räkenskapsåret är låst.", confirm: "Lås räkenskapsåret? Det går inte att ångra.",
+    },
+    transfer: { text: "Utgående balanser blir nästa års ingående balanser. Årets resultat (2099) flyttas till 2098.", button: "Överför till nästa år", done: "Ingående balanser för nästa år är skapade." },
+    deadlines: { title: "Datum", ink2: "Inkomstdeklaration 2 (digitalt)", agm: "Årsstämma senast", annualReport: "Årsredovisningen hos Bolagsverket" },
+    reports: {
+      intro: "Resultat- och balansräkning i K2-uppställning, och inkomstdeklaration 2 som SRU-filer för Skatteverkets filöverföring.",
+      income: "Resultaträkning", balance: "Balansräkning", post: "Post", pdf: "Resultat- och balansräkning (PDF)", preliminary: "Preliminär: bokslutet är inte bokfört än.",
+      ink2r: "INK2R – räkenskapsschema", ink2s: "INK2S – skattemässiga justeringar", ink2: "INK2 – huvudblankett", field: "Fältkod", value: "Belopp (kr)",
+      sru: "SRU-filer", sruText: "Ladda ner båda filerna och lämna dem i Skatteverkets e-tjänst Filöverföring. Filnamnen får inte ändras.",
+      info: "INFO.SRU", forms: "BLANKETTER.SRU", sruNeedsTax: "SRU-filerna kan skapas när bokslutet är bokfört.", sruNeedsCompany: "Fyll i företagsuppgifterna först.",
+      check: "Kontrollera mot årsredovisningen innan du lämnar deklarationen. Deklarationen räknas som inlämnad först när den är signerad i e-tjänsten.",
+    },
+    opening: {
+      intro: "Ingående balans per balanskonto vid årets början. Skapas av överföringen från förra året, eller fylls i här för det första året i systemet.",
+      empty: "Inga ingående balanser för året.", add: "Lägg till rad", save: "Spara ingående balanser", saved: "De ingående balanserna är sparade.",
+      transferred: "Balanserna kommer från förra årets bokslut och kan inte ändras här.", locked: "Året är låst.", sum: "Summa (ska vara 0)", remove: "Ta bort rad",
+    },
+  },
   rotRut: {
     title: "ROT/RUT", tabs: { cases: "Ärenden", claims: "Begäran", settings: "Inställningar" },
     disabled: "ROT/RUT är avstängt. Slå på modulen under Inställningar › Bokföring.",
@@ -449,6 +508,11 @@ const sv = {
     invalid: (f: string) => `Ogiltigt värde: ${f}`, conflict: (m: string) => `Konflikt: ${m}`, locked: (m: string) => `Låst: ${m}`,
     vault: (m: string) => `Dokumentvalvet: ${m}`, keys: (m: string) => `Nyckeltjänsten: ${m}`, network: (m: string) => `Anropet misslyckades: ${m}`,
     fields: {
+      taxParams: "skatteparametrar saknas för året (de läggs in när de är kontrollerade)", fund: "avsättning till periodiseringsfond (hela kronor, högst 25 % av överskottet)",
+      fundAccount: "konto för årets periodiseringsfond saknas i kontoplanen", deficitIn: "underskott (positivt belopp)", adjustments: "justeringar (positiva belopp)",
+      appropriationsBooked: "det finns redan bokslutsdispositioner eller skatt bokförda på året", nothingToBook: "inget att bokföra", notEnded: "året är inte slut än",
+      steps: "alla steg i checklistan är inte klara", notLocked: "året måste vara låst först", transferred: "balanserna är redan överförda",
+      nextYear: "nästa räkenskapsår saknas – lägg upp det under Inställningar", nothingOpen: "inga obetalda fakturor", cashBooked: "de obetalda fakturorna är redan bokförda", yearEndBooked: "bokslutet är redan bokfört", accountingMethod: "gäller bara kontantmetoden", step: "steg",
       "accounts.cost": "tillgångskonto (1000–1399)", "accounts.accumulated": "konto för ackumulerade avskrivningar (1000–1399, inte tillgångskontot)", "accounts.expense": "kostnadskonto (7700–7899)",
       acquired: "anskaffningsdatum", inUse: "datum taget i bruk (tidigast anskaffningsdagen)", residual: "restvärde (lägre än anskaffningsvärdet)", lifeMonths: "nyttjandeperiod (1–1 200 månader)",
       openingDepreciation: "tidigare avskrivet (högst anskaffningsvärdet minus restvärdet)", depreciated: "tillgången har avskrivningar", periodDone: "perioden är redan avskriven",

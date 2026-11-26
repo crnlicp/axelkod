@@ -7,6 +7,7 @@ import Time "mo:core/Time";
 import Audit "lib/Audit";
 import Seed "lib/Seed";
 import AssetsMixin "mixins/Assets";
+import YearEndMixin "mixins/YearEnd";
 import AttachmentsMixin "mixins/Attachments";
 import AuditMixin "mixins/Audit";
 import BankMixin "mixins/Bank";
@@ -28,6 +29,7 @@ import Pr "types/Payroll";
 import R "types/RotRut";
 import S "types/Sales";
 import V "types/Vat";
+import YT "types/YearEnd";
 import Types "types";
 
 // `firstOwner` is the optional install argument `(opt principal "...")`. It only
@@ -48,6 +50,7 @@ actor class Accounting(firstOwner : ?Principal) {
   let payroll : Pr.Payroll;
   let rotRut : R.RotRut;
   let assets : As.Assets;
+  let yearEnd : YT.YearEnd;
 
   switch (firstOwner) {
     case (?p) {
@@ -93,6 +96,7 @@ actor class Accounting(firstOwner : ?Principal) {
   include PayrollMixin(roles, config, chart, ledger, files, counters, audit, payroll);
   include RotRutMixin(roles, config, chart, ledger, files, counters, audit, sales, rotRut);
   include AssetsMixin(roles, config, chart, ledger, files, counters, audit, assets, payroll);
+  include YearEndMixin(roles, config, chart, ledger, files, counters, audit, sales, purchases, vat, payroll, assets, yearEnd);
 
   // Rejects oversized calls before they run (saves cycles; every method still
   // validates its own input). A 500-line voucher fits well within this.

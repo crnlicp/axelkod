@@ -5,7 +5,7 @@ const en: AccDict = {
   workspace: { label: "Workspace", site: "Website", accounting: "Accounting" },
   nav: {
     label: "Accounting", overview: "Overview", groupDaily: "Daily", groupPeriods: "Periods", groupRegisters: "Registers and archive",
-    ledger: "Bookkeeping", sales: "Sales", purchases: "Purchases", bank: "Bank & tax account", vat: "VAT", payroll: "Payroll", rotRut: "ROT/RUT", assets: "Assets & inventory", guide: "Documentation", settings: "Settings",
+    ledger: "Bookkeeping", sales: "Sales", purchases: "Purchases", bank: "Bank & tax account", vat: "VAT", payroll: "Payroll", rotRut: "ROT/RUT", assets: "Assets & inventory", yearEnd: "Year-end", guide: "Documentation", settings: "Settings",
   },
   shell: {
     year: "Fiscal year", noYear: "No fiscal year", search: "Search", searchHint: "Search a voucher (A-12) or a page",
@@ -254,6 +254,65 @@ const en: AccDict = {
       done: "The stocktaking is booked.", history: "Stocktakings", empty: "No stocktakings yet.",
     },
   },
+  yearEnd: {
+    title: "Year-end", tabs: { checklist: "Checklist", reports: "Reports and tax return", opening: "Opening balances" },
+    intro: "Year-end is done step by step. Each step shows what is left and links to it; the year can be locked when every step is done.",
+    steps: {
+      inventory: "Count the stock", depreciation: "Run depreciation", accruals: "Accrue income and costs", cash: "Unpaid invoices (cash method)",
+      bank: "Reconcile the bank account", taxAccount: "Reconcile the tax account", vat: "VAT returns for the year", payroll: "Reconcile payroll liabilities",
+      tax: "Tax and appropriations", lock: "Lock the financial year", transfer: "Carry over to next year",
+    } as Record<string, string>,
+    saved: "Saved.", na: "Not applicable", open: (n: string) => `${n} left`,
+    inventory: { text: "Count the stock on the last day of the year and post the change in stock.", go: "Go to stocktaking" },
+    depreciation: { text: (n: string) => `${n} assets still have depreciation for the year. Run depreciation for the last month; missed months are included.`, done: "All depreciation for the year is posted.", go: "Go to assets" },
+    accruals: {
+      text: "Post accrued and prepaid items so income and costs fall in the right year: 1700 accounts (prepaid costs, accrued income) and 2900 accounts (accrued costs, deferred income). K2 allows amounts under SEK 5,000 not to be accrued.",
+      go: "New voucher", confirm: "Accruals are posted",
+    },
+    cash: {
+      text: "Under the cash method, unpaid customer and supplier invoices are posted on the last day of the year and reversed on the first day of the next.",
+      none: "No unpaid invoices at year-end.", book: "Post unpaid invoices", creates: "Creates a voucher in series X on the last day of the year and a reversal on the first day of the next.",
+      done: "The unpaid invoices are posted.",
+    },
+    statement: {
+      bank: "Balance on the bank statement on the last day of the year", taxAccount: "Balance on the tax account on the last day of the year",
+      ledger: (a: string) => `Ledger balance: ${a}`, save: "Save balance", diff: (a: string) => `Difference: ${a}. Look for missing or duplicate entries.`, match: "The balances match.",
+      goBank: "Go to bank", goTax: "Go to tax account",
+    },
+    vat: { text: (n: string) => `${n} months have no locked VAT return.`, done: "Every month has a locked VAT return.", go: "Go to VAT" },
+    payroll: { text: (n: string) => `${n} pay runs have no filed employer declaration.`, check: "Check that 2710 (employee tax), 2731 (employer contributions) and 2920 (holiday pay liability) are right.", confirm: "Payroll liabilities are reconciled", go: "Go to payroll" },
+    tax: {
+      text: "Tax is calculated from the year's result with the tax adjustments. Posting creates a voucher in series X on the last day of the year.",
+      deficitIn: "Unused deficit from last year's return (SEK)", fund: "Allocation to a tax allocation reserve (SEK)", fundMax: (a: string) => `At most ${a} (25 % of the surplus).`,
+      otherAdd: "Other tax adjustments, increase (SEK)", otherDeduct: "Other tax adjustments, decrease (SEK)", calc: "Calculate",
+      rows: {
+        result: "Result before appropriations and tax", nonDeductible: "Non-deductible costs", taxFree: "Tax-free income", schablon: "Standard income on tax allocation reserves",
+        reversed: "Reserves reversed", deficitIn: "Unused deficit", base: "Surplus before allocation", fund: "Allocation to tax allocation reserve",
+        taxable: "Taxable surplus (rounded down to tens of kronor)", deficitOut: "Deficit to carry forward", tax: (rate: string) => `Income tax ${rate} %`, after: "Result after tax",
+      } as Record<string, string | ((x: string) => string)>,
+      book: "Post year-end", creates: "Creates the year-end voucher in series X: tax allocation reserves, tax (8910/2512) and the year's result (8999/2099). The year is marked Year-end in progress.",
+      done: "Year-end is posted.", voucher: "Show the year-end voucher", params: (y: string, r: string) => `Parameters ${y}: corporate tax ${r} %, government borrowing rate 30 Nov the year before.`,
+    },
+    lock: {
+      text: "Once the year is locked nothing more can be posted to it. The lock date moves to the last day of the year.", button: "Lock the financial year", notEnded: "The year has not ended yet.",
+      blocked: "Every step above must be done.", done: "The financial year is locked.", confirm: "Lock the financial year? This cannot be undone.",
+    },
+    transfer: { text: "Closing balances become next year's opening balances. The year's result (2099) moves to 2098.", button: "Carry over to next year", done: "Opening balances for next year are created." },
+    deadlines: { title: "Dates", ink2: "Income tax return 2 (digital)", agm: "Annual general meeting by", annualReport: "Annual report at Bolagsverket" },
+    reports: {
+      intro: "Income statement and balance sheet in the K2 layout, and income tax return 2 as SRU files for Skatteverket's file transfer.",
+      income: "Income statement", balance: "Balance sheet", post: "Item", pdf: "Income statement and balance sheet (PDF)", preliminary: "Preliminary: year-end is not posted yet.",
+      ink2r: "INK2R – accounts", ink2s: "INK2S – tax adjustments", ink2: "INK2 – main form", field: "Field code", value: "Amount (SEK)",
+      sru: "SRU files", sruText: "Download both files and submit them in Skatteverket's File transfer service. The file names must not be changed.",
+      info: "INFO.SRU", forms: "BLANKETTER.SRU", sruNeedsTax: "The SRU files can be created once year-end is posted.", sruNeedsCompany: "Fill in the company details first.",
+      check: "Check against the annual report before filing. The return counts as filed only when it is signed in the e-service.",
+    },
+    opening: {
+      intro: "Opening balance per balance-sheet account at the start of the year. Created by the carry-over from last year, or entered here for the first year in the system.",
+      empty: "No opening balances for the year.", add: "Add row", save: "Save opening balances", saved: "The opening balances are saved.",
+      transferred: "The balances come from last year's year-end and cannot be changed here.", locked: "The year is locked.", sum: "Total (must be 0)", remove: "Remove row",
+    },
+  },
   rotRut: {
     title: "ROT/RUT", tabs: { cases: "Cases", claims: "Claims", settings: "Settings" },
     disabled: "ROT/RUT is off. Turn the module on under Settings › Bookkeeping.",
@@ -451,6 +510,11 @@ const en: AccDict = {
     invalid: (f: string) => `Invalid value: ${f}`, conflict: (m: string) => `Conflict: ${m}`, locked: (m: string) => `Locked: ${m}`,
     vault: (m: string) => `Document vault: ${m}`, keys: (m: string) => `Key service: ${m}`, network: (m: string) => `The call failed: ${m}`,
     fields: {
+      taxParams: "tax parameters are missing for the year (they are added once verified)", fund: "allocation to tax allocation reserve (whole kronor, at most 25 % of the surplus)",
+      fundAccount: "the account for this year's tax allocation reserve is missing from the chart", deficitIn: "deficit (positive amount)", adjustments: "adjustments (positive amounts)",
+      appropriationsBooked: "appropriations or tax are already posted for the year", nothingToBook: "nothing to post", notEnded: "the year has not ended yet",
+      steps: "not every checklist step is done", notLocked: "the year must be locked first", transferred: "the balances are already carried over",
+      nextYear: "the next financial year is missing – add it under Settings", nothingOpen: "no unpaid invoices", cashBooked: "the unpaid invoices are already posted", yearEndBooked: "year-end is already posted", accountingMethod: "only for the cash method", step: "step",
       "accounts.cost": "asset account (1000–1399)", "accounts.accumulated": "accumulated depreciation account (1000–1399, not the asset account)", "accounts.expense": "expense account (7700–7899)",
       acquired: "acquisition date", inUse: "date taken into use (not before acquisition)", residual: "residual value (below cost)", lifeMonths: "useful life (1–1,200 months)",
       openingDepreciation: "depreciated earlier (at most cost less residual)", depreciated: "the asset has depreciation", periodDone: "the period is already depreciated",

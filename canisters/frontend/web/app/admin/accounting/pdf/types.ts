@@ -37,7 +37,11 @@ export type Job =
   | { template: "ec-sales@1"; meta: Meta; rows: EslRow[]; facts: [string, string][] }
   /** Payslip: the lines, tax, net, and what the AGI reports (V7). */
   | { template: "payslip@1"; meta: Meta; facts: [string, string][]; lines: PayslipLine[]; totals: [string, bigint][]; agi: [string, string][] }
-  | { template: "summary@1"; meta: Meta; facts: [string, string][]; table: { cols: string[]; rows: string[][] } };
+  | { template: "summary@1"; meta: Meta; facts: [string, string][]; table: { cols: string[]; rows: string[][] } }
+  /** K2 statements (V19) and INK2 field lists: whole kronor, this year and last year. */
+  | { template: "statement@1"; meta: Meta; facts: [string, string][]; sections: StatementSection[] };
+
+export type StatementSection = { title: string; cols: [string, string, string]; rows: { label: string; kind: "heading" | "item" | "sum" | "total"; cur: bigint; prev: bigint | null }[] };
 
 /** ROT/RUT buyers and home, decrypted in the browser for printing (V12: shown on the invoice). */
 export type HusPrint = { buyers: { name: string; personnummer: string; amount: bigint }[]; property?: string };

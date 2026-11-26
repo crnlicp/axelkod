@@ -72,3 +72,10 @@ export const assetTabs = (t: { title: string; tabs: Record<"register" | "stock" 
     ...(inventory ? [["/admin/accounting/assets/inventory", t.tabs.stock] as const, ["/admin/accounting/assets/counts", t.tabs.counts] as const] : []),
   ],
 });
+
+export const yearEndTabs = (t: { title: string; tabs: Record<"checklist" | "reports" | "opening", string> }) => ({
+  label: t.title,
+  tabs: [
+    ["/admin/accounting/year-end", t.tabs.checklist], ["/admin/accounting/year-end/reports", t.tabs.reports], ["/admin/accounting/year-end/opening", t.tabs.opening],
+  ] as const,
+});
