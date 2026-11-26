@@ -79,6 +79,10 @@ test("reports, backup and SIE4 import", async ({ page, context }) => {
 
     // SIE4 import: closing balances of the year before fill the opening-balance rows (not saved).
     await page.goto("/admin/accounting/year-end/opening");
+    // Wait until the rows have loaded before deciding: yearend.spec may have locked the year.
+    await expect(page).toHaveTitle(/^Ingående balanser – Ekonomi/);
+    await expect(page.getByRole("heading", { level: 1, name: "Bokslut" })).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: /^Laddar/ })).toHaveCount(0);
     const input = page.getByLabel("Hämta från SIE4-fil");
     if (await input.isVisible()) {
       const y = new Date().getUTCFullYear() - 1;

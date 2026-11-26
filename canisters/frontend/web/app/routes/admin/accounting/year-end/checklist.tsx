@@ -37,7 +37,9 @@ export default function YearEndChecklist() {
   const [msg, setMsg] = useState<Msg>(null);
   useCrumbs([{ label: y.title, to: "/admin/accounting/year-end" }, { label: y.tabs.checklist }]);
 
-  const load = useCallback(async () => { if (year) setSt(ok(await acc.yearEndStatus(year.id))); }, [acc, year]);
+  const yearId = year?.id;
+  const load = useCallback(async () => { if (yearId !== undefined) setSt(ok(await acc.yearEndStatus(yearId))); }, [acc, yearId]);
+  // Keyed on the year id: ctx.reload() after a save gives a new year object, which must not reset the open step.
   useEffect(() => { setSt(null); setStep(null); void load().catch((e) => setMsg({ ok: false, text: err(e) })); }, [load, err]);
   const done = async (text: string) => { setMsg({ ok: true, text }); await Promise.all([load(), ctx.reload()]); };
   const fail = (e: unknown) => setMsg({ ok: false, text: err(e) });
