@@ -35,4 +35,13 @@ mixin (admins : Types.Admins, config : Types.Config) {
       clean;
     });
   };
+
+  public shared ({ caller }) func setHomeProducts(section : Types.ProductSection) : async Result.Result<Types.ProductSection, Types.Error> {
+    if (not Auth.isAdmin(admins, caller)) return #err(#notAuthorized);
+    HomeLib.products(section).mapOk(func clean {
+      config.homeDraft := { config.homeDraft with products = clean };
+      config.seoUpdatedAt := Time.now();
+      clean;
+    });
+  };
 };

@@ -209,5 +209,12 @@ module {
   /// Hero: headline words (one may be highlighted), buttons and the trust strip below it.
   public type HeroLang = { eyebrow : Text; words : [Text]; subtitle : Text; cta : Text; cta2 : Text };
   public type HomeHero = { sv : HeroLang; en : HeroLang; highlight : Nat; trust : [HomeItem] };
-  public type HomeContent = { hero : HomeHero; services : HomeSection; security : HomeSection; industries : HomeSection };
+  /// Our own products: no url sends the CTA to the contact form.
+  public type ProductStatus = { #live; #beta; #soon };
+  public type ProductText = { title : Text; text : Text; cta : Text };
+  public type ProductItem = { icon : Text; status : ProductStatus; url : Text; sv : ProductText; en : ProductText };
+  public type ProductSection = { sv : HomeHead; en : HomeHead; items : [ProductItem] };
+  public type HomeContent = {
+    hero : HomeHero; services : HomeSection; security : HomeSection; industries : HomeSection; products : ProductSection;
+  };
 };

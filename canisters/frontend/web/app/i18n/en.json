@@ -7,6 +7,7 @@
     "services": "Services",
     "contact": "Contact",
     "home": "Axelkod, home",
+    "products": "Products",
     "security": "Security",
     "industries": "Industries",
     "news": "News",
@@ -19,14 +20,15 @@
   },
   "anchors": {
     "services": "services",
+    "products": "products",
     "security": "security",
     "industries": "industries",
     "news": "news",
     "contact": "contact"
   },
   "seo": {
-    "homeTitle": "Axelkod AB – Vehicle parts, software and cyber security",
-    "homeDescription": "Axelkod AB in Mölndal, Sweden, supplies parts for heavy vehicles, builds software and advises on cyber security. Get in touch to learn more.",
+    "homeTitle": "Axelkod AB – Software, cyber security and supply chain",
+    "homeDescription": "Axelkod AB in Mölndal, Sweden, builds software, advises on cyber security and runs secure supply chains, including vehicle spare parts. Get in touch to learn more.",
     "privacyTitle": "Privacy notice – Axelkod AB",
     "privacyDescription": "How Axelkod AB handles personal data sent through the contact form."
   },
@@ -95,7 +97,7 @@
     "optional": "optional",
     "required": "required",
     "areas": {
-      "parts": "Vehicle parts",
+      "parts": "Supply chain",
       "software": "Software development",
       "security": "Cyber security",
       "other": "Other"

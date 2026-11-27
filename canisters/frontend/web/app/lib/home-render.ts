@@ -1,4 +1,4 @@
-// Home-page section HTML (Services, Security layers, Industries), shared by the
+// Home-page section HTML (Services, Products, Security layers, Industries), shared by the
 // deploy-time bake, Publish and the client fallback, like news-render.ts. Pure and
 // import-light so Node can load it. Interactivity (security layers, spotlight,
 // reveals) is attached to this markup by the React components after load.
@@ -11,11 +11,18 @@ export type HomeHead = { eyebrow: string; title: string; intro: string };
 export type HomeSection = { sv: HomeHead; en: HomeHead; items: HomeItem[] };
 export type HeroLang = { eyebrow: string; words: string[]; subtitle: string; cta: string; cta2: string };
 export type HomeHero = { sv: HeroLang; en: HeroLang; highlight: bigint | number; trust: HomeItem[] };
-export type HomeContent = { hero: HomeHero; services: HomeSection; security: HomeSection; industries: HomeSection };
-/** Baked regions: the hero text, the trust strip and the three sections. */
-export type HomeKey = "hero" | "trust" | "services" | "security" | "industries";
+export type ProductStatusKey = "live" | "beta" | "soon";
+/** The bake gets raw Candid (`{ beta: null }`); the browser bindings give the enum string. */
+export type ProductStatus = ProductStatusKey | { [k in ProductStatusKey]?: null };
+export type ProductText = { title: string; text: string; cta: string };
+export type ProductItem = { icon: string; status: ProductStatus; url: string; sv: ProductText; en: ProductText };
+export type ProductSection = { sv: HomeHead; en: HomeHead; items: ProductItem[] };
+export type HomeContent = { hero: HomeHero; services: HomeSection; security: HomeSection; industries: HomeSection; products: ProductSection };
+/** Baked regions: the hero text, the trust strip and the four sections. */
+export type HomeKey = "hero" | "trust" | "services" | "products" | "security" | "industries";
 
-export const HOME_KEYS: HomeKey[] = ["hero", "trust", "services", "security", "industries"];
+export const HOME_KEYS: HomeKey[] = ["hero", "trust", "services", "products", "security", "industries"];
+export const statusKey = (s: ProductStatus): ProductStatusKey => (typeof s === "string" ? s : (Object.keys(s)[0] as ProductStatusKey));
 export const homeRegion = (key: HomeKey, lang: Lang) => `home-${key}-${lang}`;
 
 const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -72,16 +79,27 @@ function shieldVisual(id: string): string {
   return `<div class="pointer-events-none absolute -right-6 bottom-0 top-0 hidden w-56 items-center sm:flex" aria-hidden="true"><svg viewBox="0 0 120 140" class="h-48 w-full text-accent"><defs><clipPath id="${id}"><path d="${d}"/></clipPath></defs><path d="${d}" fill="var(--brand-soft)" stroke="currentColor" stroke-width="1.5"/><g clip-path="url(#${id})"><rect class="shield-scan" x="0" y="0" width="120" height="3" fill="var(--glow)" opacity="0.8"/></g><path d="M44 70 l11 11 22 -24" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
 }
 
-// The first three cards keep the featured bento slots; the rest are standard cards.
-const SLOTS = ["min-h-64 lg:col-span-2", "lg:row-span-2", "min-h-64 lg:col-span-2"];
+/** Server rack with status lights and an uplink, for the IT & infrastructure card. */
+function infraVisual(): string {
+  const unit = (y: number, i: number) =>
+    `<rect x="14" y="${y}" width="112" height="26" rx="4" fill="var(--brand-soft)" stroke="currentColor" stroke-width="1.5"/><path d="M58 ${y + 13} H112" stroke="currentColor" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 4"/>${[0, 1, 2]
+      .map((k) => `<circle class="infra-led infra-d${(i * 3 + k) % 4}" cx="${26 + k * 9}" cy="${y + 13}" r="2.6" fill="var(--glow)"/>`)
+      .join("")}`;
+  return `<div class="pointer-events-none absolute -right-4 bottom-0 top-0 hidden w-56 items-center sm:flex" aria-hidden="true"><svg viewBox="0 0 140 150" class="h-48 w-full text-accent"><path d="M70 6 V22" stroke="currentColor" stroke-width="1.5"/><circle cx="70" cy="6" r="3" fill="currentColor"/><path class="infra-flow" d="M70 22 V128" stroke="var(--glow)" stroke-width="2" stroke-dasharray="3 9" opacity="0.7"/>${[22, 58, 94].map(unit).join("")}<path d="M30 126 V140 H110 V126" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/></svg></div>`;
+}
+
+// Featured bento slots by card count; with four, the wide cards sit diagonally. Extra cards are standard.
+const SLOTS3 = ["min-h-64 lg:col-span-2", "lg:row-span-2", "min-h-64 lg:col-span-2"];
+const SLOTS4 = ["min-h-64 lg:col-span-2", "min-h-64", "min-h-64", "min-h-64 lg:col-span-2"];
 const TILE = "grid h-12 w-12 place-items-center rounded-2xl border border-border-strong bg-surface-strong text-accent shadow-[0_0_30px_-8px_var(--brand)]";
 
 export function servicesHtml(s: HomeSection, lang: Lang): string {
+  const slots = s.items.length === 4 ? SLOTS4 : SLOTS3;
   const cards = s.items.map((it, i) => {
     const t = it[lang];
-    const aside = it.visual === "gear" || it.visual === "shield";
-    const visual = it.visual === "gear" ? GEAR : it.visual === "shield" ? shieldVisual(`shield-clip-${lang}-${i}`) : "";
-    return `<li data-reveal class="spotlight glass relative overflow-hidden p-7 ${SLOTS[i] ?? ""}">${visual}<span class="${TILE}">${iconSvg(it.icon, "h-6 w-6")}</span><h3 class="mt-6 text-3xl uppercase">${esc(t.title)}</h3><p class="mt-2 text-muted${aside ? " max-w-md" : ""}">${esc(t.text)}</p>${it.visual === "code" ? codeVisual() : ""}</li>`;
+    const aside = it.visual === "gear" || it.visual === "shield" || it.visual === "infra";
+    const visual = it.visual === "gear" ? GEAR : it.visual === "shield" ? shieldVisual(`shield-clip-${lang}-${i}`) : it.visual === "infra" ? infraVisual() : "";
+    return `<li data-reveal class="spotlight glass relative overflow-hidden p-7 ${slots[i] ?? ""}">${visual}<span class="${TILE}">${iconSvg(it.icon, "h-6 w-6")}</span><h3 class="mt-6 text-3xl uppercase">${esc(t.title)}</h3><p class="mt-2 text-muted${aside ? " max-w-md" : ""}">${esc(t.text)}</p>${it.visual === "code" ? codeVisual() : ""}</li>`;
   });
   return `${head(s[lang], "services-title", "max-w-2xl")}<ul class="mt-12 grid gap-5 lg:grid-cols-3">${cards.join("")}</ul>`;
 }
@@ -123,6 +141,26 @@ export function securityHtml(s: HomeSection, lang: Lang): string {
   return `<div class="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2"><div>${head(s[lang], "security-title")}<ul class="mt-10 space-y-3" aria-label="${LAYER_HINT[lang]}">${buttons.join("")}</ul><p id="security-panel" aria-live="polite" class="layer-text mt-6 min-h-14 text-lg">${esc(first)}</p></div><div class="relative mx-auto aspect-square w-full max-w-[30rem]" aria-hidden="true"><svg viewBox="0 0 400 400" class="h-full w-full">${rings}</svg><div data-logo class="pointer-events-none absolute inset-[40%] grid place-items-center"></div></div></div>`;
 }
 
+// ── Products ──────────────────────────────────────────────────────────────────
+const STATUS: Record<Lang, Record<ProductStatusKey, string>> = {
+  sv: { live: "Lanserad", beta: "Beta", soon: "Kommer snart" },
+  en: { live: "Live", beta: "Beta", soon: "Coming soon" },
+};
+
+/** Product cards; without a url the CTA goes to the contact form. One product gets a wide card. */
+export function productsHtml(s: ProductSection, lang: Lang): string {
+  const single = s.items.length === 1;
+  const cards = s.items.map((it) => {
+    const t = it[lang];
+    const st = statusKey(it.status);
+    const href = it.url ? esc(it.url) : `#${ANCHOR[lang].contact}`;
+    const ext = it.url ? ' target="_blank" rel="noopener"' : "";
+    const badge = `<span class="product-badge" data-status="${st}">${STATUS[lang][st]}</span>`;
+    return `<li data-reveal class="spotlight gradient-border glass relative overflow-hidden p-8${single ? " lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12" : ""}"><div><div class="flex flex-wrap items-center gap-4"><span class="${TILE}">${iconSvg(it.icon, "h-6 w-6")}</span>${badge}</div><h3 class="mt-6 text-4xl uppercase">${esc(t.title)}</h3><p class="mt-3 max-w-2xl text-lg text-muted">${esc(t.text)}</p></div><a href="${href}"${ext} class="btn btn-primary mt-7 lg:mt-0">${esc(t.cta)} ${ARROW}</a></li>`;
+  });
+  return `${head(s[lang], "products-title", "max-w-2xl")}<ul class="mt-12 grid gap-5 ${single ? "" : industryCols(s.items.length)}">${cards.join("")}</ul>`;
+}
+
 // ── Industries ────────────────────────────────────────────────────────────────
 /** Columns that fill evenly for the item count, at most 4 on wide screens. */
 export function industryCols(n: number): string {
@@ -146,6 +184,7 @@ export function homeHtml(c: HomeContent, key: HomeKey, lang: Lang): string {
   if (key === "hero") return heroHtml(c.hero, lang);
   if (key === "trust") return trustHtml(c.hero, lang);
   if (key === "services") return servicesHtml(c.services, lang);
+  if (key === "products") return productsHtml(c.products, lang);
   if (key === "security") return securityHtml(c.security, lang);
   return industriesHtml(c.industries, lang);
 }

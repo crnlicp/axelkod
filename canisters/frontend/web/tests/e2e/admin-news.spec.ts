@@ -46,7 +46,7 @@ test("admin writes, edits and deletes a news article", async ({ page, context })
     await page.getByRole("link", { name: "← Alla nyheter" }).click();
     const list = page.getByTestId("news-list");
     await expect(list).toContainText(title);
-    await expect(list).toContainText("Publicerad · Fordonsdelar · sv + en");
+    await expect(list).toContainText("Publicerad · Leveranskedja · sv + en");
     page.once("dialog", (d) => void d.accept());
     await page.getByRole("button", { name: `Radera ${title}` }).click();
     await expect(page.getByRole("status").filter({ hasText: "Nyheten är raderad." })).toBeVisible();

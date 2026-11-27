@@ -6,10 +6,12 @@ You are a senior full-stack engineer and UI designer experienced with the Intern
 **Source of truth:** `~/.claude/icp/RULES.md` (folder layout, tooling, identities, Motoko conventions) and the current ICP skills it points to. If this spec and RULES.md disagree, RULES.md wins. Load the matching skill before writing IC code or config.
 
 ## About the company (keep it short on the site)
-- Axelkod AB is a Swedish company in Mölndal (Gothenburg region) with three areas:
-  1. **Vehicle parts:** spare parts and accessories for trucks and heavy vehicles
+- Axelkod AB is a Swedish company in Mölndal (Gothenburg region) combining IT, software, cyber security and supply chain (repositioned 2026-11-27):
+  1. **IT & infrastructure:** operations, networks and cloud
   2. **Software development:** software, web applications and websites
-  3. **Cyber security:** IT and information security consulting
+  3. **Supply chain:** secure, traceable sourcing and delivery, including vehicle spare parts (no named vehicle types)
+  4. **Cyber security:** IT and information security consulting
+- **Products:** Axelkod's own software, starting with **Prova CRA** (confidential exchange for cybersecurity evidence in industrial supply chains, beta).
 - **Reveal little on purpose.** Each area gets one short, confident sentence: no service lists, prices, partners or brand names. The site's main goal is to make visitors **use the contact form** to learn more.
 - Tone: professional, modern, trustworthy, Scandinavian, minimal.
 
@@ -26,11 +28,12 @@ You are a senior full-stack engineer and UI designer experienced with the Intern
 
 ## Public site (single page with anchors, plus a few routes)
 1. **Header:** sticky glass bar (logo, section links with active indicator, theme toggle, language switch); animated menu on small screens.
-2. **Hero:** eyebrow, headline "Delar. Kod. Säkerhet." / "Parts. Code. Security." (CSS entrance, LCP-safe), subline "Reservdelar, mjukvara och cybersäkerhet, levererat med svensk noggrannhet.", buttons "Kontakta oss" and "Se vad vi gör", the logo inside rotating hexagon rings, animated circuit network background.
+2. **Hero:** eyebrow, headline "Kod. Säkerhet. Leverans." / "Code. Security. Supply." (CSS entrance, LCP-safe), subline "Mjukvara, cybersäkerhet och säkra leveranskedjor, även för fordonsreservdelar, levererat med svensk noggrannhet.", buttons "Kontakta oss" and "Se vad vi gör", the logo inside rotating hexagon rings, animated circuit network background.
 3. **Trust strip:** personal contact, Swedish company, secure by design, quick response (one line each).
-4. **What we do:** bento grid of Vehicle parts / Software / Cyber security with animated visuals (turning gear, typing code window, scanning shield), one sentence each.
+4. **What we do:** bento grid of IT & infrastructure / Software / Supply chain / Cyber security with animated visuals (server rack with status lights, typing code window, turning gear, scanning shield), one sentence each.
+   **Products:** our own products (Prova CRA first), each with a status badge (Live / Beta / Coming soon) and a button to its link or, without one, to the contact form.
 5. **Security by design:** four nested layers around the logo (code, infrastructure, people, supply chain), chosen by hover/focus/click, one sentence per layer.
-6. **Who we help:** haulage & logistics, workshops, small and medium businesses, industry & manufacturing (tiles, one line each).
+6. **Who we help:** logistics & supply chain, small and medium businesses, industry & manufacturing (tiles, one line each).
 7. **News:** the 3 latest published articles as cards (cover or generated artwork, date, area, title, excerpt) and a link to all news.
 8. **Contact:** form in a glass panel plus contact details loaded from the backend (editable in admin).
 9. **Footer:** company name, org. nr, city, email, phone (each shown only if set in admin), section links, privacy notice, language switch, © year.
@@ -39,13 +42,13 @@ You are a senior full-stack engineer and UI designer experienced with the Intern
 12. **404 page** in the same style.
 
 ## News
-- Article: slug (unique), draft/published, publish date (future dates stay hidden until then), optional area (vehicle parts, software, cyber security, company), optional cover image (`/uploads/…` or https) with alt text, Swedish title/excerpt/body (required) and English (optional).
+- Article: slug (unique), draft/published, publish date (future dates stay hidden until then), optional area (supply chain, software, cyber security, company), optional cover image (`/uploads/…` or https) with alt text, Swedish title/excerpt/body (required) and English (optional).
 - Body: a safe Markdown subset (paragraphs, `##`/`###` headings, lists, quotes, bold, italic, code, links to https or same-site paths). Raw HTML is never rendered.
 - Backend: `listNews(lang, offset, limit)`, `getNews(slug, lang)`, `publishedNews()` (public, published only); `adminListNews`, `createNews`, `updateNews`, `deleteNews` (admins). Max 500 articles.
 - Landing cards, list pages and article pages are baked into the static HTML at every deploy (`presync`) and by Publish, from prerendered article templates, with per-article SEO (NewsArticle JSON-LD, canonical, hreflang only where a translation exists) and sitemap entries. A removed article shows a noindex "not found" page after Publish and is deleted at the next deploy.
 
 ## Contact form (simple)
-- Fields: name*, email*, phone (optional), company (optional), area of interest (select: Vehicle parts / Software / Cyber security / Other)*, message* (max 2,000 characters), GDPR consent checkbox* linking to the privacy notice.
+- Fields: name*, email*, phone (optional), company (optional), area of interest (select: Supply chain / Software / Cyber security / Other)*, message* (max 2,000 characters), GDPR consent checkbox* linking to the privacy notice.
 - Validation on the client **and** in the canister (lengths, email format, required fields, allowed enum values, stripping control characters).
 - Spam protection with no third-party services: hidden honeypot field, minimum time to submit (at least 3 s, token issued on page load), rate limiting in the canister (global and per-session token), request-size caps.
   - Form token: `getFormToken()` (query) returns a timestamp signed with a random secret the canister creates at init (`raw_rand`). `submitContact` rejects tokens younger than 3 s, older than a set lifetime, or already used.

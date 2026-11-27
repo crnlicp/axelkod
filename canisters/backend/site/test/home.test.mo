@@ -58,3 +58,24 @@ suite("hero", func() {
   });
 });
 
+
+let productText : Types.ProductText = { title = "Prova"; text = "Text"; cta = "Demo" };
+let productItem : Types.ProductItem = { icon = "lock"; status = #beta; url = ""; sv = productText; en = productText };
+let products : Types.ProductSection = { sv = head; en = head; items = [productItem] };
+
+func productsInvalid(r : { #ok : Types.ProductSection; #err : Types.Error }) : Text {
+  switch (r) { case (#err(#invalid(f))) { f }; case (_) { "" } };
+};
+
+suite("products", func() {
+  test("an empty url and an https url are accepted", func() {
+    expect.text(productsInvalid(Home.products(products))).equal("");
+    expect.text(productsInvalid(Home.products({ products with items = [{ productItem with url = "https://provacra.se" }] }))).equal("");
+  });
+  test("other urls are rejected", func() {
+    expect.text(productsInvalid(Home.products({ products with items = [{ productItem with url = "javascript:alert(1)" }] }))).equal("products.items.0.url");
+  });
+  test("the CTA is required in both languages", func() {
+    expect.text(productsInvalid(Home.products({ products with items = [{ productItem with en = { productText with cta = "" } }] }))).equal("products.items.0.en.cta");
+  });
+});

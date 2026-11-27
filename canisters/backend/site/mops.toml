@@ -11,7 +11,7 @@ candid = "src/site.did"
 
 [canisters.site.migrations]
 chain = "src/migrations"
-check-limit = 1
+check-limit = 2
 
 [canisters.site.check-stable]
 path = "deployed/site.most"

@@ -5,6 +5,7 @@ import { Hero } from "../components/Hero";
 import { Industries } from "../components/Industries";
 import { NewsSection } from "../components/NewsSection";
 import { PageShell } from "../components/PageShell";
+import { Products } from "../components/Products";
 import { Reveal } from "../components/Reveal";
 import { SecurityLayers } from "../components/SecurityLayers";
 import { Services } from "../components/Services";
@@ -24,6 +25,7 @@ export default function Home() {
 
       <div className="midfield">
         <Services lang={lang} />
+        <Products lang={lang} />
         <SecurityLayers lang={lang} />
         <Industries lang={lang} />
         <NewsSection lang={lang} />

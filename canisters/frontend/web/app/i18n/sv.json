@@ -7,6 +7,7 @@
     "services": "Tjänster",
     "contact": "Kontakt",
     "home": "Axelkod, startsida",
+    "products": "Produkter",
     "security": "Säkerhet",
     "industries": "Branscher",
     "news": "Nyheter",
@@ -19,14 +20,15 @@
   },
   "anchors": {
     "services": "tjanster",
+    "products": "produkter",
     "security": "sakerhet",
     "industries": "branscher",
     "news": "nyheter",
     "contact": "kontakt"
   },
   "seo": {
-    "homeTitle": "Axelkod AB – Fordonsdelar, mjukvara och cybersäkerhet",
-    "homeDescription": "Axelkod AB i Mölndal levererar reservdelar till tunga fordon, utvecklar mjukvara och ger råd inom cybersäkerhet. Kontakta oss så berättar vi mer.",
+    "homeTitle": "Axelkod AB – Mjukvara, cybersäkerhet och leveranskedja",
+    "homeDescription": "Axelkod AB i Mölndal utvecklar mjukvara, ger råd inom cybersäkerhet och bygger säkra leveranskedjor, även för fordonsreservdelar. Kontakta oss så berättar vi mer.",
     "privacyTitle": "Integritetspolicy – Axelkod AB",
     "privacyDescription": "Så hanterar Axelkod AB personuppgifter som skickas via kontaktformuläret."
   },
@@ -95,7 +97,7 @@
     "optional": "valfritt",
     "required": "obligatoriskt",
     "areas": {
-      "parts": "Fordonsdelar",
+      "parts": "Leveranskedja",
       "software": "Mjukvaruutveckling",
       "security": "Cybersäkerhet",
       "other": "Annat"

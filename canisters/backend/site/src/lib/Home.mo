@@ -14,7 +14,7 @@ module {
     "truck", "wrench", "store", "factory", "company", "person", "users", "chart", "clock", "mail", "phone", "pin",
   ];
   /// Decorative visuals for the featured service cards ("" = none).
-  public let visuals : [Text] = ["", "gear", "code", "shield"];
+  public let visuals : [Text] = ["", "gear", "code", "shield", "infra"];
 
   public let maxItems = 12;
 
@@ -56,6 +56,41 @@ module {
     let items = Array.tabulate(s.items.size(), func i = item(s.items[i], name # ".items." # debug_show i));
     for (r in items.values()) { switch (r) { case (#err(e)) return #err(e); case (#ok(_)) {} } };
     switch (head(s.sv, name # ".sv"), head(s.en, name # ".en")) {
+      case (#ok(sv), #ok(en)) {
+        #ok({ sv; en; items = items.map(func r = switch (r) { case (#ok(v)) v; case (#err(_)) s.items[0] }) });
+      };
+      case (#err(e), _) { #err(e) };
+      case (_, #err(e)) { #err(e) };
+    };
+  };
+
+  func productText(t : Types.ProductText, field : Text) : R<Types.ProductText> {
+    let clean = { title = V.singleLine(t.title); text = V.singleLine(t.text); cta = V.singleLine(t.cta) };
+    check(V.lengthIn(clean.title, 1, 80), field # ".title")
+      .chain(func _ = check(V.lengthIn(clean.text, 1, 300), field # ".text"))
+      .chain(func _ = check(V.lengthIn(clean.cta, 1, 40), field # ".cta"))
+      .mapOk(func _ = clean);
+  };
+
+  func product(it : Types.ProductItem, field : Text) : R<Types.ProductItem> {
+    let url = V.singleLine(it.url);
+    switch (productText(it.sv, field # ".sv"), productText(it.en, field # ".en")) {
+      case (#ok(sv), #ok(en)) {
+        check(icons.find(func i = i == it.icon) != null, field # ".icon")
+          .chain(func _ = check(url == "" or V.isHttpsUrl(url), field # ".url"))
+          .mapOk(func _ = { icon = it.icon; status = it.status; url; sv; en });
+      };
+      case (#err(e), _) { #err(e) };
+      case (_, #err(e)) { #err(e) };
+    };
+  };
+
+  /// Errors name the field as "products.<sv|en>.title" or "products.items.<n>.<sv|en|url|icon>…".
+  public func products(s : Types.ProductSection) : R<Types.ProductSection> {
+    if (s.items.size() < 1 or s.items.size() > maxItems) return #err(#invalid("products.items"));
+    let items = Array.tabulate(s.items.size(), func i = product(s.items[i], "products.items." # debug_show i));
+    for (r in items.values()) { switch (r) { case (#err(e)) return #err(e); case (#ok(_)) {} } };
+    switch (head(s.sv, "products.sv"), head(s.en, "products.en")) {
       case (#ok(sv), #ok(en)) {
         #ok({ sv; en; items = items.map(func r = switch (r) { case (#ok(v)) v; case (#err(_)) s.items[0] }) });
       };

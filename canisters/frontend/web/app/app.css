@@ -464,8 +464,22 @@ html:has(.news-section .news-empty) [data-nav="news"] { display: none; }
 .layer-text { animation: layer-in 450ms var(--ease-out-expo); }
 @keyframes layer-in { from { opacity: 0; transform: translateY(8px); } }
 
+/* IT & infrastructure card: blinking status lights and traffic down the uplink. */
+.infra-led { animation: blink 2.4s steps(1) infinite; }
+.infra-d1 { animation-delay: 0.6s; } .infra-d2 { animation-delay: 1.2s; } .infra-d3 { animation-delay: 1.8s; }
+@keyframes blink { 50% { opacity: 0.25; } }
+.infra-flow { animation: flow 1.6s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -24; } }
+
+.product-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 999px; padding: 0.2rem 0.75rem;
+  border: 1px solid var(--border-strong); color: var(--accent); font-size: 0.75rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.product-badge::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 999px; background: currentColor; box-shadow: 0 0 10px currentColor; }
+
 @media (prefers-reduced-motion: reduce) {
-  .service-gear, .shield-scan, .code-line:last-child::after, .layer-text { animation: none; }
+  .service-gear, .shield-scan, .code-line:last-child::after, .layer-text, .infra-led, .infra-flow { animation: none; }
   .code-line > span { clip-path: none !important; animation: none !important; }
 }
 

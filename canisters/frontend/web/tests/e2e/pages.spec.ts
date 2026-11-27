@@ -48,7 +48,7 @@ test("hydrates: language switch navigates client-side", async ({ page }) => {
   await page.evaluate(() => ((window as unknown as { marker: number }).marker = 1));
   await page.getByRole("link", { name: "In English" }).first().click();
   await expect(page).toHaveURL(/\/en\/$/);
-  await expect(page.locator("h1")).toHaveText("Parts. Code. Security.");
+  await expect(page.locator("h1")).toHaveText("Code. Security. Supply.");
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   // Same document: React Router handled the click, so hydration worked.
   expect(await page.evaluate(() => (window as unknown as { marker?: number }).marker)).toBe(1);

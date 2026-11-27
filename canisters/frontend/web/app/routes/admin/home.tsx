@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { HomeKey as HomeKeyEnum, type HomeContent, type HomeHero, type HomeItem, type HomeSection } from "../../bindings/site";
+import { HomeKey as HomeKeyEnum, ProductStatus, type HomeContent, type HomeHead, type HomeHero, type HomeItem, type HomeSection, type ProductItem, type ProductSection } from "../../bindings/site";
 import { useAdminLang, type AdminDict, type AdminLang } from "../../admin/i18n";
 import { errMessage, type BackendErr } from "../../admin/result";
 import { useAdmin } from "../../admin/session";
@@ -7,13 +7,17 @@ import { Toast } from "../../admin/toast";
 import { publishSeo } from "../../admin/publish";
 import { HOME_ICON_KEYS, iconSvg } from "../../lib/home-icons";
 
-type SectionKey = "services" | "security" | "industries";
+type SectionKey = "services" | "products" | "security" | "industries";
 type Key = "hero" | SectionKey;
-const KEYS: Key[] = ["hero", "services", "security", "industries"];
+const KEYS: Key[] = ["hero", "services", "products", "security", "industries"];
+/** Products items carry a status, a link and a button text on top of the usual card fields. */
+type Item = HomeItem | ProductItem;
+type Section = { sv: HomeHead; en: HomeHead; items: Item[] };
+const STATUSES = [ProductStatus.live, ProductStatus.beta, ProductStatus.soon];
 const MAX_WORDS = 4;
 const MAX_TRUST = 8;
 const MAX_ITEMS = 12;
-const VISUALS = ["", "gear", "code", "shield"];
+const VISUALS = ["", "gear", "code", "shield", "infra"];
 const input = "mt-1 w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2";
 const blankText = { title: "", text: "" };
 /** Change detection; the hero's highlight index is a bigint, which JSON can't encode as-is. */
@@ -115,27 +119,34 @@ export default function HomeAdmin() {
     } finally { setBusy(false); }
   }
 
-  const section = draft[key];
-  const setSection = (s: HomeSection) => { setDraft({ ...draft, [key]: s }); setStatus(null); };
-  const setItem = (i: number, it: HomeItem) => setSection({ ...section, items: section.items.map((x, j) => (j === i ? it : x)) });
+  const section: Section = draft[key];
+  const isProducts = key === "products";
+  const setSection = (s: Section) => { setDraft({ ...draft, [key]: s }); setStatus(null); };
+  const setItem = (i: number, it: Item) => setSection({ ...section, items: section.items.map((x, j) => (j === i ? it : x)) });
   const move = (i: number, d: -1 | 1) => {
     const items = [...section.items];
     [items[i], items[i + d]] = [items[i + d], items[i]];
     setSection({ ...section, items });
   };
+  const blankProduct = { ...blankText, cta: "" };
   const add = () => setSection({
     ...section,
-    items: [...section.items, { icon: key === "industries" ? "company" : "shield", visual: "", sv: blankText, en: blankText }],
+    items: [...section.items, isProducts
+      ? { icon: "lock", status: ProductStatus.soon, url: "", sv: blankProduct, en: blankProduct }
+      : { icon: key === "industries" ? "company" : "shield", visual: "", sv: blankText, en: blankText }],
   });
   const missing = (l: AdminLang) =>
-    !section[l].eyebrow.trim() || !section[l].title.trim() || section.items.some((it) => !it[l].title.trim() || !it[l].text.trim());
+    !section[l].eyebrow.trim() || !section[l].title.trim()
+    || section.items.some((it) => !it[l].title.trim() || !it[l].text.trim() || (isProducts && !(it as ProductItem)[l].cta.trim()));
   const isLayers = key === "security";
 
   async function save() {
     setBusy(true);
     try {
-      const variant = { services: HomeKeyEnum.services, security: HomeKeyEnum.security, industries: HomeKeyEnum.industries }[key as SectionKey];
-      const r = await actor.setHomeSection(variant, section);
+      const variant = { services: HomeKeyEnum.services, security: HomeKeyEnum.security, industries: HomeKeyEnum.industries }[key as Exclude<SectionKey, "products">];
+      const r = isProducts
+        ? await actor.setHomeProducts(section as ProductSection)
+        : await actor.setHomeSection(variant, section as HomeSection);
       if (r.__kind__ === "err") {
         const err = r.err as BackendErr;
         const local = err.__kind__ === "invalid" && err.invalid ? invalidText(err.invalid, t) : null;
@@ -214,9 +225,18 @@ export default function HomeAdmin() {
                 {key === "services" && (
                   <label className="flex items-center gap-2 text-sm">
                     <span className="text-muted">{h.visual}</span>
-                    <select className="rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 py-1.5" value={it.visual}
-                      onChange={(e) => setItem(i, { ...it, visual: e.target.value })}>
+                    <select className="rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 py-1.5" value={(it as HomeItem).visual}
+                      onChange={(e) => setItem(i, { ...(it as HomeItem), visual: e.target.value })}>
                       {VISUALS.map((v) => <option key={v} value={v}>{h.visuals[v]}</option>)}
+                    </select>
+                  </label>
+                )}
+                {isProducts && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <span className="text-muted">{h.product.status}</span>
+                    <select className="rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 py-1.5" value={(it as ProductItem).status}
+                      onChange={(e) => setItem(i, { ...(it as ProductItem), status: e.target.value as ProductStatus })}>
+                      {STATUSES.map((v) => <option key={v} value={v}>{h.product.statuses[v]}</option>)}
                     </select>
                   </label>
                 )}
@@ -238,6 +258,23 @@ export default function HomeAdmin() {
                 <textarea id={`${id}-text`} rows={2} className={input} maxLength={300} value={it[lang].text}
                   onChange={(e) => setItem(i, { ...it, [lang]: { ...it[lang], text: e.target.value } })} />
               </div>
+              {isProducts && (() => {
+                const p = it as ProductItem;
+                return (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor={`${id}-cta`} className="font-medium">{h.product.cta}</label>
+                      <input id={`${id}-cta`} className={input} maxLength={40} value={p[lang].cta}
+                        onChange={(e) => setItem(i, { ...p, [lang]: { ...p[lang], cta: e.target.value } })} />
+                    </div>
+                    <div>
+                      <label htmlFor={`${id}-url`} className="font-medium">{h.product.url}</label>
+                      <input id={`${id}-url`} type="url" className={input} maxLength={500} value={p.url} placeholder="https://"
+                        onChange={(e) => setItem(i, { ...p, url: e.target.value })} />
+                    </div>
+                  </div>
+                );
+              })()}
             </li>
           );
         })}

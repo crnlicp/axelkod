@@ -27,12 +27,12 @@ const T = {
   sv: {
     readMore: "Läs mer", all: "Alla nyheter", empty: "Inga nyheter ännu.", back: "Alla nyheter", other: "Read in English",
     months: ["januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"],
-    areas: { parts: "Fordonsdelar", software: "Mjukvara", security: "Cybersäkerhet", company: "Företaget" },
+    areas: { parts: "Leveranskedja", software: "Mjukvara", security: "Cybersäkerhet", company: "Företaget" },
   },
   en: {
     readMore: "Read more", all: "All news", empty: "No news yet.", back: "All news", other: "Läs på svenska",
     months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-    areas: { parts: "Vehicle parts", software: "Software", security: "Cyber security", company: "Company" },
+    areas: { parts: "Supply chain", software: "Software", security: "Cyber security", company: "Company" },
   },
 } as const;
 

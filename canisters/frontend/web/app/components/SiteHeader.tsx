@@ -7,7 +7,7 @@ import { MobileMenu } from "./MobileMenu";
 import { ThemeToggle } from "./ThemeToggle";
 
 /** Sections in the main navigation (ones that exist on the landing page). */
-export const NAV_SECTIONS = ["services", "security", "industries", "news", "contact"] as const;
+export const NAV_SECTIONS = ["services", "products", "security", "industries", "news", "contact"] as const;
 export type NavSection = (typeof NAV_SECTIONS)[number];
 
 /** Tracks which landing-page section is in view (for the active indicator). */
