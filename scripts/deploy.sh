@@ -16,7 +16,18 @@ case "$target" in
     env_flags=()
     id_flags=(--identity "${ICP_IDENTITY:-anonymous}")
     ids=.icp/cache/mappings/local.ids.json
-    icp network status >/dev/null 2>&1 || icp network start -d
+    if ! icp network status >/dev/null 2>&1; then
+      # The gateway port only comes from icp.yaml, so pick the first free one from
+      # 8000 up (e.g. another project's network holds 8000) and write it there.
+      port=8000
+      while (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; do port=$((port + 1)); done
+      sed -i '/^    gateway:$/d; /^      port: [0-9]*$/d' icp.yaml
+      if [[ "$port" != 8000 ]]; then
+        echo "Port 8000 is in use; starting the local network on $port."
+        sed -i "/^    mode: managed$/a\\    gateway:\\n      port: $port" icp.yaml
+      fi
+      icp network start -d
+    fi
     ;;
   ic)
     env_flags=(-e ic)
@@ -71,6 +82,7 @@ icp canister call site syncAdminsToFrontend '()' "${env_flags[@]}" "${id_flags[@
 if [[ "$target" == "local" ]]; then
   # Rewritten on every local deploy; IDs change when the local network is reset.
   web=$(jq -r .web "$ids")
+  port=$(icp network status --json | jq -r .gateway_url | sed -E 's#.*:([0-9]+)/?$#\1#')
   {
     echo "# Local URLs"
     echo
@@ -78,10 +90,10 @@ if [[ "$target" == "local" ]]; then
     echo
     echo "| What | URL |"
     echo "|---|---|"
-    echo "| Site | http://web.local.localhost:8000 |"
-    echo "| Site (by ID) | http://$web.localhost:8000 |"
-    echo "| Admin | http://web.local.localhost:8000/admin |"
-    echo "| Accounting | http://web.local.localhost:8000/admin/accounting |"
+    echo "| Site | http://web.local.localhost:$port |"
+    echo "| Site (by ID) | http://$web.localhost:$port |"
+    echo "| Admin | http://web.local.localhost:$port/admin |"
+    echo "| Accounting | http://web.local.localhost:$port/admin/accounting |"
     echo
     echo "| Canister | ID |"
     echo "|---|---|"
