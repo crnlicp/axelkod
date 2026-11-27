@@ -970,7 +970,9 @@ export class GlobeScene {
       const worldH = (px * 2 * halfH) / h;
       this.logo.scale.set(worldH * (this.logo.userData.aspect as number), worldH, worldH);
     }
-    this.root.userData.base = { x: wide ? (0.44 * halfH * aspect) / 0.65 : 0, y: 0 };
+    // Portrait: lift the globe so its top sits just below the hero's top edge (pixels -> world).
+    const lift = wide ? 0 : Math.max(0, h / 2 - (fraction * h) / 2 - 32);
+    this.root.userData.base = { x: wide ? (0.44 * halfH * aspect) / 0.65 : 0, y: (lift * 2 * halfH) / h / 0.65 };
   }
 
   setPointer(nx: number, ny: number) {
