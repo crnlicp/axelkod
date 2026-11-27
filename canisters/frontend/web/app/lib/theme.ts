@@ -2,7 +2,7 @@
 // (its sha256 is added to the CSP by scripts/postbuild.mjs like every inline script).
 export const THEME_KEY = "axelkod:theme";
 
-export const HEAD_SCRIPT = `(function(){var d=document.documentElement;try{if(localStorage.getItem("${THEME_KEY}")==="light")d.setAttribute("data-theme","light")}catch(e){}if(!matchMedia("(prefers-reduced-motion: reduce)").matches){d.classList.add("anim");setTimeout(function(){if(!d.classList.contains("anim-ready"))d.classList.add("anim-timeout")},4000)}})()`;
+export const HEAD_SCRIPT = `(function(){var d=document.documentElement;d.classList.add("js");try{if(localStorage.getItem("${THEME_KEY}")==="light")d.setAttribute("data-theme","light")}catch(e){}if(!matchMedia("(prefers-reduced-motion: reduce)").matches){d.classList.add("anim");setTimeout(function(){if(!d.classList.contains("anim-ready"))d.classList.add("anim-timeout")},4000)}})()`;
 
 export type Theme = "dark" | "light";
 

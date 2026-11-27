@@ -24,7 +24,7 @@ function fmtCoord(v: number, pos: string, neg: string) {
 const HEX = "0123456789abcdef";
 const randomHash = () => Array.from({ length: 16 }, () => HEX[(Math.random() * 16) | 0]).join("");
 
-type Events = { onHover: (h: HoverInfo | null) => void; onLongitude: (lon: number, lat: number) => void; onArrival: (c: City) => void };
+type Events = { onFail: () => void; onHover: (h: HoverInfo | null) => void; onLongitude: (lon: number, lat: number) => void; onArrival: (c: City) => void };
 
 /** The hero's own logo symbol as an SVG data URL, in the current theme's colours (for the globe's core). */
 function logoDataUrl(section: Element | null): string | undefined {
@@ -41,7 +41,7 @@ const isLight = () => document.documentElement.getAttribute("data-theme") === "l
 
 type Look = { size: number; logo: boolean; logoDepth: number; beacon: [number, number] };
 
-function Scene({ size, logo, logoDepth, beacon, onHover, onLongitude, onArrival }: Events & Look) {
+function Scene({ size, logo, logoDepth, beacon, onFail, onHover, onLongitude, onArrival }: Events & Look) {
   const ref = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -49,7 +49,9 @@ function Scene({ size, logo, logoDepth, beacon, onHover, onLongitude, onArrival 
     const canvas = ref.current!;
     // The hero section receives the pointer; the canvas itself sits behind the content.
     const surface = canvas.closest("section") ?? canvas.parentElement!;
-    const globe = new GlobeScene(canvas, {
+    let globe: GlobeScene;
+    try {
+      globe = new GlobeScene(canvas, {
       quality: detectQuality(),
       colors: themeColors(),
       size: size / 100,
@@ -62,8 +64,16 @@ function Scene({ size, logo, logoDepth, beacon, onHover, onLongitude, onArrival 
       onLongitude,
       onArrival,
       onReady: () => setReady(true),
+      });
+    } catch (e) {
+      console.warn("[globe]", e);
+      onFail();
+      return;
+    }
+    globe.init("/globe/land.bin", "/globe/coast.bin").catch((e: unknown) => {
+      console.warn("[globe]", e);
+      onFail();
     });
-    globe.init("/globe/land.bin", "/globe/coast.bin").catch((e: unknown) => console.warn("[globe]", e));
 
     const ro = new ResizeObserver(() => globe.resize());
     ro.observe(canvas);
@@ -124,8 +134,8 @@ function Scene({ size, logo, logoDepth, beacon, onHover, onLongitude, onArrival 
 
 /** `size`: the globe's diameter in % of the screen height. */
 /** `logo`: draw the hero logo inside the globe; `beacon`: where the beacon pulses ([lat, lon]). */
-export default function HeroGlobe({ lang, size, logo = false, logoDepth = 19, beacon = [57.6554, 12.0138], className = "" }:
-  { lang: Lang; size: number; logo?: boolean; logoDepth?: number; beacon?: [number, number]; className?: string }) {
+export default function HeroGlobe({ lang, size, logo = false, logoDepth = 19, beacon = [57.6554, 12.0138], onFail = () => {}, className = "" }:
+  { lang: Lang; size: number; logo?: boolean; logoDepth?: number; beacon?: [number, number]; onFail?: () => void; className?: string }) {
   const [light, setLight] = useState(isLight);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [coords, setCoords] = useState({ lon: 18.07, lat: 59.33 });
@@ -147,7 +157,7 @@ export default function HeroGlobe({ lang, size, logo = false, logoDepth = 19, be
 
   return (
     <div className={`pointer-events-none absolute inset-0 ${className}`}>
-      <Scene key={`${light ? "light" : "dark"}-${size}-${logo}-${logoDepth}-${beacon}`} size={size} logo={logo} logoDepth={logoDepth} beacon={beacon} onHover={setHover} onLongitude={(lon, lat) => setCoords({ lon, lat })}
+      <Scene key={`${light ? "light" : "dark"}-${size}-${logo}-${logoDepth}-${beacon}`} size={size} logo={logo} logoDepth={logoDepth} beacon={beacon} onFail={onFail} onHover={setHover} onLongitude={(lon, lat) => setCoords({ lon, lat })}
         onArrival={(c) => { setArrivals((n) => n + 1); setLastCity(c); }} />
       {/* Coordinates facing the viewer, and the network's live status (decorative). */}
       <div className="globe-hud" aria-hidden="true">

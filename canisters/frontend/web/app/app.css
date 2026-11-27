@@ -360,7 +360,7 @@
 /* Logo switched off in the admin (baked onto the h1), hidden without waiting for JS. */
 section:has(h1[data-logo="0"]) .hero-logo { visibility: hidden; }
 /* Logo drawn inside the globe: the column gives way (shown again if the globe cannot run). */
-section:has(h1[data-globe="1"][data-logo="1"][data-logo-core="1"]) .hero-logo:not(.hero-logo--fallback) { visibility: hidden; }
+.js section:has(h1[data-globe="1"][data-logo="1"][data-logo-core="1"]) .hero-logo:not(.hero-logo--fallback) { visibility: hidden; }
 
 /* Hero globe: a scrim keeps the headline readable over it, and the city tooltip. */
 .hero-scrim { background: radial-gradient(ellipse at 20% 45%, color-mix(in srgb, var(--bg) 75%, transparent), transparent 55%); }

@@ -10,7 +10,16 @@ import { Region } from "./Region";
 
 /** Hexagon outline path centred in a 200×200 box. */
 const HEX = "M100 8 L180 54 L180 146 L100 192 L20 146 L20 54 Z";
-const HeroGlobe = lazy(() => import("./HeroGlobe"));
+/** Stands in for the globe when its bundle fails to load, and reports the failure. */
+function GlobeUnavailable({ onFail }: { onFail?: () => void }) {
+  useEffect(() => onFail?.(), [onFail]);
+  return <></>;
+}
+const HeroGlobe = lazy(() =>
+  import("./HeroGlobe").catch((e: unknown) => {
+    console.warn("[globe]", e);
+    return { default: GlobeUnavailable as typeof import("./HeroGlobe").default };
+  }));
 
 export function Hero({ lang }: { lang: Lang }) {
   const t = dict(lang);
@@ -34,6 +43,8 @@ export function Hero({ lang }: { lang: Lang }) {
     });
     return enhanceCipher(el);
   };
+  // The globe could not start (no GPU context, failed download): back to the flat logo.
+  const globeFailed = () => setLayers((l) => l && { ...l, globe: false, logoCore: false, fallback: l.logoCore });
   const network = !!layers?.network;
   const globe = !!layers?.globe;
   // The 3D bundle loads after the page has loaded and the main thread is idle, so the
@@ -59,7 +70,7 @@ export function Hero({ lang }: { lang: Lang }) {
       <div className="bg-grid absolute inset-0 -z-20 opacity-60" aria-hidden="true" />
       {network && <HeroNetwork className="hero-network -z-10 opacity-80" />}
       {/* Above the network, below the content (the logo column). */}
-      {globe && showGlobe && <Suspense fallback={null}><HeroGlobe lang={lang} size={layers!.size} logo={layers!.logoCore} logoDepth={layers!.logoDepth} beacon={layers!.beacon} className="-z-10" /></Suspense>}
+      {globe && showGlobe && <Suspense fallback={null}><HeroGlobe lang={lang} size={layers!.size} logo={layers!.logoCore} logoDepth={layers!.logoDepth} beacon={layers!.beacon} onFail={globeFailed} className="-z-10" /></Suspense>}
       {globe && <div className="hero-scrim pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />}
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 py-16 lg:grid-cols-[1.15fr_0.85fr]">
         <div data-no-drag>
