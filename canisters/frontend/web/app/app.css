@@ -109,6 +109,8 @@
     scroll-behavior: smooth;
     scroll-padding-top: 5rem; /* sticky header */
   }
+  /* Menu anchors land on the section's eyebrow, not on its top padding (py-28). */
+  section[id].py-28 { scroll-margin-top: -7rem; }
   body {
     background: var(--bg);
   }

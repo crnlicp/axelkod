@@ -106,6 +106,7 @@ module {
   public let maxWords = 4;
   public let minGlobeSize = 20;
   public let maxGlobeSize = 100;
+  public let maxLogoDepth = 50;
   public let maxTrust = 8;
 
   func heroLang(h : Types.HeroLang, field : Text) : R<Types.HeroLang> {
@@ -135,6 +136,9 @@ module {
     if (h.highlights.size() > maxWords or h.highlights.any(func i = i >= maxWords)) return #err(#invalid("hero.highlights"));
     if (h.ciphers.size() > maxWords or h.ciphers.any(func i = i >= maxWords)) return #err(#invalid("hero.ciphers"));
     if (h.visuals.globeSize < minGlobeSize or h.visuals.globeSize > maxGlobeSize) return #err(#invalid("hero.globeSize"));
+    if (h.visuals.logoDepth > maxLogoDepth) return #err(#invalid("hero.logoDepth"));
+    let b = h.visuals.beacon;
+    if (not (b.lat >= -90.0 and b.lat <= 90.0 and b.lon >= -180.0 and b.lon <= 180.0)) return #err(#invalid("hero.beacon"));
     let trust = Array.tabulate(h.trust.size(), func i = trustItem(h.trust[i], "hero.trust." # debug_show i));
     for (r in trust.values()) { switch (r) { case (#err(e)) return #err(e); case (#ok(_)) {} } };
     switch (heroLang(h.sv, "hero.sv"), heroLang(h.en, "hero.en")) {

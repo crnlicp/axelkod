@@ -17,7 +17,7 @@ export function Hero({ lang }: { lang: Lang }) {
   // The visual layers are baked into the hero text (h1 data-*) and read once it is in
   // the DOM, so nothing animates until we know which ones. No WebGL2: no globe. The logo
   // column is hidden by CSS from the same attribute, so it never flashes.
-  const [layers, setLayers] = useState<{ network: boolean; globe: boolean; size: number; logoCore: boolean; fallback: boolean } | null>(null);
+  const [layers, setLayers] = useState<{ network: boolean; globe: boolean; size: number; logoCore: boolean; logoDepth: number; beacon: [number, number]; fallback: boolean } | null>(null);
   const enhance = (el: HTMLElement) => {
     const d = el.querySelector<HTMLElement>("h1[data-globe]")?.dataset;
     const globe = d?.globe === "1" && supportsWebGL2();
@@ -27,6 +27,8 @@ export function Hero({ lang }: { lang: Lang }) {
       globe,
       size: Number(d?.globeSize) || 70,
       logoCore: globe && logoCore,
+      logoDepth: Number(d?.logoDepth ?? 19),
+      beacon: (d?.beacon?.split(",").map(Number) as [number, number] | undefined) ?? [57.6554, 12.0138],
       // CSS hid the logo column for the globe; without WebGL2 there is no globe to hold it.
       fallback: d?.globe === "1" && logoCore && !globe,
     });
@@ -57,7 +59,7 @@ export function Hero({ lang }: { lang: Lang }) {
       <div className="bg-grid absolute inset-0 -z-20 opacity-60" aria-hidden="true" />
       {network && <HeroNetwork className="hero-network -z-10 opacity-80" />}
       {/* Above the network, below the content (the logo column). */}
-      {globe && showGlobe && <Suspense fallback={null}><HeroGlobe lang={lang} size={layers!.size} logo={layers!.logoCore} className="-z-10" /></Suspense>}
+      {globe && showGlobe && <Suspense fallback={null}><HeroGlobe lang={lang} size={layers!.size} logo={layers!.logoCore} logoDepth={layers!.logoDepth} beacon={layers!.beacon} className="-z-10" /></Suspense>}
       {globe && <div className="hero-scrim pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />}
       <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 py-16 lg:grid-cols-[1.15fr_0.85fr]">
         <div data-no-drag>

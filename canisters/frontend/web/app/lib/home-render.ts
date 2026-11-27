@@ -11,7 +11,8 @@ export type HomeHead = { eyebrow: string; title: string; intro: string };
 export type HomeSection = { sv: HomeHead; en: HomeHead; items: HomeItem[] };
 export type HeroLang = { eyebrow: string; words: string[]; subtitle: string; cta: string; cta2: string };
 /** Hero visual layers, any combination; `globeSize` is the globe's diameter in % of the screen height. */
-export type HeroVisuals = { network: boolean; globe: boolean; logo: boolean; logoInGlobe: boolean; globeSize: bigint | number };
+export type HeroVisuals = { network: boolean; globe: boolean; logo: boolean; logoInGlobe: boolean; globeSize: bigint | number;
+  logoDepth: bigint | number; beacon: { lat: number; lon: number } };
 export type HomeHero = {
   sv: HeroLang; en: HeroLang; highlights: (bigint | number)[]; ciphers: (bigint | number)[];
   visuals: HeroVisuals; trust: HomeItem[];
@@ -56,7 +57,7 @@ export function heroHtml(h: HomeHero, lang: Lang): string {
     .join("");
   // The h1's data-* tell the (unbaked) hero which visual layers to show (see Hero.tsx, app.css).
   const v = h.visuals;
-  const layers = `data-network="${v.network ? 1 : 0}" data-globe="${v.globe ? 1 : 0}" data-logo="${v.logo ? 1 : 0}" data-logo-core="${v.logoInGlobe ? 1 : 0}" data-globe-size="${Number(v.globeSize)}"`;
+  const layers = `data-network="${v.network ? 1 : 0}" data-globe="${v.globe ? 1 : 0}" data-logo="${v.logo ? 1 : 0}" data-logo-core="${v.logoInGlobe ? 1 : 0}" data-globe-size="${Number(v.globeSize)}" data-logo-depth="${Number(v.logoDepth)}" data-beacon="${v.beacon.lat},${v.beacon.lon}"`;
   return `<p class="eyebrow hero-in" data-step="0">${esc(l.eyebrow)}</p><h1 id="hero-title" ${layers} class="mt-5 text-6xl uppercase sm:text-7xl lg:text-8xl">${words}</h1><p class="hero-in mt-6 max-w-xl text-lg text-muted sm:text-xl" data-step="4">${esc(l.subtitle)}</p><div class="hero-in mt-9 flex flex-wrap gap-3" data-step="5"><a href="#${ANCHOR[lang].contact}" class="btn btn-primary">${esc(l.cta)} ${ARROW}</a><a href="#${ANCHOR[lang].services}" class="btn btn-secondary">${esc(l.cta2)}</a></div>`;
 }
 

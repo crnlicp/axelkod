@@ -35,7 +35,7 @@ suite("home sections", func() {
 
 let heroLang : Types.HeroLang = { eyebrow = "Axelkod"; words = ["Delar.", "Kod."]; subtitle = "Sub"; cta = "Kontakt"; cta2 = "Mer" };
 let trust : Types.HomeItem = { icon = "clock"; visual = "gear"; sv = { title = "Snabbt"; text = "Svar" }; en = { title = "Fast"; text = "Reply" } };
-let hero : Types.HomeHero = { sv = heroLang; en = heroLang; highlights = [1, 2]; ciphers = [0, 1]; visuals = { network = true; globe = true; logo = false; logoInGlobe = true; globeSize = 70 }; trust = [trust] };
+let hero : Types.HomeHero = { sv = heroLang; en = heroLang; highlights = [1, 2]; ciphers = [0, 1]; visuals = { network = true; globe = true; logo = false; logoInGlobe = true; globeSize = 70; logoDepth = 19; beacon = { lat = 57.6554; lon = 12.0138 } }; trust = [trust] };
 
 func heroInvalid(r : { #ok : Types.HomeHero; #err : Types.Error }) : Text {
   switch (r) { case (#err(#invalid(f))) { f }; case (_) { "" } };
@@ -57,7 +57,9 @@ suite("hero", func() {
     expect.text(heroInvalid(Home.hero({ hero with ciphers = [4] }))).equal("hero.ciphers");
     expect.text(heroInvalid(Home.hero({ hero with highlights = []; ciphers = [] }))).equal("");
     expect.text(heroInvalid(Home.hero({ hero with visuals = { hero.visuals with globeSize = 101 } }))).equal("hero.globeSize");
-    expect.text(heroInvalid(Home.hero({ hero with visuals = { network = false; globe = false; logo = false; logoInGlobe = false; globeSize = 20 } }))).equal("");
+    expect.text(heroInvalid(Home.hero({ hero with visuals = { hero.visuals with logoDepth = 51 } }))).equal("hero.logoDepth");
+    expect.text(heroInvalid(Home.hero({ hero with visuals = { hero.visuals with beacon = { lat = 91.0; lon = 0.0 } } }))).equal("hero.beacon");
+    expect.text(heroInvalid(Home.hero({ hero with visuals = { network = false; globe = false; logo = false; logoInGlobe = false; globeSize = 20; logoDepth = 0; beacon = { lat = -90.0; lon = 180.0 } } }))).equal("");
     expect.text(heroInvalid(Home.hero({ hero with trust = [{ trust with icon = "x" }] }))).equal("hero.trust.0.icon");
   });
 });

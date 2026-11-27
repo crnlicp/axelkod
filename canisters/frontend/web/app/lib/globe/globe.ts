@@ -54,8 +54,12 @@ export interface GlobeOptions {
   colors: GlobeColors;
   /** Globe diameter as a fraction of the screen height (on portrait, capped by the width). */
   size: number;
-  /** Logo image URL drawn at the globe's core (always facing the viewer), plus a beacon on Stockholm. */
+  /** Logo image URL drawn at the globe's core (spins with the globe). */
   logo?: string;
+  /** The logo's thickness as a fraction of its height. */
+  logoDepth?: number;
+  /** Where the beacon pulses from (the company's location). */
+  beacon?: { lat: number; lon: number };
   /** The logo's height in CSS pixels (matches the logo in its own column). */
   logoHeight?: () => number;
   reducedMotion: boolean;
@@ -375,7 +379,7 @@ export class GlobeScene {
   private baseRotation = 0;
   private lastLonReport = 0;
   private hovered: string | null = null;
-  private logo?: THREE.Sprite;
+  private logo?: THREE.Group;
   private beacon: THREE.Mesh[] = [];
   private q;
 
@@ -418,8 +422,8 @@ export class GlobeScene {
     if (this.opts.logo) {
       await this.buildLogo(this.opts.logo).catch((e: unknown) => console.warn("[globe] logo", e));
       if (this.disposed) return;
-      this.buildBeacon();
     }
+    this.buildBeacon();
     this.setupPost();
     this.resize();
     this.ready = true;
@@ -714,11 +718,33 @@ export class GlobeScene {
     // On dark, tinted toward the globe's glow and kept (with the glass over it) below the
     // bloom threshold: anything that blooms reads as lying on top of the surface.
     const tint = this.c.light ? new THREE.Color(0xffffff) : new THREE.Color(0xffffff).lerp(this.c.primary, 0.35).multiplyScalar(0.8);
-    const mat = new THREE.SpriteMaterial({ map, transparent: true, depthTest: false, depthWrite: false, opacity: 0, color: tint });
-    this.logo = new THREE.Sprite(mat);
-    if (x1 > x0) this.logo.center.set((x0 + x1) / 2 / c.width, 1 - (y0 + y1) / 2 / c.height);
+    const mat = new THREE.MeshBasicMaterial({ map, transparent: true, depthTest: false, depthWrite: false, opacity: 0, color: tint });
+    // A flat card through the core that spins with the Earth. Two faces back to back, so
+    // the logo reads the right way round from behind too; it thins out edge-on.
+    const geo = new THREE.PlaneGeometry(1, 1);
+    if (x1 > x0) geo.translate(0.5 - (x0 + x1) / 2 / c.width, (y0 + y1) / 2 / c.height - 0.5, 0);
+    this.logo = new THREE.Group();
+    // Thickness: a stack of slices in a darker shade between the two faces reads as a
+    // solid edge as the logo turns (transparent objects are drawn back to front).
+    const depth = this.opts.logoDepth ?? 0.19; // of the logo's height
+    const slices = Math.max(2, Math.round(depth * 200)); // ~1 px apart, so no gaps edge-on
+    const side = new THREE.MeshBasicMaterial({ map, transparent: true, depthTest: false, depthWrite: false, opacity: 0, side: THREE.DoubleSide, color: tint.clone().multiplyScalar(0.45) });
+    for (let i = 1; i < slices; i++) {
+      const slice = new THREE.Mesh(geo, side);
+      slice.position.z = (i / slices - 0.5) * depth;
+      slice.renderOrder = 1.5;
+      this.logo.add(slice);
+    }
+    for (const turn of [0, Math.PI]) {
+      const face = new THREE.Mesh(geo, mat);
+      face.rotation.y = turn;
+      face.position.z = turn ? -depth / 2 : depth / 2;
+      face.renderOrder = 1.5;
+      this.logo.add(face);
+    }
+    this.logo.userData.side = side;
     this.logo.userData.aspect = c.width / c.height;
-    this.logo.renderOrder = 1.5;
+    this.logo.userData.mat = mat;
     this.root.add(this.logo);
 
 
@@ -754,12 +780,14 @@ export class GlobeScene {
     };
     const p = new THREE.Vector3(mid(c.x) * -c.z, mid(c.y) * -c.z, c.z).applyMatrix4(this.camera.matrixWorld);
     logo.position.copy(this.root.worldToLocal(p));
+    // Upright, turning about the vertical at the globe's speed; facing the viewer on load.
+    logo.rotation.set(0, this.globe.rotation.y - this.baseRotation, 0);
   }
 
-  /** Two rings pulsing out from Stockholm, where the company is. */
+  /** Two rings pulsing out from the company's location. */
   private buildBeacon() {
-    const sto = CITIES.find((c) => c.code === "STO") ?? CITIES[0];
-    const p = latLonToVec3(sto.lat, sto.lon, R * 1.016);
+    const at = this.opts.beacon ?? { lat: 57.6554, lon: 12.0138 };
+    const p = latLonToVec3(at.lat, at.lon, R * 1.016);
     for (let i = 0; i < 2; i++) {
       const mat = new THREE.MeshBasicMaterial({ color: this.c.hi, transparent: true, opacity: 0, depthWrite: false, blending: this.blend, side: THREE.DoubleSide });
       const mesh = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 64), mat);
@@ -940,7 +968,7 @@ export class GlobeScene {
       // Same on-screen height as the logo in its own column (pixels -> world units at the centre).
       const px = this.opts.logoHeight?.() || h * 0.24;
       const worldH = (px * 2 * halfH) / h;
-      this.logo.scale.set(worldH * (this.logo.userData.aspect as number), worldH, 1);
+      this.logo.scale.set(worldH * (this.logo.userData.aspect as number), worldH, worldH);
     }
     this.root.userData.base = { x: wide ? (0.44 * halfH * aspect) / 0.65 : 0, y: 0 };
   }
@@ -1137,7 +1165,8 @@ export class GlobeScene {
 
     if (this.logo) {
       const a = reveal * ((this.root.userData.logoAlpha as number | undefined) ?? 1);
-      (this.logo.material as THREE.SpriteMaterial).opacity = a;
+      (this.logo.userData.mat as THREE.MeshBasicMaterial).opacity = a;
+      (this.logo.userData.side as THREE.MeshBasicMaterial).opacity = a;
       this.centreLogo();
     }
     for (const b of this.beacon) {

@@ -397,6 +397,7 @@ function HeroEditor({ hero, saved, lang, setLang, status, busy, onChange, onSave
   status: { ok: boolean; text: string } | null; busy: boolean; onChange: (h: HomeHero) => void; onSave: () => void;
 }) {
   const { t } = useAdminLang();
+  const { actor } = useAdmin();
   const h = t.home;
   const x = h.hero;
   const l = hero[lang];
@@ -515,6 +516,28 @@ function HeroEditor({ hero, saved, lang, setLang, status, busy, onChange, onSave
               <option value="column">{x.logoPlaces.column}</option>
               <option value="globe">{x.logoPlaces.globe}</option>
             </select>
+            <label htmlFor="hr-logo-depth" className="mt-3 block text-sm">{x.logoDepth}: <span className="font-mono">{Number(v.logoDepth)} %</span></label>
+            <input id="hr-logo-depth" type="range" min={0} max={50} step={1} value={Number(v.logoDepth)} disabled={!v.globe || !v.logo || !v.logoInGlobe}
+              className="w-full accent-[var(--color-teal-500)] disabled:opacity-50"
+              onChange={(e) => onChange({ ...hero, visuals: { ...v, logoDepth: BigInt(e.target.value) } })} />
+            <p className="mt-3 text-sm">{x.beacon}</p>
+            <div className="mt-1 flex flex-wrap items-end gap-3">
+              {(["lat", "lon"] as const).map((k) => (
+                <label key={k} className="text-sm">
+                  <span className="text-muted">{x.beaconAxis[k]}</span>
+                  <input type="number" step="0.0001" min={k === "lat" ? -90 : -180} max={k === "lat" ? 90 : 180} value={v.beacon[k]} disabled={!v.globe}
+                    className="mt-1 block w-32 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 py-1.5 disabled:opacity-50"
+                    onChange={(e) => { const n = e.target.valueAsNumber; if (Number.isFinite(n)) onChange({ ...hero, visuals: { ...v, beacon: { ...v.beacon, [k]: n } } }); }} />
+                </label>
+              ))}
+              <button type="button" className="btn btn-secondary px-3 py-1.5 text-sm" disabled={!v.globe}
+                onClick={async () => {
+                  const r = await actor.getContactInfo();
+                  const c = r.__kind__ === "ok" ? r.ok : null;
+                  const at = c?.mapLat !== undefined && c?.mapLon !== undefined ? { lat: c.mapLat, lon: c.mapLon } : { lat: 57.6554, lon: 12.0138 };
+                  onChange({ ...hero, visuals: { ...v, beacon: at } });
+                }}>{x.beaconFromContact}</button>
+            </div>
           </fieldset>
         </div>
         <div className="space-y-4">

@@ -39,7 +39,9 @@ function logoDataUrl(section: Element | null): string | undefined {
 
 const isLight = () => document.documentElement.getAttribute("data-theme") === "light";
 
-function Scene({ size, logo, onHover, onLongitude, onArrival }: Events & { size: number; logo: boolean }) {
+type Look = { size: number; logo: boolean; logoDepth: number; beacon: [number, number] };
+
+function Scene({ size, logo, logoDepth, beacon, onHover, onLongitude, onArrival }: Events & Look) {
   const ref = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -52,6 +54,8 @@ function Scene({ size, logo, onHover, onLongitude, onArrival }: Events & { size:
       colors: themeColors(),
       size: size / 100,
       logo: logo ? logoDataUrl(surface) : undefined,
+      logoDepth: logoDepth / 100,
+      beacon: { lat: beacon[0], lon: beacon[1] },
       logoHeight: () => surface.querySelector(".hero-logo .animate-float svg")?.getBoundingClientRect().height ?? 0,
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       onHover,
@@ -119,8 +123,9 @@ function Scene({ size, logo, onHover, onLongitude, onArrival }: Events & { size:
 }
 
 /** `size`: the globe's diameter in % of the screen height. */
-/** `logo`: draw the hero logo inside the globe, with a beacon on Stockholm. */
-export default function HeroGlobe({ lang, size, logo = false, className = "" }: { lang: Lang; size: number; logo?: boolean; className?: string }) {
+/** `logo`: draw the hero logo inside the globe; `beacon`: where the beacon pulses ([lat, lon]). */
+export default function HeroGlobe({ lang, size, logo = false, logoDepth = 19, beacon = [57.6554, 12.0138], className = "" }:
+  { lang: Lang; size: number; logo?: boolean; logoDepth?: number; beacon?: [number, number]; className?: string }) {
   const [light, setLight] = useState(isLight);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [coords, setCoords] = useState({ lon: 18.07, lat: 59.33 });
@@ -142,7 +147,7 @@ export default function HeroGlobe({ lang, size, logo = false, className = "" }: 
 
   return (
     <div className={`pointer-events-none absolute inset-0 ${className}`}>
-      <Scene key={`${light ? "light" : "dark"}-${size}-${logo}`} size={size} logo={logo} onHover={setHover} onLongitude={(lon, lat) => setCoords({ lon, lat })}
+      <Scene key={`${light ? "light" : "dark"}-${size}-${logo}-${logoDepth}-${beacon}`} size={size} logo={logo} logoDepth={logoDepth} beacon={beacon} onHover={setHover} onLongitude={(lon, lat) => setCoords({ lon, lat })}
         onArrival={(c) => { setArrivals((n) => n + 1); setLastCity(c); }} />
       {/* Coordinates facing the viewer, and the network's live status (decorative). */}
       <div className="globe-hud" aria-hidden="true">

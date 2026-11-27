@@ -138,7 +138,7 @@ test("admin edits the hero and trust points, publishes, and the site shows them"
     await page.getByLabel(`Färgmarkerat: Ord ${last + 1}`).check();
     await page.getByLabel(`Krypterat: Ord ${last + 1}`).check();
     await page.getByLabel("Jordglob", { exact: true }).check();
-    await page.getByLabel(/^Logotypens placering/).selectOption({ label: "I jordglobens kärna, med fyr på Stockholm" });
+    await page.getByLabel(/^Logotypens placering/).selectOption({ label: "I jordglobens kärna" });
     await page.getByRole("tab", { name: /Engelska/ }).click();
     await page.getByRole("button", { name: "+ Lägg till ord" }).click();
     await page.getByLabel(/^Ord \d$/).nth(last).fill(`${tag}en`);
@@ -165,6 +165,8 @@ test("admin edits the hero and trust points, publishes, and the site shows them"
     await expect(site.locator("h1")).toHaveAttribute("data-globe", "1");
     // The logo moves into the globe, so its own column gives way.
     await expect(site.locator("h1")).toHaveAttribute("data-logo-core", "1");
+    await expect(site.locator("h1")).toHaveAttribute("data-logo-depth", "19");
+    await expect(site.locator("h1")).toHaveAttribute("data-beacon", /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/);
     await expect(site.locator(".hero-logo")).toBeHidden();
     // The encrypted words resolve back to their text after the effect.
     await expect(site.locator("h1 [data-cipher]").last()).toHaveText(tag, { timeout: 10_000 });

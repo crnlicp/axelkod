@@ -212,8 +212,13 @@ module {
   /// effect (word indexes, any number of each). The visual layers, any combination:
   /// `network` (circuit background), `globe` (3D globe, `globeSize` = its diameter in
   /// percent of the screen height) and `logo` (the logo with its hexagons; `logoInGlobe`
-  /// draws it inside the globe instead of in its own column, when both are on).
-  public type HeroVisuals = { network : Bool; globe : Bool; logo : Bool; logoInGlobe : Bool; globeSize : Nat };
+  /// draws it inside the globe instead of in its own column, when both are on;
+  /// `logoDepth` is that logo's thickness in percent of its height). `beacon` is the
+  /// place the globe's beacon pulses from (the company's location).
+  public type HeroVisuals = {
+    network : Bool; globe : Bool; logo : Bool; logoInGlobe : Bool; globeSize : Nat; logoDepth : Nat;
+    beacon : { lat : Float; lon : Float };
+  };
   public type HomeHero = {
     sv : HeroLang; en : HeroLang; highlights : [Nat]; ciphers : [Nat]; visuals : HeroVisuals; trust : [HomeItem];
   };

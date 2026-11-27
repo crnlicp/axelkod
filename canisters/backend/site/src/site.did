@@ -343,9 +343,14 @@ type HomeContent =
  };
 type HeroVisuals = 
  record {
+   beacon: record {
+             lat: float64;
+             lon: float64;
+           };
    globe: bool;
    globeSize: nat;
    logo: bool;
+   logoDepth: nat;
    logoInGlobe: bool;
    network: bool;
  };

@@ -1,7 +1,8 @@
 // New positioning: IT, software, cyber security and supply chain (vehicle spare parts
 // are part of the supply chain, no longer a service of their own), plus a Products
 // section with Prova; the hero gets lists of highlighted and encrypted words and a
-// choice of visual layers, product
+// choice of visual layers (the globe's beacon starts at the contact map's coordinates,
+// else Mölndal), product
 // cards a background simulation. Rewrites the draft and published home sections and the SEO
 // titles once; admins edit them afterwards as before.
 // Self-contained: types are copied, not imported.
@@ -30,7 +31,8 @@ module {
   type HomeHero = { sv : HeroLang; en : HeroLang; highlight : Nat; trust : [HomeItem] };
   type NewHero = {
     sv : HeroLang; en : HeroLang; highlights : [Nat]; ciphers : [Nat];
-    visuals : { network : Bool; globe : Bool; logo : Bool; logoInGlobe : Bool; globeSize : Nat }; trust : [HomeItem];
+    visuals : { network : Bool; globe : Bool; logo : Bool; logoInGlobe : Bool; globeSize : Nat; logoDepth : Nat; beacon : { lat : Float; lon : Float } };
+    trust : [HomeItem];
   };
   type ProductText = { title : Text; text : Text; cta : Text };
   type ProductItem = { icon : Text; status : { #live; #beta; #soon }; url : Text; background : Text; sv : ProductText; en : ProductText };
@@ -52,7 +54,7 @@ module {
     icon; visual; sv = { title = svTitle; text = svText }; en = { title = enTitle; text = enText };
   };
 
-  func home(old : OldHome) : NewHome = {
+  func home(old : OldHome, beacon : { lat : Float; lon : Float }) : NewHome = {
     // The trust strip is kept as it is.
     hero = {
       trust = old.hero.trust;
@@ -60,7 +62,7 @@ module {
       en = { eyebrow = "Axelkod AB · Mölndal, Sweden"; words = ["Code.", "Security.", "Supply."]; subtitle = "Software, cyber security and secure supply chains, including vehicle spare parts, delivered with Swedish precision."; cta = "Contact us"; cta2 = "See what we do" };
       highlights = [1];
       ciphers = [1]; // "Säkerhet." / "Security." decrypts
-      visuals = { network = true; globe = false; logo = true; logoInGlobe = false; globeSize = 70 };
+      visuals = { network = true; globe = false; logo = true; logoInGlobe = false; globeSize = 70; logoDepth = 19; beacon };
     };
     services = {
       sv = { eyebrow = "Tjänster"; title = "Vad vi gör"; intro = "Fyra områden, ett bolag. Fråga oss så berättar vi mer." };
@@ -103,6 +105,10 @@ module {
   public func migration(old : { config : OldConfig }) : { config : NewConfig } {
     let c = old.config;
     let seo = c.seo;
+    let beacon = switch (c.contact.mapLat, c.contact.mapLon) {
+      case (?lat, ?lon) { { lat; lon } };
+      case _ { { lat = 57.6554; lon = 12.0138 } }; // Mölndal
+    };
     {
       config = {
         var contact = c.contact;
@@ -114,8 +120,8 @@ module {
         var seoUpdatedAt = c.seoUpdatedAt;
         var seoPublishedAt = c.seoPublishedAt;
         var site = c.site;
-        var homeDraft = home(c.homeDraft);
-        var homePublished = home(c.homePublished);
+        var homeDraft = home(c.homeDraft, beacon);
+        var homePublished = home(c.homePublished, beacon);
       };
     };
   };
