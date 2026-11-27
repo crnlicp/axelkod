@@ -8,3 +8,4 @@ canisters/frontend/web/app/bindings/
 .migrations-*/
 test-results/
 playwright-report/
+docs/local-urls.md
