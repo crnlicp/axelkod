@@ -84,3 +84,13 @@ test("no third-party requests", async ({ page }) => {
   // The page itself plus the local gateway's API endpoint (icp-api.io on mainnet).
   expect([...hosts].sort()).toEqual(["localhost:8000", "web.local.localhost:8000"]);
 });
+
+test("a product card with a background runs its simulation", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/", { waitUntil: "networkidle" });
+  const sim = page.locator('[data-sim="prova-cra"]');
+  await sim.scrollIntoViewIfNeeded();
+  await expect(sim.locator(".sim-row").first()).toBeVisible();
+  await expect(sim.locator(".sim-flow")).toBeVisible();
+  expect(errors).toEqual([]);
+});

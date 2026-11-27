@@ -10,12 +10,17 @@ export type HomeItem = { icon: string; visual: string; sv: HomeText; en: HomeTex
 export type HomeHead = { eyebrow: string; title: string; intro: string };
 export type HomeSection = { sv: HomeHead; en: HomeHead; items: HomeItem[] };
 export type HeroLang = { eyebrow: string; words: string[]; subtitle: string; cta: string; cta2: string };
-export type HomeHero = { sv: HeroLang; en: HeroLang; highlight: bigint | number; trust: HomeItem[] };
+/** Hero visual layers, any combination; `globeSize` is the globe's diameter in % of the screen height. */
+export type HeroVisuals = { network: boolean; globe: boolean; logo: boolean; logoInGlobe: boolean; globeSize: bigint | number };
+export type HomeHero = {
+  sv: HeroLang; en: HeroLang; highlights: (bigint | number)[]; ciphers: (bigint | number)[];
+  visuals: HeroVisuals; trust: HomeItem[];
+};
 export type ProductStatusKey = "live" | "beta" | "soon";
 /** The bake gets raw Candid (`{ beta: null }`); the browser bindings give the enum string. */
 export type ProductStatus = ProductStatusKey | { [k in ProductStatusKey]?: null };
 export type ProductText = { title: string; text: string; cta: string };
-export type ProductItem = { icon: string; status: ProductStatus; url: string; sv: ProductText; en: ProductText };
+export type ProductItem = { icon: string; status: ProductStatus; url: string; background: string; sv: ProductText; en: ProductText };
 export type ProductSection = { sv: HomeHead; en: HomeHead; items: ProductItem[] };
 export type HomeContent = { hero: HomeHero; services: HomeSection; security: HomeSection; industries: HomeSection; products: ProductSection };
 /** Baked regions: the hero text, the trust strip and the four sections. */
@@ -44,11 +49,15 @@ const ARROW = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" strok
 /** Text column of the hero. Pure-CSS entrance (data-step) so the h1, the LCP element, paints at once. */
 export function heroHtml(h: HomeHero, lang: Lang): string {
   const l = h[lang];
-  const hi = Number(h.highlight);
+  const hi = new Set(h.highlights.map(Number));
+  const ci = new Set(h.ciphers.map(Number));
   const words = l.words
-    .map((w, i) => `<span class="hero-word block" data-step="${Math.min(i + 1, 4)}"><span${i === hi ? ' class="text-gradient"' : ""}>${esc(w)}</span>${i < l.words.length - 1 ? " " : ""}</span>`)
+    .map((w, i) => `<span class="hero-word block" data-step="${Math.min(i + 1, 4)}"><span${hi.has(i) ? ' class="text-gradient"' : ""}${ci.has(i) ? " data-cipher" : ""}>${esc(w)}</span>${i < l.words.length - 1 ? " " : ""}</span>`)
     .join("");
-  return `<p class="eyebrow hero-in" data-step="0">${esc(l.eyebrow)}</p><h1 id="hero-title" class="mt-5 text-6xl uppercase sm:text-7xl lg:text-8xl">${words}</h1><p class="hero-in mt-6 max-w-xl text-lg text-muted sm:text-xl" data-step="4">${esc(l.subtitle)}</p><div class="hero-in mt-9 flex flex-wrap gap-3" data-step="5"><a href="#${ANCHOR[lang].contact}" class="btn btn-primary">${esc(l.cta)} ${ARROW}</a><a href="#${ANCHOR[lang].services}" class="btn btn-secondary">${esc(l.cta2)}</a></div>`;
+  // The h1's data-* tell the (unbaked) hero which visual layers to show (see Hero.tsx, app.css).
+  const v = h.visuals;
+  const layers = `data-network="${v.network ? 1 : 0}" data-globe="${v.globe ? 1 : 0}" data-logo="${v.logo ? 1 : 0}" data-logo-core="${v.logoInGlobe ? 1 : 0}" data-globe-size="${Number(v.globeSize)}"`;
+  return `<p class="eyebrow hero-in" data-step="0">${esc(l.eyebrow)}</p><h1 id="hero-title" ${layers} class="mt-5 text-6xl uppercase sm:text-7xl lg:text-8xl">${words}</h1><p class="hero-in mt-6 max-w-xl text-lg text-muted sm:text-xl" data-step="4">${esc(l.subtitle)}</p><div class="hero-in mt-9 flex flex-wrap gap-3" data-step="5"><a href="#${ANCHOR[lang].contact}" class="btn btn-primary">${esc(l.cta)} ${ARROW}</a><a href="#${ANCHOR[lang].services}" class="btn btn-secondary">${esc(l.cta2)}</a></div>`;
 }
 
 /** Trust points under the hero; columns follow the count (at most 4 per row). */
@@ -147,17 +156,26 @@ const STATUS: Record<Lang, Record<ProductStatusKey, string>> = {
   en: { live: "Live", beta: "Beta", soon: "Coming soon" },
 };
 
-/** Product cards; without a url the CTA goes to the contact form. One product gets a wide card. */
+/** One product card; without a url the CTA goes to the contact form. `wide`: the only product. */
+export function productCardHtml(it: ProductItem, lang: Lang, wide: boolean): string {
+  const t = it[lang];
+  const st = statusKey(it.status);
+  const href = it.url ? esc(it.url) : `#${ANCHOR[lang].contact}`;
+  const ext = it.url ? ' target="_blank" rel="noopener"' : "";
+  const badge = `<span class="product-badge" data-status="${st}">${STATUS[lang][st]}</span>`;
+  const body = `<div><div class="flex flex-wrap items-center gap-4"><span class="${TILE}">${iconSvg(it.icon, "h-6 w-6")}</span>${badge}</div><h3 class="mt-6 text-4xl uppercase">${esc(t.title)}</h3><p class="mt-3 max-w-2xl text-lg text-muted">${esc(t.text)}</p></div>`;
+  const cta = (cls: string) => `<a href="${href}"${ext} class="btn btn-primary ${cls}">${esc(t.cta)} ${ARROW}</a>`;
+  // A background simulation (lib/product-sims) fills the card around the copy: beside
+  // it on a wide card, under it on a narrow one (container queries in app.css).
+  if (it.background) {
+    return `<li data-reveal class="spotlight gradient-border glass product-card--sim relative overflow-hidden"><div class="product-sim absolute inset-0" data-sim="${esc(it.background)}" data-lang="${lang}" aria-hidden="true"></div><div class="product-copy flex flex-col items-start">${body}${cta("mt-7")}</div><div class="product-sim-room" aria-hidden="true"></div></li>`;
+  }
+  return `<li data-reveal class="spotlight gradient-border glass relative overflow-hidden p-8${wide ? " lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12" : ""}">${body}${cta("mt-7 lg:mt-0")}</li>`;
+}
+
 export function productsHtml(s: ProductSection, lang: Lang): string {
   const single = s.items.length === 1;
-  const cards = s.items.map((it) => {
-    const t = it[lang];
-    const st = statusKey(it.status);
-    const href = it.url ? esc(it.url) : `#${ANCHOR[lang].contact}`;
-    const ext = it.url ? ' target="_blank" rel="noopener"' : "";
-    const badge = `<span class="product-badge" data-status="${st}">${STATUS[lang][st]}</span>`;
-    return `<li data-reveal class="spotlight gradient-border glass relative overflow-hidden p-8${single ? " lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12" : ""}"><div><div class="flex flex-wrap items-center gap-4"><span class="${TILE}">${iconSvg(it.icon, "h-6 w-6")}</span>${badge}</div><h3 class="mt-6 text-4xl uppercase">${esc(t.title)}</h3><p class="mt-3 max-w-2xl text-lg text-muted">${esc(t.text)}</p></div><a href="${href}"${ext} class="btn btn-primary mt-7 lg:mt-0">${esc(t.cta)} ${ARROW}</a></li>`;
-  });
+  const cards = s.items.map((it) => productCardHtml(it, lang, single));
   return `${head(s[lang], "products-title", "max-w-2xl")}<ul class="mt-12 grid gap-5 ${single ? "" : industryCols(s.items.length)}">${cards.join("")}</ul>`;
 }
 

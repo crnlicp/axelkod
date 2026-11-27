@@ -130,12 +130,15 @@ test("admin edits the hero and trust points, publishes, and the site shows them"
     await page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Startsida" }).click();
     await expect(page.getByRole("tab", { name: "Hero" })).toHaveAttribute("aria-selected", "true");
 
-    // A new last headline word, highlighted.
+    // A new last headline word, highlighted and encrypted; the globe as background.
     await page.getByRole("button", { name: "+ Lägg till ord" }).click();
     const words = page.getByLabel(/^Ord \d$/);
     const last = (await words.count()) - 1;
     await words.nth(last).fill(tag);
-    await page.getByRole("radio").nth(last).check();
+    await page.getByLabel(`Färgmarkerat: Ord ${last + 1}`).check();
+    await page.getByLabel(`Krypterat: Ord ${last + 1}`).check();
+    await page.getByLabel("Jordglob", { exact: true }).check();
+    await page.getByLabel(/^Logotypens placering/).selectOption({ label: "I jordglobens kärna, med fyr på Stockholm" });
     await page.getByRole("tab", { name: /Engelska/ }).click();
     await page.getByRole("button", { name: "+ Lägg till ord" }).click();
     await page.getByLabel(/^Ord \d$/).nth(last).fill(`${tag}en`);
@@ -148,19 +151,28 @@ test("admin edits the hero and trust points, publishes, and the site shows them"
     await page.getByRole("tab", { name: /Svenska/ }).click();
     await point.getByLabel("Titel").fill(`Förtroende ${tag}`);
     await point.getByLabel("Text").fill("Svensk punkt.");
-    await page.getByRole("button", { name: "Spara", exact: true }).click();
-    await expect(page.getByRole("status").filter({ hasText: "Sparat." })).toBeVisible();
 
-    // Publish straight from the home editor.
-    await page.getByRole("button", { name: "Publicera", exact: true }).click();
+    // With unsaved edits, publishing from the home editor saves first.
+    await page.getByRole("button", { name: "Spara och publicera", exact: true }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Sparat." })).toBeVisible();
     await expect(page.getByRole("status").filter({ hasText: "Publicerat." })).toBeVisible({ timeout: 60_000 });
 
     const site = await (await browser.newContext()).newPage();
     await site.goto("/", { waitUntil: "networkidle" });
-    await expect(site.locator("h1 .text-gradient")).toHaveText(tag);
+    // Several words can be highlighted and encrypted; the defaults keep word 2.
+    await expect(site.locator("h1 .text-gradient").last()).toHaveText(tag);
+    await expect(site.locator("h1 .text-gradient")).toHaveCount(2);
+    await expect(site.locator("h1")).toHaveAttribute("data-globe", "1");
+    // The logo moves into the globe, so its own column gives way.
+    await expect(site.locator("h1")).toHaveAttribute("data-logo-core", "1");
+    await expect(site.locator(".hero-logo")).toBeHidden();
+    // The encrypted words resolve back to their text after the effect.
+    await expect(site.locator("h1 [data-cipher]").last()).toHaveText(tag, { timeout: 10_000 });
+    await expect(site.locator("canvas.hero-globe")).toHaveCount(1);
+    await expect(site.locator("canvas.hero-network")).toHaveCount(1);
     await expect(site.getByText(`Förtroende ${tag}`)).toBeVisible();
     await site.goto("/en", { waitUntil: "networkidle" });
-    await expect(site.locator("h1 .text-gradient")).toHaveText(`${tag}en`);
+    await expect(site.locator("h1 .text-gradient").last()).toHaveText(`${tag}en`);
   } finally {
     await api.actor.setHomeHero(original.ok.hero);
     await page.goto("/admin/seo");

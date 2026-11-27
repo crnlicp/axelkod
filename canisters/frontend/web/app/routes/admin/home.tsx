@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HomeKey as HomeKeyEnum, ProductStatus, type HomeContent, type HomeHead, type HomeHero, type HomeItem, type HomeSection, type ProductItem, type ProductSection } from "../../bindings/site";
 import { useAdminLang, type AdminDict, type AdminLang } from "../../admin/i18n";
 import { errMessage, type BackendErr } from "../../admin/result";
@@ -6,6 +6,9 @@ import { useAdmin } from "../../admin/session";
 import { Toast } from "../../admin/toast";
 import { publishSeo } from "../../admin/publish";
 import { HOME_ICON_KEYS, iconSvg } from "../../lib/home-icons";
+import { decrypt } from "../../lib/cipher";
+import { enhanceSims, PRODUCT_SIMS } from "../../lib/product-sims";
+import { productCardHtml, type ProductItem as RenderProductItem } from "../../lib/home-render";
 
 type SectionKey = "services" | "products" | "security" | "industries";
 type Key = "hero" | SectionKey;
@@ -20,11 +23,20 @@ const MAX_ITEMS = 12;
 const VISUALS = ["", "gear", "code", "shield", "infra"];
 const input = "mt-1 w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2";
 const blankText = { title: "", text: "" };
-/** Change detection; the hero's highlight index is a bigint, which JSON can't encode as-is. */
+/** Change detection; the hero's word indexes are bigints, which JSON can't encode as-is. */
 const same = (a: unknown, b: unknown) => {
   const enc = (v: unknown) => JSON.stringify(v, (_k, x) => (typeof x === "bigint" ? x.toString() : x));
   return enc(a) === enc(b);
 };
+
+/** The chosen product background running in a card-sized box, as on the site. */
+/** The card exactly as the site renders it (escaped markup from home-render), with its simulation running. */
+function CardPreview({ item, lang }: { item: RenderProductItem; lang: AdminLang }) {
+  const ref = useRef<HTMLUListElement>(null);
+  const html = productCardHtml(item, lang, false).replace(" data-reveal", "");
+  useEffect(() => (ref.current ? enhanceSims(ref.current) : undefined), [html]);
+  return <ul ref={ref} className="grid" aria-hidden="true" inert dangerouslySetInnerHTML={{ __html: html }} />;
+}
 
 /** Icon from the shared library (constant markup, never user input). */
 function Glyph({ name, className }: { name: string; className: string }) {
@@ -93,7 +105,7 @@ export default function HomeAdmin() {
 
   if (key === "hero") {
     return (
-      <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }} dirty={dirty} saves={saves}>
+      <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }} dirty={dirty} saves={saves} onSave={saveHero}>
         <HeroEditor hero={draft.hero} saved={saved!.hero} lang={lang} setLang={setLang} status={status} busy={busy}
           onChange={(hero) => { setDraft({ ...draft, hero }); setStatus(null); }}
           onSave={() => void saveHero()} />
@@ -101,21 +113,25 @@ export default function HomeAdmin() {
     );
   }
 
-  async function saveHero() {
+  /** Saves the hero; false (with the error shown) when it didn't save. */
+  async function saveHero(): Promise<boolean> {
     setBusy(true);
     try {
       const r = await actor.setHomeHero(draft!.hero);
       if (r.__kind__ === "err") {
         const err = r.err as BackendErr;
         const local = err.__kind__ === "invalid" && err.invalid ? invalidText(err.invalid, t) : null;
-        return setStatus({ ok: false, text: local ?? errMessage(err, t) });
+        setStatus({ ok: false, text: local ?? errMessage(err, t) });
+        return false;
       }
       setSaved({ ...saved!, hero: r.ok });
       setDraft({ ...draft!, hero: r.ok });
       setStatus({ ok: true, text: h.saved });
       setSaves((n) => n + 1);
+      return true;
     } catch (e) {
       setStatus({ ok: false, text: t.saveFailed(e instanceof Error ? e.message : String(e)) });
+      return false;
     } finally { setBusy(false); }
   }
 
@@ -132,7 +148,7 @@ export default function HomeAdmin() {
   const add = () => setSection({
     ...section,
     items: [...section.items, isProducts
-      ? { icon: "lock", status: ProductStatus.soon, url: "", sv: blankProduct, en: blankProduct }
+      ? { icon: "lock", status: ProductStatus.soon, url: "", background: "", sv: blankProduct, en: blankProduct }
       : { icon: key === "industries" ? "company" : "shield", visual: "", sv: blankText, en: blankText }],
   });
   const missing = (l: AdminLang) =>
@@ -140,7 +156,7 @@ export default function HomeAdmin() {
     || section.items.some((it) => !it[l].title.trim() || !it[l].text.trim() || (isProducts && !(it as ProductItem)[l].cta.trim()));
   const isLayers = key === "security";
 
-  async function save() {
+  async function save(): Promise<boolean> {
     setBusy(true);
     try {
       const variant = { services: HomeKeyEnum.services, security: HomeKeyEnum.security, industries: HomeKeyEnum.industries }[key as Exclude<SectionKey, "products">];
@@ -150,20 +166,23 @@ export default function HomeAdmin() {
       if (r.__kind__ === "err") {
         const err = r.err as BackendErr;
         const local = err.__kind__ === "invalid" && err.invalid ? invalidText(err.invalid, t) : null;
-        return setStatus({ ok: false, text: local ?? errMessage(err, t) });
+        setStatus({ ok: false, text: local ?? errMessage(err, t) });
+        return false;
       }
       setSaved({ ...saved!, [key]: r.ok });
       setDraft({ ...draft!, [key]: r.ok });
       setStatus({ ok: true, text: h.saved });
       setSaves((n) => n + 1);
+      return true;
     } catch (e) {
       setStatus({ ok: false, text: t.saveFailed(e instanceof Error ? e.message : String(e)) });
+      return false;
     } finally { setBusy(false); }
   }
 
   const head = section[lang];
   return (
-    <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }} dirty={dirty} saves={saves}>
+    <Shell t={t} k={key} setKey={(k) => { setKey(k); setStatus(null); }} dirty={dirty} saves={saves} onSave={save}>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div role="tablist" aria-label={t.nav.language} className="flex gap-1">
@@ -270,8 +289,24 @@ export default function HomeAdmin() {
                     <div>
                       <label htmlFor={`${id}-url`} className="font-medium">{h.product.url}</label>
                       <input id={`${id}-url`} type="url" className={input} maxLength={500} value={p.url} placeholder="https://"
-                        onChange={(e) => setItem(i, { ...p, url: e.target.value })} />
+                        aria-describedby={`${id}-url-hint`} onChange={(e) => setItem(i, { ...p, url: e.target.value })} />
+                      <p id={`${id}-url-hint`} className="mt-1 text-sm text-muted">{h.product.urlHint}</p>
                     </div>
+                    <div className="sm:col-span-2">
+                      <label htmlFor={`${id}-bg`} className="font-medium">{h.product.background}</label>
+                      <p className="text-sm text-muted">{h.product.backgroundHint}</p>
+                      <select id={`${id}-bg`} className={input} value={p.background}
+                        onChange={(e) => setItem(i, { ...p, background: e.target.value })}>
+                        <option value="">{h.product.noBackground}</option>
+                        {PRODUCT_SIMS.map((s) => <option key={s.id} value={s.id}>{s.label[lang]}</option>)}
+                      </select>
+                    </div>
+                    {p.background && (
+                      <div className="sm:col-span-2">
+                        <p className="font-medium">{h.product.preview}</p>
+                        <CardPreview item={p as RenderProductItem} lang={lang} />
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -284,15 +319,15 @@ export default function HomeAdmin() {
 }
 
 /** Page title, intro and section tabs around each editor. */
-function Shell({ t, k, setKey, dirty, saves, children }: {
-  t: AdminDict; k: Key; setKey: (k: Key) => void; dirty: boolean; saves: number; children: React.ReactNode;
+function Shell({ t, k, setKey, dirty, saves, onSave, children }: {
+  t: AdminDict; k: Key; setKey: (k: Key) => void; dirty: boolean; saves: number; onSave: () => Promise<boolean>; children: React.ReactNode;
 }) {
   const h = t.home;
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-4xl uppercase">{h.title}</h1>
-        <PublishBar t={t} dirty={dirty} saves={saves} />
+        <PublishBar t={t} dirty={dirty} saves={saves} onSave={onSave} />
       </div>
       <p className="mt-2 text-muted">{h.intro}</p>
       <div role="tablist" aria-label={h.title} className="mt-6 flex flex-wrap gap-1 border-b border-border">
@@ -310,8 +345,9 @@ function Shell({ t, k, setKey, dirty, saves, children }: {
 
 const when = (t: AdminDict, ns?: bigint) => (ns ? new Date(Number(ns / 1_000_000n)).toLocaleString(t.locale) : t.seo.never);
 
-/** Publishes the whole site (same as the SEO page), so home edits can go live from here. */
-function PublishBar({ t, dirty, saves }: { t: AdminDict; dirty: boolean; saves: number }) {
+/** Publishes the whole site (same as the SEO page), so home edits can go live from here.
+ *  Unsaved edits on the open tab are saved first; a failed save stops the publish. */
+function PublishBar({ t, dirty, saves, onSave }: { t: AdminDict; dirty: boolean; saves: number; onSave: () => Promise<boolean> }) {
   const { actor, identity } = useAdmin();
   const x = t.seo;
   const [times, setTimes] = useState<{ updatedAt: bigint; publishedAt?: bigint } | null>(null);
@@ -327,6 +363,7 @@ function PublishBar({ t, dirty, saves }: { t: AdminDict; dirty: boolean; saves: 
 
   async function publish() {
     setBusy(true);
+    if (dirty && !(await onSave())) return setBusy(false);
     setStatus({ ok: true, text: x.publishing });
     try {
       await publishSeo(actor, identity);
@@ -346,12 +383,11 @@ function PublishBar({ t, dirty, saves }: { t: AdminDict; dirty: boolean; saves: 
           {unpublished && !busy && <span className="ml-2 inline-block h-2 w-2 rounded-full bg-brand align-middle" title={x.changed} aria-label={x.changed} />}
         </p>
         <button type="button" className="btn btn-primary" title={t.home.publishAll}
-          disabled={busy || dirty || !times} onClick={() => void publish()}>
-          {busy ? x.publishing : x.publish}
+          disabled={busy || !times} onClick={() => void publish()}>
+          {busy ? x.publishing : dirty ? t.home.saveAndPublish : x.publish}
         </button>
       </div>
       <Toast status={status} />
-      {dirty && <p className="text-sm text-muted">{x.saveFirst}</p>}
     </div>
   );
 }
@@ -365,7 +401,31 @@ function HeroEditor({ hero, saved, lang, setLang, status, busy, onChange, onSave
   const x = h.hero;
   const l = hero[lang];
   const dirty = !same(hero, saved);
-  const highlight = Number(hero.highlight);
+  const v = hero.visuals;
+  const globeSize = Number(v.globeSize);
+  const highlights = new Set(hero.highlights.map(Number));
+  const ciphers = new Set(hero.ciphers.map(Number));
+  /** Turns a word's effect on or off (indexes are shared by both languages). */
+  const toggle = (field: "highlights" | "ciphers", i: number, on: boolean) => {
+    const rest = hero[field].filter((v) => Number(v) !== i);
+    onChange({ ...hero, [field]: on ? [...rest, BigInt(i)].sort((a, b) => Number(a - b)) : rest });
+  };
+  /** Removing a word shifts the later words' indexes down. */
+  const removeWord = (i: number) => {
+    const shift = (xs: bigint[]) => xs.filter((v) => Number(v) !== i).map((v) => (Number(v) > i ? v - 1n : v));
+    onChange({ ...hero, [lang]: { ...l, words: l.words.filter((_, j) => j !== i) }, highlights: shift(hero.highlights), ciphers: shift(hero.ciphers) });
+  };
+  const previewRef = useRef<HTMLParagraphElement>(null);
+  const cipherKey = [...ciphers].sort().map((i) => `${i}:${l.words[i]}`).join("|");
+  // Replays the effect in the preview whenever the encrypted words change.
+  useEffect(() => {
+    if (!previewRef.current || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cancels = Array.from(previewRef.current.querySelectorAll<HTMLElement>("[data-cipher]")).map((el, n) => {
+      delete el.dataset.cipherText;
+      return decrypt(el, { delay: n * 0.25 });
+    });
+    return () => cancels.forEach((c) => c());
+  }, [cipherKey]);
   const setL = (patch: Partial<typeof l>) => onChange({ ...hero, [lang]: { ...l, ...patch } });
   const setWord = (i: number, w: string) => setL({ words: l.words.map((v, j) => (j === i ? w : v)) });
   const setTrust = (i: number, it: HomeItem) => onChange({ ...hero, trust: hero.trust.map((v, j) => (j === i ? it : v)) });
@@ -415,17 +475,46 @@ function HeroEditor({ hero, saved, lang, setLang, status, busy, onChange, onSave
                   <input aria-label={x.word(i + 1)} className={`${input} mt-0 flex-1 font-display text-xl uppercase`} maxLength={30} value={w}
                     onChange={(e) => setWord(i, e.target.value)} />
                   <label className="flex shrink-0 items-center gap-1.5 text-sm">
-                    <input type="radio" name="hr-highlight" className="h-4 w-4 accent-[var(--color-teal-500)]" checked={highlight === i}
-                      onChange={() => onChange({ ...hero, highlight: BigInt(i) })} />
+                    <input type="checkbox" className="h-4 w-4 accent-[var(--color-teal-500)]" checked={highlights.has(i)}
+                      aria-label={`${x.highlight}: ${x.word(i + 1)}`} onChange={(e) => toggle("highlights", i, e.target.checked)} />
                     {x.highlight}
                   </label>
+                  <label className="flex shrink-0 items-center gap-1.5 text-sm">
+                    <input type="checkbox" className="h-4 w-4 accent-[var(--color-teal-500)]" checked={ciphers.has(i)}
+                      aria-label={`${x.cipher}: ${x.word(i + 1)}`} onChange={(e) => toggle("ciphers", i, e.target.checked)} />
+                    {x.cipher}
+                  </label>
                   <button type="button" className="btn btn-secondary !px-3" disabled={l.words.length <= 1}
-                    onClick={() => setL({ words: l.words.filter((_, j) => j !== i) })} aria-label={`${h.removeItem}: ${x.word(i + 1)}`}>×</button>
+                    onClick={() => removeWord(i)} aria-label={`${h.removeItem}: ${x.word(i + 1)}`}>×</button>
                 </li>
               ))}
             </ol>
             <button type="button" className="btn btn-secondary mt-2" disabled={l.words.length >= MAX_WORDS}
               onClick={() => setL({ words: [...l.words, ""] })}>+ {x.addWord}</button>
+          </fieldset>
+          <fieldset>
+            <legend className="font-medium">{x.visuals}</legend>
+            <p className="text-sm text-muted">{x.visualsHint}</p>
+            <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
+              {(["network", "globe", "logo"] as const).map((k) => (
+                <label key={k} className="flex items-center gap-1.5">
+                  <input type="checkbox" className="h-4 w-4 accent-[var(--color-teal-500)]" checked={v[k]}
+                    onChange={(e) => onChange({ ...hero, visuals: { ...v, [k]: e.target.checked } })} />
+                  {x.layers[k]}
+                </label>
+              ))}
+            </div>
+            <label htmlFor="hr-globe-size" className="mt-3 block text-sm">{x.globeSize}: <span className="font-mono">{globeSize} %</span></label>
+            <input id="hr-globe-size" type="range" min={20} max={100} step={5} value={globeSize} disabled={!v.globe}
+              className="w-full accent-[var(--color-teal-500)] disabled:opacity-50"
+              onChange={(e) => onChange({ ...hero, visuals: { ...v, globeSize: BigInt(e.target.value) } })} />
+            <label htmlFor="hr-logo-place" className="mt-3 block text-sm">{x.logoPlacement}</label>
+            <select id="hr-logo-place" value={v.logoInGlobe ? "globe" : "column"} disabled={!v.globe || !v.logo}
+              className="mt-1 w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] px-2 py-1.5 disabled:opacity-50"
+              onChange={(e) => onChange({ ...hero, visuals: { ...v, logoInGlobe: e.target.value === "globe" } })}>
+              <option value="column">{x.logoPlaces.column}</option>
+              <option value="globe">{x.logoPlaces.globe}</option>
+            </select>
           </fieldset>
         </div>
         <div className="space-y-4">
@@ -443,8 +532,10 @@ function HeroEditor({ hero, saved, lang, setLang, status, busy, onChange, onSave
           </div>
           <div className="rounded-xl border border-border bg-bg p-4" aria-hidden="true">
             <p className="text-xs uppercase tracking-widest text-accent">{l.eyebrow}</p>
-            <p className="mt-2 font-display text-3xl font-bold uppercase leading-tight">
-              {l.words.map((w, i) => <span key={i} className={`block ${i === highlight ? "text-gradient" : ""}`}>{w || "…"}</span>)}
+            <p ref={previewRef} className="mt-2 font-display text-3xl font-bold uppercase leading-tight">
+              {l.words.map((w, i) => (
+                <span key={`${i}-${w}`} className="block"><span data-cipher={ciphers.has(i) ? "" : undefined} className={highlights.has(i) ? "text-gradient" : ""}>{w || "…"}</span></span>
+              ))}
             </p>
           </div>
         </div>

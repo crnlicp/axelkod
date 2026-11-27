@@ -35,7 +35,7 @@ suite("home sections", func() {
 
 let heroLang : Types.HeroLang = { eyebrow = "Axelkod"; words = ["Delar.", "Kod."]; subtitle = "Sub"; cta = "Kontakt"; cta2 = "Mer" };
 let trust : Types.HomeItem = { icon = "clock"; visual = "gear"; sv = { title = "Snabbt"; text = "Svar" }; en = { title = "Fast"; text = "Reply" } };
-let hero : Types.HomeHero = { sv = heroLang; en = heroLang; highlight = 1; trust = [trust] };
+let hero : Types.HomeHero = { sv = heroLang; en = heroLang; highlights = [1, 2]; ciphers = [0, 1]; visuals = { network = true; globe = true; logo = false; logoInGlobe = true; globeSize = 70 }; trust = [trust] };
 
 func heroInvalid(r : { #ok : Types.HomeHero; #err : Types.Error }) : Text {
   switch (r) { case (#err(#invalid(f))) { f }; case (_) { "" } };
@@ -53,14 +53,18 @@ suite("hero", func() {
     expect.text(heroInvalid(Home.hero({ hero with en = { heroLang with words = ["a", "b", "c", "d", "e"] } }))).equal("hero.en.words");
   });
   test("highlight index and trust icons are checked", func() {
-    expect.text(heroInvalid(Home.hero({ hero with highlight = 4 }))).equal("hero.highlight");
+    expect.text(heroInvalid(Home.hero({ hero with highlights = [0, 4] }))).equal("hero.highlights");
+    expect.text(heroInvalid(Home.hero({ hero with ciphers = [4] }))).equal("hero.ciphers");
+    expect.text(heroInvalid(Home.hero({ hero with highlights = []; ciphers = [] }))).equal("");
+    expect.text(heroInvalid(Home.hero({ hero with visuals = { hero.visuals with globeSize = 101 } }))).equal("hero.globeSize");
+    expect.text(heroInvalid(Home.hero({ hero with visuals = { network = false; globe = false; logo = false; logoInGlobe = false; globeSize = 20 } }))).equal("");
     expect.text(heroInvalid(Home.hero({ hero with trust = [{ trust with icon = "x" }] }))).equal("hero.trust.0.icon");
   });
 });
 
 
 let productText : Types.ProductText = { title = "Prova"; text = "Text"; cta = "Demo" };
-let productItem : Types.ProductItem = { icon = "lock"; status = #beta; url = ""; sv = productText; en = productText };
+let productItem : Types.ProductItem = { icon = "lock"; status = #beta; url = ""; background = "prova-cra"; sv = productText; en = productText };
 let products : Types.ProductSection = { sv = head; en = head; items = [productItem] };
 
 func productsInvalid(r : { #ok : Types.ProductSection; #err : Types.Error }) : Text {
@@ -71,6 +75,10 @@ suite("products", func() {
   test("an empty url and an https url are accepted", func() {
     expect.text(productsInvalid(Home.products(products))).equal("");
     expect.text(productsInvalid(Home.products({ products with items = [{ productItem with url = "https://provacra.se" }] }))).equal("");
+  });
+  test("only known backgrounds are accepted", func() {
+    expect.text(productsInvalid(Home.products({ products with items = [{ productItem with background = "" }] }))).equal("");
+    expect.text(productsInvalid(Home.products({ products with items = [{ productItem with background = "<script>" }] }))).equal("products.items.0.background");
   });
   test("other urls are rejected", func() {
     expect.text(productsInvalid(Home.products({ products with items = [{ productItem with url = "javascript:alert(1)" }] }))).equal("products.items.0.url");

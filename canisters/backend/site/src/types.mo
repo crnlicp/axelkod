@@ -206,13 +206,22 @@ module {
   public type HomeItem = { icon : Text; visual : Text; sv : HomeText; en : HomeText };
   public type HomeHead = { eyebrow : Text; title : Text; intro : Text };
   public type HomeSection = { sv : HomeHead; en : HomeHead; items : [HomeItem] };
-  /// Hero: headline words (one may be highlighted), buttons and the trust strip below it.
+  /// Hero: headline words (highlighted and/or encrypted), buttons and the trust strip below it.
   public type HeroLang = { eyebrow : Text; words : [Text]; subtitle : Text; cta : Text; cta2 : Text };
-  public type HomeHero = { sv : HeroLang; en : HeroLang; highlight : Nat; trust : [HomeItem] };
+  /// `highlights`: words with the colour gradient; `ciphers`: words that play the "decrypt"
+  /// effect (word indexes, any number of each). The visual layers, any combination:
+  /// `network` (circuit background), `globe` (3D globe, `globeSize` = its diameter in
+  /// percent of the screen height) and `logo` (the logo with its hexagons; `logoInGlobe`
+  /// draws it inside the globe instead of in its own column, when both are on).
+  public type HeroVisuals = { network : Bool; globe : Bool; logo : Bool; logoInGlobe : Bool; globeSize : Nat };
+  public type HomeHero = {
+    sv : HeroLang; en : HeroLang; highlights : [Nat]; ciphers : [Nat]; visuals : HeroVisuals; trust : [HomeItem];
+  };
   /// Our own products: no url sends the CTA to the contact form.
   public type ProductStatus = { #live; #beta; #soon };
   public type ProductText = { title : Text; text : Text; cta : Text };
-  public type ProductItem = { icon : Text; status : ProductStatus; url : Text; sv : ProductText; en : ProductText };
+  /// `background`: a simulation id from `Home.productBackgrounds` ("" = none).
+  public type ProductItem = { icon : Text; status : ProductStatus; url : Text; background : Text; sv : ProductText; en : ProductText };
   public type ProductSection = { sv : HomeHead; en : HomeHead; items : [ProductItem] };
   public type HomeContent = {
     hero : HomeHero; services : HomeSection; security : HomeSection; industries : HomeSection; products : ProductSection;

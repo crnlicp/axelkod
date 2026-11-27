@@ -73,143 +73,144 @@ function tracePoint(n: Node, m: Node, t: number) {
   return { x: p1.x + (m.x - p1.x) * u, y: p1.y + (m.y - p1.y) * u };
 }
 
+/** Draws the network on `canvas` until the returned cleanup runs (also used as a product-card background). */
+export function mountNetwork(canvas: HTMLCanvasElement): () => void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return () => {};
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let graph = build(1, 1);
+  let w = 0;
+  let h = 0;
+  let colors = { line: "", node: "", pulse: "" };
+  let raf = 0;
+  let running = false;
+  let last = 0;
+  const mouse = { x: -1e4, y: -1e4 };
+  // The pulse glow, rendered once per colour scheme instead of a new gradient per pulse per frame.
+  let sprite: HTMLCanvasElement | null = null;
+  const makeSprite = () => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 40;
+    const g2 = c.getContext("2d");
+    if (!g2) return null;
+    const g = g2.createRadialGradient(20, 20, 0, 20, 20, 16);
+    g.addColorStop(0, colors.pulse);
+    g.addColorStop(1, "transparent");
+    g2.fillStyle = g;
+    g2.fillRect(0, 0, 40, 40);
+    return c;
+  };
+  // 30 frames a second is smooth for slow drifting pulses and halves the GPU work on 60 Hz
+  // screens (more on 120 Hz ones).
+  const FRAME_MS = 1000 / 30;
+  let lastFrame = 0;
+
+  const readColors = () => {
+    const cs = getComputedStyle(document.documentElement);
+    const light = document.documentElement.getAttribute("data-theme") === "light";
+    // Light theme: brand-teal pulses (the dark cyan glow reads as grey there).
+    colors = { line: cs.getPropertyValue("--circuit").trim(), node: cs.getPropertyValue("--brand").trim(), pulse: light ? cs.getPropertyValue("--brand").trim() : cs.getPropertyValue("--glow").trim() };
+    sprite = makeSprite();
+  };
+  const resize = () => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    w = rect.width;
+    h = rect.height;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    graph = build(w, h);
+  };
+
+  const draw = (time: number) => {
+    if (running && lastFrame && time - lastFrame < FRAME_MS - 1) { raf = requestAnimationFrame(draw); return; }
+    lastFrame = time;
+    const dt = last ? Math.min((time - last) / 1000, 0.1) : 0;
+    last = time;
+    ctx.clearRect(0, 0, w, h);
+    const { nodes, edges, pulses } = graph;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = colors.line;
+    ctx.globalAlpha = 0.22;
+    for (const e of edges) {
+      const n = nodes[e.a];
+      const m = nodes[e.b];
+      const dx = m.x - n.x;
+      const dy = m.y - n.y;
+      const diag = Math.min(Math.abs(dx), Math.abs(dy));
+      ctx.beginPath();
+      ctx.moveTo(n.x, n.y);
+      ctx.lineTo(n.x + Math.sign(dx) * (Math.abs(dx) - diag), n.y);
+      ctx.lineTo(m.x, m.y);
+      ctx.stroke();
+    }
+    for (const n of nodes) {
+      const near = Math.max(0, 1 - Math.hypot(mouse.x - n.x, mouse.y - n.y) / 220);
+      const breathe = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(time / 1400 + n.phase);
+      ctx.globalAlpha = 0.25 + 0.35 * breathe + 0.4 * near;
+      ctx.strokeStyle = colors.node;
+      hexPath(ctx, n.x, n.y, n.r + near * 3);
+      ctx.stroke();
+    }
+    if (!reduced) {
+      for (const p of pulses) {
+        p.t += p.speed * dt;
+        if (p.t > 1) { p.t = 0; p.edge = (p.edge * 7 + 3) % edges.length; }
+        const e = edges[p.edge];
+        if (!e) continue;
+        const pt = tracePoint(nodes[e.a], nodes[e.b], p.t);
+        ctx.globalAlpha = 0.85;
+        if (sprite) ctx.drawImage(sprite, pt.x - 10, pt.y - 10, 20, 20);
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (running) raf = requestAnimationFrame(draw);
+  };
+
+  const start = () => {
+    if (running || reduced) return;
+    running = true;
+    last = 0;
+    lastFrame = 0;
+    raf = requestAnimationFrame(draw);
+  };
+  const stop = () => {
+    running = false;
+    cancelAnimationFrame(raf);
+  };
+
+  readColors();
+  resize();
+  draw(0);
+
+  const io = new IntersectionObserver(([entry]) => (entry.isIntersecting && !document.hidden ? start() : stop()));
+  io.observe(canvas);
+  const onVisibility = () => (document.hidden ? stop() : start());
+  const onResize = () => { resize(); if (!running) draw(0); };
+  const onMove = (e: PointerEvent) => {
+    const r = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - r.left;
+    mouse.y = e.clientY - r.top;
+  };
+  const themeObserver = new MutationObserver(() => { readColors(); if (!running) draw(0); });
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  document.addEventListener("visibilitychange", onVisibility);
+  window.addEventListener("resize", onResize);
+  window.addEventListener("pointermove", onMove, { passive: true });
+  return () => {
+    stop();
+    io.disconnect();
+    themeObserver.disconnect();
+    document.removeEventListener("visibilitychange", onVisibility);
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("pointermove", onMove);
+  };
+}
+
 export function HeroNetwork({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = ref.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let graph = build(1, 1);
-    let w = 0;
-    let h = 0;
-    let colors = { line: "", node: "", pulse: "" };
-    let raf = 0;
-    let running = false;
-    let last = 0;
-    const mouse = { x: -1e4, y: -1e4 };
-    // The pulse glow, rendered once per colour scheme instead of a new gradient per pulse per frame.
-    let sprite: HTMLCanvasElement | null = null;
-    const makeSprite = () => {
-      const c = document.createElement("canvas");
-      c.width = c.height = 40;
-      const g2 = c.getContext("2d");
-      if (!g2) return null;
-      const g = g2.createRadialGradient(20, 20, 0, 20, 20, 16);
-      g.addColorStop(0, colors.pulse);
-      g.addColorStop(1, "transparent");
-      g2.fillStyle = g;
-      g2.fillRect(0, 0, 40, 40);
-      return c;
-    };
-    // 30 frames a second is smooth for slow drifting pulses and halves the GPU work on 60 Hz
-    // screens (more on 120 Hz ones).
-    const FRAME_MS = 1000 / 30;
-    let lastFrame = 0;
-
-    const readColors = () => {
-      const cs = getComputedStyle(document.documentElement);
-      const light = document.documentElement.getAttribute("data-theme") === "light";
-      // Light theme: brand-teal pulses (the dark cyan glow reads as grey there).
-      colors = { line: cs.getPropertyValue("--circuit").trim(), node: cs.getPropertyValue("--brand").trim(), pulse: light ? cs.getPropertyValue("--brand").trim() : cs.getPropertyValue("--glow").trim() };
-      sprite = makeSprite();
-    };
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const rect = canvas.getBoundingClientRect();
-      w = rect.width;
-      h = rect.height;
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      graph = build(w, h);
-    };
-
-    const draw = (time: number) => {
-      if (running && lastFrame && time - lastFrame < FRAME_MS - 1) { raf = requestAnimationFrame(draw); return; }
-      lastFrame = time;
-      const dt = last ? Math.min((time - last) / 1000, 0.1) : 0;
-      last = time;
-      ctx.clearRect(0, 0, w, h);
-      const { nodes, edges, pulses } = graph;
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = colors.line;
-      ctx.globalAlpha = 0.22;
-      for (const e of edges) {
-        const n = nodes[e.a];
-        const m = nodes[e.b];
-        const dx = m.x - n.x;
-        const dy = m.y - n.y;
-        const diag = Math.min(Math.abs(dx), Math.abs(dy));
-        ctx.beginPath();
-        ctx.moveTo(n.x, n.y);
-        ctx.lineTo(n.x + Math.sign(dx) * (Math.abs(dx) - diag), n.y);
-        ctx.lineTo(m.x, m.y);
-        ctx.stroke();
-      }
-      for (const n of nodes) {
-        const near = Math.max(0, 1 - Math.hypot(mouse.x - n.x, mouse.y - n.y) / 220);
-        const breathe = reduced ? 0.5 : 0.5 + 0.5 * Math.sin(time / 1400 + n.phase);
-        ctx.globalAlpha = 0.25 + 0.35 * breathe + 0.4 * near;
-        ctx.strokeStyle = colors.node;
-        hexPath(ctx, n.x, n.y, n.r + near * 3);
-        ctx.stroke();
-      }
-      if (!reduced) {
-        for (const p of pulses) {
-          p.t += p.speed * dt;
-          if (p.t > 1) { p.t = 0; p.edge = (p.edge * 7 + 3) % edges.length; }
-          const e = edges[p.edge];
-          if (!e) continue;
-          const pt = tracePoint(nodes[e.a], nodes[e.b], p.t);
-          ctx.globalAlpha = 0.85;
-          if (sprite) ctx.drawImage(sprite, pt.x - 10, pt.y - 10, 20, 20);
-        }
-      }
-      ctx.globalAlpha = 1;
-      if (running) raf = requestAnimationFrame(draw);
-    };
-
-    const start = () => {
-      if (running || reduced) return;
-      running = true;
-      last = 0;
-      lastFrame = 0;
-      raf = requestAnimationFrame(draw);
-    };
-    const stop = () => {
-      running = false;
-      cancelAnimationFrame(raf);
-    };
-
-    readColors();
-    resize();
-    draw(0);
-
-    const io = new IntersectionObserver(([entry]) => (entry.isIntersecting && !document.hidden ? start() : stop()));
-    io.observe(canvas);
-    const onVisibility = () => (document.hidden ? stop() : start());
-    const onResize = () => { resize(); if (!running) draw(0); };
-    const onMove = (e: PointerEvent) => {
-      const r = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - r.left;
-      mouse.y = e.clientY - r.top;
-    };
-    const themeObserver = new MutationObserver(() => { readColors(); if (!running) draw(0); });
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("resize", onResize);
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => {
-      stop();
-      io.disconnect();
-      themeObserver.disconnect();
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("pointermove", onMove);
-    };
-  }, []);
+  useEffect(() => (ref.current ? mountNetwork(ref.current) : undefined), []);
 
   return <canvas ref={ref} className={`pointer-events-none absolute inset-0 h-full w-full ${className}`} aria-hidden="true" />;
 }

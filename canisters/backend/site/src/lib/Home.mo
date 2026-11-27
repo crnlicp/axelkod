@@ -72,13 +72,17 @@ module {
       .mapOk(func _ = clean);
   };
 
+  /// Card background simulations the site can draw (app/lib/product-sims has the same ids).
+  public let productBackgrounds : [Text] = ["", "prova-cra", "network"];
+
   func product(it : Types.ProductItem, field : Text) : R<Types.ProductItem> {
     let url = V.singleLine(it.url);
     switch (productText(it.sv, field # ".sv"), productText(it.en, field # ".en")) {
       case (#ok(sv), #ok(en)) {
         check(icons.find(func i = i == it.icon) != null, field # ".icon")
           .chain(func _ = check(url == "" or V.isHttpsUrl(url), field # ".url"))
-          .mapOk(func _ = { icon = it.icon; status = it.status; url; sv; en });
+          .chain(func _ = check(productBackgrounds.find(func b = b == it.background) != null, field # ".background"))
+          .mapOk(func _ = { icon = it.icon; status = it.status; url; background = it.background; sv; en });
       };
       case (#err(e), _) { #err(e) };
       case (_, #err(e)) { #err(e) };
@@ -100,6 +104,8 @@ module {
   };
 
   public let maxWords = 4;
+  public let minGlobeSize = 20;
+  public let maxGlobeSize = 100;
   public let maxTrust = 8;
 
   func heroLang(h : Types.HeroLang, field : Text) : R<Types.HeroLang> {
@@ -126,12 +132,14 @@ module {
   /// Errors name the field as "hero.<sv|en>.<field>" or "hero.trust.<n>.<sv|en|icon>".
   public func hero(h : Types.HomeHero) : R<Types.HomeHero> {
     if (h.trust.size() < 1 or h.trust.size() > maxTrust) return #err(#invalid("hero.trust"));
-    if (h.highlight >= maxWords) return #err(#invalid("hero.highlight"));
+    if (h.highlights.size() > maxWords or h.highlights.any(func i = i >= maxWords)) return #err(#invalid("hero.highlights"));
+    if (h.ciphers.size() > maxWords or h.ciphers.any(func i = i >= maxWords)) return #err(#invalid("hero.ciphers"));
+    if (h.visuals.globeSize < minGlobeSize or h.visuals.globeSize > maxGlobeSize) return #err(#invalid("hero.globeSize"));
     let trust = Array.tabulate(h.trust.size(), func i = trustItem(h.trust[i], "hero.trust." # debug_show i));
     for (r in trust.values()) { switch (r) { case (#err(e)) return #err(e); case (#ok(_)) {} } };
     switch (heroLang(h.sv, "hero.sv"), heroLang(h.en, "hero.en")) {
       case (#ok(sv), #ok(en)) {
-        #ok({ sv; en; highlight = h.highlight; trust = trust.map(func r = switch (r) { case (#ok(v)) v; case (#err(_)) h.trust[0] }) });
+        #ok({ sv; en; highlights = h.highlights; ciphers = h.ciphers; visuals = h.visuals; trust = trust.map(func r = switch (r) { case (#ok(v)) v; case (#err(_)) h.trust[0] }) });
       };
       case (#err(e), _) { #err(e) };
       case (_, #err(e)) { #err(e) };

@@ -189,6 +189,7 @@ type ProductSection =
  };
 type ProductItem = 
  record {
+   background: text;
    en: ProductText;
    icon: text;
    status: ProductStatus;
@@ -319,10 +320,12 @@ type HomeItem =
  };
 type HomeHero = 
  record {
+   ciphers: vec nat;
    en: HeroLang;
-   highlight: nat;
+   highlights: vec nat;
    sv: HeroLang;
    trust: vec HomeItem;
+   visuals: HeroVisuals;
  };
 type HomeHead = 
  record {
@@ -337,6 +340,14 @@ type HomeContent =
    products: ProductSection;
    security: HomeSection;
    services: HomeSection;
+ };
+type HeroVisuals = 
+ record {
+   globe: bool;
+   globeSize: nat;
+   logo: bool;
+   logoInGlobe: bool;
+   network: bool;
  };
 type HeroLang = 
  record {

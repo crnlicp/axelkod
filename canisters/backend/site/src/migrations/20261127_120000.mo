@@ -1,6 +1,8 @@
 // New positioning: IT, software, cyber security and supply chain (vehicle spare parts
 // are part of the supply chain, no longer a service of their own), plus a Products
-// section with Prova. Rewrites the draft and published home sections and the SEO
+// section with Prova; the hero gets lists of highlighted and encrypted words and a
+// choice of visual layers, product
+// cards a background simulation. Rewrites the draft and published home sections and the SEO
 // titles once; admins edit them afterwards as before.
 // Self-contained: types are copied, not imported.
 import Array "mo:core/Array";
@@ -26,12 +28,16 @@ module {
   type HomeSection = { sv : HomeHead; en : HomeHead; items : [HomeItem] };
   type HeroLang = { eyebrow : Text; words : [Text]; subtitle : Text; cta : Text; cta2 : Text };
   type HomeHero = { sv : HeroLang; en : HeroLang; highlight : Nat; trust : [HomeItem] };
+  type NewHero = {
+    sv : HeroLang; en : HeroLang; highlights : [Nat]; ciphers : [Nat];
+    visuals : { network : Bool; globe : Bool; logo : Bool; logoInGlobe : Bool; globeSize : Nat }; trust : [HomeItem];
+  };
   type ProductText = { title : Text; text : Text; cta : Text };
-  type ProductItem = { icon : Text; status : { #live; #beta; #soon }; url : Text; sv : ProductText; en : ProductText };
+  type ProductItem = { icon : Text; status : { #live; #beta; #soon }; url : Text; background : Text; sv : ProductText; en : ProductText };
   type ProductSection = { sv : HomeHead; en : HomeHead; items : [ProductItem] };
 
   type OldHome = { hero : HomeHero; services : HomeSection; security : HomeSection; industries : HomeSection };
-  type NewHome = OldHome and { products : ProductSection };
+  type NewHome = { hero : NewHero; services : HomeSection; security : HomeSection; industries : HomeSection; products : ProductSection };
 
   type OldConfig = {
     var contact : ContactInfo; var seo : SeoSettings; var seoUpdatedAt : Int; var seoPublishedAt : ?Int;
@@ -49,10 +55,12 @@ module {
   func home(old : OldHome) : NewHome = {
     // The trust strip is kept as it is.
     hero = {
-      old.hero with
+      trust = old.hero.trust;
       sv = { eyebrow = "Axelkod AB · Mölndal"; words = ["Kod.", "Säkerhet.", "Leverans."]; subtitle = "Mjukvara, cybersäkerhet och säkra leveranskedjor, även för fordonsreservdelar, levererat med svensk noggrannhet."; cta = "Kontakta oss"; cta2 = "Se vad vi gör" };
       en = { eyebrow = "Axelkod AB · Mölndal, Sweden"; words = ["Code.", "Security.", "Supply."]; subtitle = "Software, cyber security and secure supply chains, including vehicle spare parts, delivered with Swedish precision."; cta = "Contact us"; cta2 = "See what we do" };
-      highlight = 1;
+      highlights = [1];
+      ciphers = [1]; // "Säkerhet." / "Security." decrypts
+      visuals = { network = true; globe = false; logo = true; logoInGlobe = false; globeSize = 70 };
     };
     services = {
       sv = { eyebrow = "Tjänster"; title = "Vad vi gör"; intro = "Fyra områden, ett bolag. Fråga oss så berättar vi mer." };
@@ -85,6 +93,7 @@ module {
         icon = "lock";
         status = #beta;
         url = "";
+        background = "prova-cra";
         sv = { title = "Prova CRA"; text = "Ett konfidentiellt utbyte av cybersäkerhetsbevis i industriella leveranskedjor. Leverantörer registrerar signerade intyg och delar krypterade rapporter; köpare verifierar dem och registrerar sitt godkännande."; cta = "Be om en demo" };
         en = { title = "Prova CRA"; text = "A confidential exchange for cybersecurity evidence in industrial supply chains. Suppliers register signed statements and share encrypted reports; buyers verify them and record their acceptance."; cta = "Ask for a demo" };
       }];
